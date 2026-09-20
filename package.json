@@ -1,0 +1,45 @@
+{
+  "name": "clario",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Verifiable expense workflows for crypto-native teams.",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "pnpm": ">=11.19.0 <12"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @clario/web dev",
+    "lint": "pnpm -r --if-present lint",
+    "lint:contracts": "forge fmt --check --root contracts",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm test:unit && pnpm test:contracts",
+    "test:unit": "pnpm -r --if-present test",
+    "test:contracts": "forge test --root contracts",
+    "build": "pnpm build:packages && pnpm build:contracts",
+    "build:packages": "pnpm -r --if-present build",
+    "build:contracts": "forge build --root contracts",
+    "deploy:contracts": "node scripts/deploy.mjs",
+    "verify:contracts": "node scripts/verify.mjs",
+    "migrate:db": "node scripts/migrate.mjs",
+    "format": "pnpm format:code && pnpm format:contracts",
+    "format:code": "prettier --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \".github/**/*.{yaml,yml}\" \"scripts/**/*.{mjs,js,json}\" \"*.{json,yaml,yml,mjs}\"",
+    "format:contracts": "forge fmt --root contracts",
+    "format:check": "pnpm format:check:code && pnpm lint:contracts",
+    "format:check:code": "prettier --check \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \".github/**/*.{yaml,yml}\" \"scripts/**/*.{mjs,js,json}\" \"*.{json,yaml,yml,mjs}\"",
+    "audit:dependencies": "pnpm audit --prod --audit-level=high",
+    "check": "pnpm lint && pnpm lint:contracts && pnpm typecheck && pnpm test && pnpm build && pnpm format:check:code"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "26.5.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.5",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0",
+    "vitest": "5.0.1"
+  }
+}

@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# TypeScript and test output
+*.tsbuildinfo
+coverage/
+dist/
+
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+cache/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local databases, uploads, and exports
+*.db
+*.db-journal
+uploads/
+exports/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+pnpm-debug.log*

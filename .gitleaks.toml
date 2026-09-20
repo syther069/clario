@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated dependencies, caches, and build output"
+paths = [
+  '''(^|/)(node_modules|\.pnpm-store|\.next|dist|coverage)(/|$)''',
+  '''(^|/)contracts/(cache|out|broadcast)(/|$)''',
+]

@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  NEXT_TELEMETRY_DISABLED: "1"
+  APP_ENV: local
+  CHAIN_FAMILY: local
+  MONAD_CHAIN_ID: "31337"
+  MONAD_RPC_URL: http://127.0.0.1:8545
+
+jobs:
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pinned pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          version: 11.19.0
+          runtime: node@24.15.0
+          cache: true
+          require-lockfile: true
+
+      - name: Lint TypeScript and React
+        run: pnpm lint
+
+      - name: Type-check workspaces
+        run: pnpm typecheck
+
+      - name: Check code formatting
+        run: pnpm format:check:code
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pinned pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          version: 11.19.0
+          runtime: node@24.15.0
+          cache: true
+          require-lockfile: true
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  contract-tests:
+    name: Contract tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FOUNDRY_PROFILE: default
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pinned pnpm and Node.js without dependencies
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          version: 11.19.0
+          runtime: node@24.15.0
+          cache: false
+          install: false
+
+      - name: Install pinned Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: v1.7.1
+          cache: false
+
+      - name: Check Solidity formatting
+        run: pnpm lint:contracts
+
+      - name: Run contract tests
+        run: pnpm test:contracts
+
+      - name: Build contracts
+        run: pnpm build:contracts
+
+  production-build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install pinned pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          version: 11.19.0
+          runtime: node@24.15.0
+          cache: true
+          require-lockfile: true
+
+      - name: Build application and packages
+        run: pnpm build:packages
+
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out complete history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install checksum-verified Gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          archive="${RUNNER_TEMP}/gitleaks.tar.gz"
+          curl --fail --location --silent --show-error \
+            --output "${archive}" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${archive}" | sha256sum --check --strict
+          tar --extract --gzip --file "${archive}" --directory "${RUNNER_TEMP}" gitleaks
+
+      - name: Scan complete Git history for secrets
+        run: "${RUNNER_TEMP}/gitleaks git --redact --no-banner --log-opts=--all ${GITHUB_WORKSPACE}"
+
+      - name: Install pinned pnpm and Node.js without dependencies
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          version: 11.19.0
+          runtime: node@24.15.0
+          cache: false
+          install: false
+
+      - name: Block high and critical production dependency advisories
+        run: pnpm audit:dependencies

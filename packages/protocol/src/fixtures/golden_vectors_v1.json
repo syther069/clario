@@ -1,0 +1,1099 @@
+{
+  "$schema": "https://clario.xyz/schemas/v1/golden-vectors.json",
+  "version": 1,
+  "description": "Clario Canonical Expense & Commitment Golden Vectors v1",
+  "domainSeparators": {
+    "CLARIO_EXPENSE_V1_DOMAIN": "0x27cb570aa4304879c3d4a04d49a712f2759e6fb6bb25590c67533bfd3f3f01c8",
+    "CLARIO_EVIDENCE_V1_DOMAIN": "0x9c3f350cbfcb9eb908d1f855e4bf5e592756041c2c31e780fa9971ee6a22533c"
+  },
+  "validVectors": [
+    {
+      "id": "valid_standard_v1",
+      "description": "Standard expense with populated optional fields and PDF evidence",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":\"Acme Corp\",\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":\"INV-2026-0901\",\"location\":\"Lisbon, Portugal\",\"merchant\":\"TAP Air Portugal\",\"notes\":\"Approved in advance during budget planning\",\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x9e436dbd88b2b7f82fc5039e6fbf2e0a31df802452226d7ea35bc604b0caca65",
+        "versionCommitment": "0x4a330d1707527cc7108e06dac8bf8439ccd982cb826d1d308fea85fc6125f7c4"
+      }
+    },
+    {
+      "id": "valid_absent_optionals",
+      "description": "Expense with all optional fields set to null",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"TAP Air Portugal\",\"notes\":null,\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x743feba103ced28cd6d2ab0709896e7f8e27e3acbf4b1452c3cc4bf32a29dfbd",
+        "versionCommitment": "0x13eb56986d7a1d527cc4d4ee95cfd20a4b5a409490233d64ac3328ca62f53988"
+      }
+    },
+    {
+      "id": "valid_empty_arrays",
+      "description": "Expense with empty tags array",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": []
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"TAP Air Portugal\",\"notes\":null,\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0xb3d042f382eeb0ba20fc1358d8fe67593cfb90e410b67f54713c5b6dbd786684",
+        "versionCommitment": "0x79c6f2814fb2bc53076ca8933a1ddb7aa1ece77fbc695528ed6a2305ad0ee0c5"
+      }
+    },
+    {
+      "id": "valid_zero_claim_amount",
+      "description": "Manual source expense with claimAmount = 0 base units",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "0",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "manual",
+        "sourceChainId": null,
+        "sourceTransactionHash": null,
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"0\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"TAP Air Portugal\",\"notes\":null,\"paymentSource\":\"manual\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":null,\"sourceTransactionHash\":null,\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x2f6a581a221465ff56ffd0c5fd42c88b5e552a2468c94dc04607a342315d49cf",
+        "versionCommitment": "0x07d242afdccbd5e0c7c6b9e84dbc6d814206ed9e4753f96e940f858ee11553c4"
+      }
+    },
+    {
+      "id": "valid_large_claim_amount",
+      "description": "Expense with large unsigned integer claimAmount (1M with 18 decimals)",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "1000000000000000000000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"1000000000000000000000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"TAP Air Portugal\",\"notes\":null,\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x3e670449ec2691c285579937be12bd2faa932937b842a2c497dfa44e8df8dcd0",
+        "versionCommitment": "0x097cac31105df7d1158ede77f47dea0bba03d17b6a0ffe6bc6212c914c1bce66"
+      }
+    },
+    {
+      "id": "valid_transaction_hash_source",
+      "description": "Expense with transaction_hash payment source on Monad testnet",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "transaction_hash",
+        "sourceChainId": 10143,
+        "sourceTransactionHash": "0x8888888888888888888888888888888888888888888888888888888888888888",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"TAP Air Portugal\",\"notes\":null,\"paymentSource\":\"transaction_hash\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":10143,\"sourceTransactionHash\":\"0x8888888888888888888888888888888888888888888888888888888888888888\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0xd84a9d94a1b35d51780aeb8652794a31e23966a2d07ebfab2c2893293341adbd",
+        "versionCommitment": "0x18c7283e90cad1597b7f87e4c396b496921115ef465152739314506493a0999b"
+      }
+    },
+    {
+      "id": "valid_unicode_nfc",
+      "description": "NFC-normalized Unicode strings with French and Japanese characters",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Déplacement à Tokyo pour conférence",
+        "businessPurpose": "東京オフィスへの技術出張およびミートアップ登壇",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "JR東日本",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": null,
+        "invoiceNumber": null,
+        "location": null,
+        "notes": null,
+        "tags": ["conference", "出張"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"東京オフィスへの技術出張およびミートアップ登壇\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":null,\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":null,\"location\":null,\"merchant\":\"JR東日本\",\"notes\":null,\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"conference\",\"出張\"],\"title\":\"Déplacement à Tokyo pour conférence\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x275a6f7f35e052c24e62d9bdccd092e8598410cd3b0bc062bc5b871afcbf0d04",
+        "versionCommitment": "0xf8c9d27eb7994604ed1fb8141832f40eded090fedc6d74eaf76b5ccc5cabbef7"
+      }
+    },
+    {
+      "id": "valid_multi_evidence_sorted",
+      "description": "Multiple evidence entries with different MIME types and sorted evidenceIds",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0x8f95d3c515ca3ef1de179e7675d1d8108e3a8627b033a46551ee1c4f515febb4",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 204800,
+            "plaintextHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+            "ciphertextHash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+            "uploadedAt": "2026-09-15T11:00:00Z"
+          },
+          {
+            "evidenceId": "ev-002",
+            "mimeType": "image/png",
+            "sizeBytes": 512000,
+            "plaintextHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+            "ciphertextHash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+            "uploadedAt": "2026-09-15T11:05:00Z"
+          },
+          {
+            "evidenceId": "ev-010",
+            "mimeType": "image/jpeg",
+            "sizeBytes": 1024000,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:10:00Z"
+          }
+        ],
+        "previousManifestHash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x1111111111111111111111111111111111111111111111111111111111111111\",\"sizeBytes\":204800,\"uploadedAt\":\"2026-09-15T11:00:00Z\"},{\"ciphertextHash\":\"0x4444444444444444444444444444444444444444444444444444444444444444\",\"evidenceId\":\"ev-002\",\"mimeType\":\"image/png\",\"plaintextHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"sizeBytes\":512000,\"uploadedAt\":\"2026-09-15T11:05:00Z\"},{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-010\",\"mimeType\":\"image/jpeg\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1024000,\"uploadedAt\":\"2026-09-15T11:10:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":\"0x9999999999999999999999999999999999999999999999999999999999999999\"}",
+        "evidenceManifestHash": "0x8f95d3c515ca3ef1de179e7675d1d8108e3a8627b033a46551ee1c4f515febb4",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":\"Acme Corp\",\"evidenceManifestHash\":\"0x8f95d3c515ca3ef1de179e7675d1d8108e3a8627b033a46551ee1c4f515febb4\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":\"INV-2026-0901\",\"location\":\"Lisbon, Portugal\",\"merchant\":\"TAP Air Portugal\",\"notes\":\"Approved in advance during budget planning\",\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0xd12af8f9df175e6da6b573c396fe2a3ff342a60858141af646aa6007e8fbc5ae",
+        "versionCommitment": "0xfc101330be9f3b27f44685c5601aa5cafd4d3d305811bdb7a701f8a1eaccab9e"
+      }
+    },
+    {
+      "id": "valid_salt_variation_a",
+      "description": "Identical record committed with Salt A",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":\"Acme Corp\",\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":\"INV-2026-0901\",\"location\":\"Lisbon, Portugal\",\"merchant\":\"TAP Air Portugal\",\"notes\":\"Approved in advance during budget planning\",\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x9e436dbd88b2b7f82fc5039e6fbf2e0a31df802452226d7ea35bc604b0caca65",
+        "versionCommitment": "0x166f2d281a7138ed2bb63c44d004708532d7766a81fa9944b27225a5b3a376f3"
+      }
+    },
+    {
+      "id": "valid_salt_variation_b",
+      "description": "Identical record committed with Salt B",
+      "expenseInput": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "manifestInput": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "commitmentContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "expected": {
+        "canonicalEvidenceManifestJson": "{\"entries\":[{\"ciphertextHash\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"evidenceId\":\"ev-001\",\"mimeType\":\"application/pdf\",\"plaintextHash\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"sizeBytes\":1048576,\"uploadedAt\":\"2026-09-15T11:55:00Z\"}],\"manifestVersion\":1,\"previousManifestHash\":null}",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "canonicalExpenseJson": "{\"businessPurpose\":\"Travel to core engineering offsite in Lisbon\",\"category\":\"travel\",\"claimAmount\":\"450000000\",\"claimAsset\":\"0x0000000000000000000000000000000000001001\",\"client\":\"Acme Corp\",\"evidenceManifestHash\":\"0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8\",\"expenseDate\":\"2026-09-15\",\"expenseId\":\"0x2222222222222222222222222222222222222222222222222222222222222222\",\"invoiceNumber\":\"INV-2026-0901\",\"location\":\"Lisbon, Portugal\",\"merchant\":\"TAP Air Portugal\",\"notes\":\"Approved in advance during budget planning\",\"paymentSource\":\"imported_transaction\",\"project\":\"infrastructure\",\"recipient\":\"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"schemaVersion\":1,\"sourceChainId\":1,\"sourceTransactionHash\":\"0x3333333333333333333333333333333333333333333333333333333333333333\",\"submittedAt\":\"2026-09-15T12:00:00Z\",\"submittedBy\":\"0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"tags\":[\"engineering\",\"travel\"],\"title\":\"Offsite flight ticket\",\"version\":1,\"workspaceId\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"}",
+        "privateRecordHash": "0x9e436dbd88b2b7f82fc5039e6fbf2e0a31df802452226d7ea35bc604b0caca65",
+        "versionCommitment": "0x1dc291024ff3c82426385f2d15ce71925a8c322f906584bf452e1564c11da3bc"
+      }
+    }
+  ],
+  "tamperedVectors": [
+    {
+      "id": "tampered_material_claim_amount",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Material edit: claimAmount changed by 1 unit (450000000 -> 450000001)",
+      "modifiedExpense": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000001",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedChange": "MODIFIES_PRIVATE_HASH_AND_COMMITMENT"
+    },
+    {
+      "id": "tampered_material_recipient",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Material edit: recipient address altered by one character",
+      "modifiedExpense": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedChange": "MODIFIES_PRIVATE_HASH_AND_COMMITMENT"
+    },
+    {
+      "id": "tampered_material_business_purpose",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Material edit: businessPurpose string altered by one character",
+      "modifiedExpense": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in London",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedChange": "MODIFIES_PRIVATE_HASH_AND_COMMITMENT"
+    },
+    {
+      "id": "tampered_non_material_notes",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Non-material edit: notes string altered",
+      "modifiedExpense": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Updated note during retrospective",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedChange": "MODIFIES_PRIVATE_HASH_AND_COMMITMENT"
+    },
+    {
+      "id": "tampered_evidence_manifest_hash",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Material edit: evidenceManifestHash altered directly",
+      "modifiedExpense": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedChange": "MODIFIES_PRIVATE_HASH_AND_COMMITMENT"
+    },
+    {
+      "id": "tampered_salt",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Context tampering: wrong salt supplied during commitment verification",
+      "tamperedContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "expectedChange": "MODIFIES_COMMITMENT_ONLY"
+    },
+    {
+      "id": "tampered_registry_address",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Context tampering: registryAddress altered",
+      "tamperedContext": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000bb",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expectedChange": "MODIFIES_COMMITMENT_ONLY"
+    },
+    {
+      "id": "tampered_monad_chain_id",
+      "baseVectorId": "valid_standard_v1",
+      "description": "Context tampering: monadChainId altered (10143 -> 1)",
+      "tamperedContext": {
+        "monadChainId": 1,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      "expectedChange": "MODIFIES_COMMITMENT_ONLY"
+    }
+  ],
+  "malformedVectors": [
+    {
+      "id": "malformed_non_nfc_title",
+      "description": "String title is in NFD (decomposed Unicode) instead of NFC",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Café",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "Normalization Form C"
+    },
+    {
+      "id": "malformed_float_claim_amount",
+      "description": "claimAmount contains floating point decimal string",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450.50",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "unsigned integer decimal string"
+    },
+    {
+      "id": "malformed_negative_claim_amount",
+      "description": "claimAmount contains negative number",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "-100",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "unsigned integer decimal string"
+    },
+    {
+      "id": "malformed_leading_zero_claim_amount",
+      "description": "claimAmount contains leading zeros",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "0450",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "unsigned integer decimal string"
+    },
+    {
+      "id": "malformed_uppercase_address",
+      "description": "claimAsset contains uppercase hex characters",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x000000000000000000000000000000000000100A",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "lowercase hex address"
+    },
+    {
+      "id": "malformed_unsorted_tags",
+      "description": "tags array is not sorted lexicographically",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["travel", "engineering"]
+      },
+      "expectedErrorPattern": "sorted lexicographically and deduplicated"
+    },
+    {
+      "id": "malformed_duplicate_tags",
+      "description": "tags array contains duplicates",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["travel", "travel"]
+      },
+      "expectedErrorPattern": "sorted lexicographically and deduplicated"
+    },
+    {
+      "id": "malformed_unsorted_evidence_entries",
+      "description": "Evidence manifest entries are not strictly sorted by ascending evidenceId",
+      "target": "MANIFEST",
+      "input": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-002",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          },
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "application/pdf",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "expectedErrorPattern": "strictly sorted by ascending evidenceId"
+    },
+    {
+      "id": "malformed_invalid_mime_type",
+      "description": "Evidence entry contains disallowed MIME type",
+      "target": "MANIFEST",
+      "input": {
+        "manifestVersion": 1,
+        "entries": [
+          {
+            "evidenceId": "ev-001",
+            "mimeType": "image/gif",
+            "sizeBytes": 1048576,
+            "plaintextHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+            "ciphertextHash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+            "uploadedAt": "2026-09-15T11:55:00Z"
+          }
+        ],
+        "previousManifestHash": null
+      },
+      "expectedErrorPattern": "mimeType must be one of"
+    },
+    {
+      "id": "malformed_invalid_salt_length",
+      "description": "Commitment salt is not 32 bytes (64 hex characters)",
+      "target": "COMMITMENT_CONTEXT",
+      "context": {
+        "monadChainId": 10143,
+        "registryAddress": "0x00000000000000000000000000000000000000aa",
+        "salt": "0x1234"
+      },
+      "expectedErrorPattern": "salt must be a 0x-prefixed 64-character hex string"
+    },
+    {
+      "id": "malformed_timestamp_milliseconds",
+      "description": "submittedAt contains fractional seconds",
+      "target": "EXPENSE",
+      "input": {
+        "schemaVersion": 1,
+        "workspaceId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "expenseId": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "version": 1,
+        "title": "Offsite flight ticket",
+        "businessPurpose": "Travel to core engineering offsite in Lisbon",
+        "category": "travel",
+        "project": "infrastructure",
+        "merchant": "TAP Air Portugal",
+        "expenseDate": "2026-09-15",
+        "claimAmount": "450000000",
+        "claimAsset": "0x0000000000000000000000000000000000001001",
+        "recipient": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "paymentSource": "imported_transaction",
+        "sourceChainId": 1,
+        "sourceTransactionHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "evidenceManifestHash": "0xf4433d980a212432c9bbeb8f4258d7bee15e4f4c32b7a46098e534280ebbfdb8",
+        "submittedBy": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "submittedAt": "2026-09-15T12:00:00.000Z",
+        "client": "Acme Corp",
+        "invoiceNumber": "INV-2026-0901",
+        "location": "Lisbon, Portugal",
+        "notes": "Approved in advance during budget planning",
+        "tags": ["engineering", "travel"]
+      },
+      "expectedErrorPattern": "ISO 8601 UTC format"
+    }
+  ]
+}
