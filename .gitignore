@@ -27,8 +27,8 @@ cache/
 # Local databases, uploads, and exports
 *.db
 *.db-journal
-uploads/
-exports/
+/uploads/
+/exports/
 
 # Editors and operating systems
 .idea/

@@ -2,8 +2,8 @@
 
 **Status:** Active founding backlog  
 **Version:** 1.0  
-**Current phase:** Phase 5 — Reimbursement and verification  
-**Next task:** `VER-001`  
+**Current phase:** Phase 6 — Intelligence, design, and resilience  
+**Next task:** `DES-001 — Implement the design foundation`  
 **Execution model:** One task, one verified outcome, one handoff  
 **Source documents:** [Phases](./PHASES.md) · [PRD](./prd.md) · [Architecture](./architecture.md) · [Design](./DESIGN.md) · [Engineering rules](./RULES.md)
 
@@ -441,7 +441,6 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Completed:** 2026-09-16 by Antigravity  
 **Notes:** Git metadata unavailable in environment. No live contract deployment, external wallet signing, RPC transactions, or live funds used.
 
-
 ---
 
 ## Phase 2 — Private workflow
@@ -640,13 +639,14 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Golden vectors, calldata privacy scan, API/contract integration, transaction lifecycle, and UI tests.
 
 **Evidence:** Verified 2026-09-17. Implemented canonical expense submission engine in `@clario/web`:
+
 - `apps/web/src/lib/expense/submission.ts`: RFC 8785 canonical evidence manifest sorting and hashing, canonical expense record creation with normalized addresses, integer base units, ISO 8601 UTC timestamps, Viem calldata encoding for `ClarioExpenseRegistryV1.submitVersion` (`0x06377857`), and automated privacy leakage scanner (`assertCalldataPrivacy`) guaranteeing confidential fields (title, merchant, purpose, notes) never leak into calldata.
 - `apps/web/src/lib/expense/service.ts`: Secure 32-byte random salt envelope-encryption and decryption with AAD context binding, `prepareSubmission` generating golden commitments via `@clario/protocol` `computeExpenseCommitmentV1`, resolving Monad chain and registry address, asserting privacy, and `reconcileSubmission` updating `expense_versions.status = 'submitted'`, `expenses.current_version`, recording in `chain_transactions`, and logging audit events.
 - Next.js Route Handlers: `POST /api/workspaces/[workspaceId]/expenses/[expenseId]/submit/prepare` and `POST /api/workspaces/[workspaceId]/expenses/[expenseId]/submit/reconcile` with session authentication and CSRF defense.
 - Evidence Ledger UI: `ExpenseSubmitDialog` displaying public Monad commitment vs confidential offchain ledger, network verification, raw calldata inspector, and truthful lifecycle (`preparing` -> `preview` -> `awaiting_signature` -> `submitted` [pending confirmation] -> `confirming` -> `confirmed` -> `failed`), wired into `ExpenseDraftEditor`.
 - Verified with 16 automated tests across `submission.test.ts` (8) and `submission-route.test.ts` (8), bringing `@clario/web` suite to 224 passing tests (451 total tests monorepo-wide). Full quality gate `pnpm check` (95 Foundry tests, 224 web tests, Next.js Turbopack build, ESLint with 0 warnings, and Prettier) and `pnpm audit:dependencies` passed cleanly with zero vulnerabilities.
-**Completed:** 2026-09-17 by Antigravity  
-**Notes:** Calldata contains strictly public fields (`workspaceId`, `expenseId`, `version`, `commitment`, `previousCommitment`). Submitted state is never presented as confirmed until authoritative onchain receipt.
+  **Completed:** 2026-09-17 by Antigravity  
+  **Notes:** Calldata contains strictly public fields (`workspaceId`, `expenseId`, `version`, `commitment`, `previousCommitment`). Submitted state is never presented as confirmed until authoritative onchain receipt.
 
 ---
 
@@ -677,6 +677,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Authorization matrix, pagination, stale state, evidence access, and accessibility tests.
 
 **Evidence:** Verified 2026-09-17. Built the authorized review system end-to-end:
+
 1. `apps/web/src/lib/review/types.ts`: Defined `ReviewQueueItem`, `ReviewQueueFilter`, `ReviewQueueResponse`, `ReviewDetail`, `ReviewEvidenceItem`, `MaterialDiff`, `ProofSpineStep`, `ReviewerAuthorityInfo`.
 2. `apps/web/src/lib/review/diff.ts`: Implemented `computeMaterialDiff` using `EXPENSE_FIELD_DEFINITIONS_V1` from `@clario/protocol` to compute field-level diffs between versions $V$ and $V-1$ and classify materiality (`MATERIAL` vs `NON_MATERIAL`).
 3. `apps/web/src/lib/review/service.ts`: Implemented `ReviewService`:
@@ -724,6 +725,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Contract/API/UI integration plus stale, replay, material-edit, and accessibility tests.
 
 **Evidence:** Verified 2026-09-17. Built exact-version decision recording and supersession engine end-to-end:
+
 1. `apps/web/src/lib/review/decision.ts`: Viem function calldata encoding for direct onchain calls (`recordDecision`), EIP-712 typed data envelope construction (`buildClarioApprovalTypedData`), deterministic reason commitment hashing (`computeReasonCommitment`), and identifier normalizers.
 2. `apps/web/src/lib/review/decision-service.ts`: `ReviewDecisionService` enforcing:
    - `prepareDecision`: caller holds `APPROVER_ROLE` or `OWNER_ROLE`; self-approval prevention (submitter cannot approve own expense); target version must be current version and unsuperseded; single decision per version; mandatory reason commitment for reject / request_changes; returns calldata and JSON-safe EIP-712 envelope.
@@ -797,6 +799,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Authorization, ordering, reorg, lag, refresh, mobile, and screen-reader tests.
 
 **Evidence:** Verified 2026-09-17. Implemented authoritative activity timeline:
+
 - `apps/web/src/lib/timeline/types.ts`: `TimelineEvent`, `TimestampDetail` (with `applicationTime`, `blockTime`, `indexerTime` taxonomy), `ConfirmationState`, `IndexerLagStatus`, `RpcConflictStatus`, and `ExpenseTimelineResponse`.
 - `apps/web/src/lib/timeline/service.ts`: `TimelineService.getExpenseTimeline` joining 12 database tables in a single parallel fetch — operational tables (expense_versions, evidence_objects, decisions, reimbursements, source_transactions) and public projection tables (projection_expense_versions, projection_decisions, projection_settlements, indexer_checkpoints, indexed_events). Emits 15 typed events across the full lifecycle; detects indexer lag by comparing `chain_transactions` block numbers to `indexer_checkpoints`; surfaces reorg/conflict via removed `indexed_events` and `chain_transactions` status; sorts deterministically by timestamp → version → event-type rank → ID.
 - `apps/web/src/app/api/workspaces/[workspaceId]/expenses/[expenseId]/timeline/route.ts`: authorized GET handler returning `ExpenseTimelineResponse`.
@@ -835,6 +838,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Configuration provenance review, API/contract integration, mismatch matrix, and simulation tests.
 
 **Evidence:** Verified 2026-09-19. Integrated supported Monad reimbursement asset and hardened settlement preparation end-to-end:
+
 1. `docs/MONAD_PROVENANCE.md`: Official Monad Testnet USDC provenance verified against primary documentation (`docs.monad.xyz`): Chain ID 10143, USDC token `0x754704Bc059F8C67012fEd69BC8A327a5aafb603`, decimals 6. Deployment manifests configure token address and standard decimals without hardcoding values in application code.
 2. `apps/web/src/lib/settlement/config.ts`: Fail-closed configuration resolver requiring validated deployment manifest (`DeploymentManifest`) via `getServerConfiguration()`. Direct hardcoding, raw `NEXT_PUBLIC_*` reads, and fallback zero addresses are eliminated. Throws `SettlementConfigError` (`UNCONFIGURED_SETTLEMENT_ASSET`, HTTP 422). Added `tryGetSettlementConfig()` for safe queue queries and `setSettlementConfigForTesting(...)` for isolated unit/integration tests (RULES §5.1, §5.2, §10.4, §14).
 3. `apps/web/src/lib/settlement/service.ts`: `SettlementService` enforcing all immediate pre-condition checks during `prepareSettlement`:
@@ -898,6 +902,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Local/fork integration as supported, receipt-decoding, replacement/reorg, duplicate, refresh, and UI tests.
 
 **Evidence:** Verified 2026-09-19 with comprehensive receipt validation, lifecycle service, API routes, UI, and test suites.
+
 1. `receipt.ts` (`apps/web/src/lib/settlement/receipt.ts`):
    - `validateSettlementReceipt` validates onchain receipt status (`success` vs `reverted`), checks destination contract matches registry, decodes and verifies `SettlementRecorded` event against expected workspaceId, expenseId, version, commitment, token, recipient, and amount.
    - Decodes ERC-20 `Transfer` event to ensure expected recipient and amount were transferred.
@@ -934,7 +939,7 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Completed:** 2026-09-19 by Antigravity  
 **Notes:** Founder invariants preserved: private evidence remains offchain; material edits create immutable versions; approval binds to exact current commitment and authorized human; duplicate reimbursement fails in application and contract; AI has no authority; verification remains independent; SUBMITTED state is never labeled confirmed, paid, or final. No real transactions broadcast or live funds moved.
 
-### [~] VER-001 — Define portable verification package v1
+### [x] VER-001 — Define portable verification package v1
 
 **Priority:** P0  
 **Dependencies:** `PRO-002`, `IDX-002`, `SET-002`  
@@ -958,9 +963,30 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 
 **Verification:** Schema, authorization, redaction, deterministic archive, leakage, and large-package tests.
 
-**Evidence:** Pending.
+**Evidence:** Verified 2026-09-20. Implemented portable verification package v1 across `@clario/protocol` and `apps/web`:
 
-### [ ] VER-002 — Build independent verifier
+1. Protocol schema and validation:
+   - `packages/protocol/src/package/types.ts` defines `VerificationPackageManifestV1`, disclosure levels (`FULL`, `REDACTED`), package file entries, workspace policy export, expected event export, and package bundle types.
+   - `packages/protocol/src/package/validate.ts` validates schema version, disclosure level, chain ID, registry/exporter addresses, safe relative paths, duplicate paths, per-file SHA-256 hashes, and privacy classes; computes deterministic file hashes and canonical manifest hash with RFC 8785 canonical JSON.
+   - Protocol package tests pass (`pnpm --filter @clario/protocol test -- package`, 126 protocol tests total).
+2. Export service and deterministic archive:
+   - `apps/web/src/lib/export/service.ts` provides disclosure preview, FULL/REDACTED package generation, package retrieval, explicit retention expiry, audit event recording, and deterministic ZIP creation through `zip.ts`.
+   - Export requires authenticated workspace exporter authority (`OWNER_ROLE`, `ADMIN_ROLE`, or `AUDITOR_ROLE`) and recent 15-minute wallet confirmation.
+   - FULL mode includes decrypted canonical records, evidence manifests, disclosed salts, and evidence bytes only inside the generated archive; plaintext is not written to disk or audit metadata.
+   - REDACTED mode omits private records, salts, and evidence binaries while marking those manifest entries as redacted, so dependent verifier checks become unavailable/unverifiable rather than passed.
+   - Deployment data is sourced from a validated deployment manifest; placeholder fallback manifests and fake addresses were removed.
+3. API boundary:
+   - `GET /api/workspaces/[workspaceId]/exports/preview` returns explicit disclosure impact before export.
+   - `POST /api/workspaces/[workspaceId]/exports` generates a package only after explicit `FULL` or `REDACTED` selection.
+   - `GET /api/workspaces/[workspaceId]/exports/[exportId]` downloads an authorized unexpired ZIP with no-store cache headers and package hash header.
+4. Verification:
+   - `pnpm --filter @clario/web test -- export`: 40 web test files, 389 tests passing.
+   - `pnpm --filter @clario/web typecheck`: passed.
+
+**Completed:** 2026-09-20 by Codex  
+**Notes:** No live deployment, signing, broadcast, provider mutation, or evidence disclosure occurred. Package generation still depends on a valid configured deployment manifest for non-test use; independent verifier execution is tracked by `VER-002`.
+
+### [x] VER-002 — Build independent verifier
 
 **Priority:** P0  
 **Dependencies:** `VER-001`  
@@ -984,13 +1010,36 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 
 **Verification:** Golden vectors and complete valid/tampered package matrix in offline-capable tests.
 
-**Evidence:** Pending.
+**Evidence:** Verified 2026-09-22. Implemented an independent package verifier in `@clario/protocol`:
+
+1. Deterministic verifier core:
+   - `packages/protocol/src/verifier/verify.ts` returns `VERIFIED`, `VERIFIED_WITH_WARNINGS`, `FAILED`, or `UNVERIFIABLE` for each check and overall.
+   - Checks package schema, declared/undeclared files, SHA-256 digests, deployment and policy snapshots, canonical record/evidence hashes, salted commitments, version ordering/supersession, exact current approval, historical reviewer authority, self-approval, configured token, settlement terms, ERC-20 transfer, and conflicting settlement indicators.
+   - Redacted or omitted allowed inputs are `UNVERIFIABLE`, never passed.
+2. Independent public-chain boundary:
+   - `packages/protocol/src/verifier/rpc.ts` reads a compatible Monad RPC directly with Viem, discovers modular registries through `ClarioRegistry`, reconstructs historical authority, and validates decision/settlement receipts without an authenticated Clario API.
+   - Wrong chain and incompatible/wrong registry contract are explicit failures.
+3. Portable archive and CLI:
+   - `archive.ts` loads bounded ZIP packages in memory with root/path/size/entry-count defenses.
+   - `pnpm verify:package -- <package.zip> [--rpc <MONAD_RPC_URL>]` runs the standalone CLI and emits a JSON report.
+   - `docs/INDEPENDENT_VERIFIER.md` documents result semantics, trust boundaries, privacy handling, checked claims, and limitations.
+4. Export/verifier compatibility hardening:
+   - FULL exports now disclose the canonical record and canonical evidence manifest used by the commitment; submission preparation persists the exact canonical timestamp needed for deterministic reconstruction.
+   - Exported event provenance uses persisted block hashes; synthetic zero hashes and fallback policy snapshots are rejected.
+   - REDACTED exports explicitly declare the evidence manifest as redacted.
+5. Verification evidence:
+   - Valid, changed-field, changed-evidence, wrong-salt, wrong-chain, wrong-contract, unauthorized/revoked reviewer, stale/superseded version, unmatched settlement, redacted input, missing RPC, archive traversal, and bounded archive cases pass in 133 protocol tests.
+   - Export-to-verifier integration passes in the 389-test web suite.
+   - Root `pnpm check` passed: lint, typecheck, 15 database tests, 133 protocol tests, 389 web tests, 95 Foundry tests, package/contracts builds, Next production build, and formatting.
+
+**Completed:** 2026-09-22 by Codex  
+**Notes:** No package was uploaded, no live RPC was called, and no deployment, signature, broadcast, provider mutation, or fund movement occurred. Phase 5 technical tasks are complete and require the documented founder gate review before phase advancement.
 
 ---
 
 ## Phase 6 — Intelligence, design, and resilience
 
-### [ ] AI-001 — Add human-supervised receipt extraction
+### [x] AI-001 — Add human-supervised receipt extraction
 
 **Priority:** P1  
 **Dependencies:** `EXP-001`, `APP-003`, `SEC-001`  
@@ -1014,9 +1063,12 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 
 **Verification:** Prompt-injection fixtures, schema fuzzing, privacy assertions, timeout/fallback, and confirmation UI tests.
 
-**Evidence:** Pending.
+**Evidence:** Verified 2026-09-22. Added a provider-neutral, tool-free receipt extraction contract with versioned strict output validation; fixed untrusted-document instructions; explicit per-request evidence consent; authorized draft/evidence access; MIME, file-count, and total-size limits; durable `jobs` lifecycle with bounded timeout and retry; safe error-code persistence; AES-256-GCM encrypted suggestion and correction history; and a disabled-by-default runtime provider until provider/privacy terms receive founder approval. Added authenticated extraction and disposition routes plus an editable “AI suggested” draft panel that exposes source, confidence, uncertainty, warnings, manual fallback, and explicit apply/reject actions. Applying selected values updates only the human-controlled draft and records accepted/modified provenance; AI has no submission, approval, signing, role, or settlement capability. Prompt-injection, privacy, malformed-schema, source-binding, quota retry, timeout fallback, encryption context, confidence labeling, and explicit-selection tests pass. Full `pnpm check` passed with 15 database tests, 133 protocol tests, 408 web tests, 95 Foundry tests, production build, lint, typecheck, and formatting.
 
-### [ ] INT-001 — Add duplicate and mismatch warnings
+**Completed:** 2026-09-22 by Codex  
+**Notes:** Phase 5 advancement was explicitly approved by the founder before this task. No evidence was sent to an external provider. Runtime provider activation remains blocked on explicit provider, region, retention, privacy, and consent-policy approval; manual entry remains fully operational.
+
+### [x] INT-001 — Add duplicate and mismatch warnings
 
 **Priority:** P1  
 **Dependencies:** `EXP-002`, `AI-001`, `SET-002`  
@@ -1038,9 +1090,12 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 
 **Verification:** Duplicate/mismatch fixture matrix and authorization/UI tests.
 
-**Evidence:** Pending.
+**Evidence:** Verified 2026-09-22. Added a deterministic-first warning engine in `apps/web/src/lib/warnings/` with stable warning identifiers, affected-field attribution, source labels, severity, and explicit separation between exact local rules and AI-assisted review signals. Exact rules cover missing/reused evidence, duplicate or failed source claims, multiple active reimbursements, stale-version reimbursement attempts, and persisted amount/recipient mismatch. AI comparisons run afterward, ignore rejected or low-confidence analysis, honor human corrections, remain non-blocking, and are omitted for callers without evidence access. Added authenticated, CSRF-protected warning read/disposition API, immutable privacy-safe audit events for acknowledge/confirm/false-positive dispositions, and a review-signal panel on current draft and review screens. Deterministic financial blocks cannot be dismissed and do not replace the existing database, service, or contract settlement guards. Fixture matrices, authorization, privacy, audit-history, stable-ID, UI action, low-confidence, stale/duplicate settlement, and false-positive recovery tests pass. Full `pnpm check` passed with 15 database tests, 133 protocol tests, 423 web tests, 95 Foundry tests, production build, lint, typecheck, and formatting.
 
-### [ ] DES-001 — Implement the design foundation
+**Completed:** 2026-09-22 by Codex  
+**Notes:** No warning approves, rejects, submits, signs, or settles anything. No private values are stored in warning audit metadata or exposed to callers lacking evidence access. Existing deterministic settlement preparation and contract duplicate guards remain authoritative.
+
+### [~] DES-001 — Implement the design foundation
 
 **Priority:** P1  
 **Dependencies:** `FND-001`  
@@ -1064,6 +1119,8 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 **Verification:** Component tests, automated accessibility, Lighthouse, and Playwright visual baselines.
 
 **Evidence:** Pending.
+
+**Progress:** 2026-09-23 by Codex. Added the first production design-foundation slice: semantic token aliases for legacy component usage, gradient/font/motion variables, reduced-motion and forced-colors handling, mobile shell/table behavior, skeleton/callout/mono-badge primitives, explicit root theme marker, typed design-token exports, reusable native UI primitives, and numeric WCAG contrast tests for documented semantic pairs. Verified with full `pnpm check`: lint, contract formatting, typecheck, 15 database tests, 133 protocol tests, 429 web tests, 95 Foundry tests, package builds, Next production build, contract build, and Prettier check. Remaining before completion: broader screen refactor away from ad hoc inline styles, automated accessibility pass, Lighthouse, and Playwright visual baselines.
 
 ### [ ] OBS-001 — Add privacy-safe observability and recovery
 

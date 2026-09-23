@@ -24,6 +24,7 @@ import {
   computePackageFileHash,
   validateVerificationPackageManifestV1,
   canonicalizeJson,
+  hashCanonicalEvidenceManifestV1,
   ProtocolError,
   type VerificationPackageManifestV1,
   type PackageFileEntry,
@@ -47,6 +48,12 @@ import {
 import { getEvidenceKek } from "../evidence/service";
 import { createDeterministicZip, type ZipEntry } from "./zip";
 import { getServerConfiguration } from "../../config/server";
+import type { DeploymentManifest } from "../../config/schema";
+import {
+  buildCanonicalEvidenceManifest,
+  buildCanonicalExpenseRecord,
+} from "../expense/submission";
+import type { ExpenseDraftPayload } from "../expense/types";
 
 export interface ExportFilterOptions {
   expenseIds?: string[] | undefined;
@@ -151,7 +158,9 @@ export function generateExportStorageKey(
   const safeWorkspace = workspaceId.replace(/[^a-zA-Z0-9_-]/g, "");
   const safeExport = exportId.replace(/[^a-zA-Z0-9_-]/g, "");
   if (!safeWorkspace || !safeExport) {
-    throw new Error("Invalid workspaceId or exportId for export storage key generation.");
+    throw new Error(
+      "Invalid workspaceId or exportId for export storage key generation.",
+    );
   }
   return `exports/${safeWorkspace}/${safeExport}.zip`;
 }
@@ -185,15 +194,18 @@ export class ExportService {
   private readonly policy: AuthorizationPolicy;
   private readonly kek: Buffer;
   private readonly storage: StorageDriver;
+  private readonly deploymentManifestOverride: DeploymentManifest | undefined;
 
   constructor(
     private readonly db: DatabaseClient,
     storage?: StorageDriver,
     kek?: Buffer,
+    deploymentManifest?: DeploymentManifest,
   ) {
     this.policy = new AuthorizationPolicy(db);
     this.storage = storage ?? getDefaultStorageDriver();
     this.kek = kek ?? getEvidenceKek();
+    this.deploymentManifestOverride = deploymentManifest;
   }
 
   /**
@@ -360,7 +372,7 @@ export class ExportService {
       options.disclosureLevel !== "FULL" &&
       options.disclosureLevel !== "REDACTED"
     ) {
-      throw new ProtocolError("INVALID_STATE", {
+      throw new ProtocolError("INVALID_IDENTIFIER", {
         message: "disclosureLevel must be either 'FULL' or 'REDACTED'.",
       });
     }
@@ -386,11 +398,13 @@ export class ExportService {
       [workspaceId],
     );
 
-    const latestPolicy = policyRes.rows[0] ?? {
-      policy_version: 1,
-      policy_commitment: "0x" + "00".repeat(32),
-      created_by: exporterAddress,
-    };
+    const latestPolicy = policyRes.rows[0];
+    if (!latestPolicy) {
+      throw new ProtocolError("INTERNAL_ERROR", {
+        message:
+          "A persisted workspace policy is required before generating a verification package.",
+      });
+    }
 
     const rolesRes = await this.db.query<{
       role: string;
@@ -424,55 +438,35 @@ export class ExportService {
       exportedAt: createdAt,
     };
 
-    // 2. Resolve deployment manifest & chain info
-    let serverConfig;
-    try {
-      serverConfig = getServerConfiguration();
-    } catch {
-      serverConfig = null;
+    // 2. Resolve deployment manifest & chain info.
+    // VER-001 packages must be portable and independent; they therefore need
+    // the exact deployment manifest used for verification. Do not synthesize
+    // placeholder contracts, token addresses, blocks, or hashes.
+    const deploymentManifest =
+      this.deploymentManifestOverride ?? getServerConfiguration().deployment;
+
+    if (!deploymentManifest) {
+      throw new ProtocolError("INTERNAL_ERROR", {
+        message:
+          "A validated deployment manifest is required before generating a portable verification package.",
+      });
     }
 
-    const chainId = serverConfig?.chain.chainId ?? 10143;
-    const registryAddress =
-      serverConfig?.deployment?.contracts.ClarioRegistry.address ??
-      "0x" + "11".repeat(20);
-
-    const deploymentManifestContent = serverConfig?.deployment
-      ? canonicalizeJson(serverConfig.deployment)
-      : canonicalizeJson({
-          schemaVersion: 1,
-          environment: "preview",
-          sourceCommit: "test-commit",
-          chainFamily: "monad",
-          chainId,
-          deployer: exporterAddress,
-          deployedAt: createdAt,
-          contracts: {
-            ClarioRegistry: {
-              address: registryAddress,
-              transactionHash: "0x" + "00".repeat(32),
-              blockNumber: 1,
-              abiHash: "0x" + "00".repeat(32),
-            },
-          },
-          tokens: {
-            USDC: {
-              address: "0x" + "22".repeat(20),
-              decimals: 6,
-            },
-          },
-        });
+    const chainId = deploymentManifest.chainId;
+    const registryAddress = deploymentManifest.contracts.ClarioRegistry.address;
+    const deploymentManifestContent = canonicalizeJson(deploymentManifest);
 
     // 3. Resolve onchain expected events
     const eventsRes = await this.db.query<{
       block_number: string | number;
+      block_hash: string;
       transaction_hash: string;
       log_index: number;
       event_name: string;
       contract_address: string;
       payload: string | Record<string, unknown>;
     }>(
-      `SELECT block_number, transaction_hash, log_index, event_name, contract_address, payload
+      `SELECT block_number, block_hash, transaction_hash, log_index, event_name, contract_address, payload
        FROM indexed_events
        WHERE workspace_id = $1
        ORDER BY block_number ASC, log_index ASC;`,
@@ -486,7 +480,7 @@ export class ExportService {
           : ev.payload;
       return {
         blockNumber: String(ev.block_number),
-        blockHash: "0x" + "00".repeat(32),
+        blockHash: ev.block_hash,
         transactionHash: ev.transaction_hash,
         logIndex: Number(ev.log_index),
         eventName: ev.event_name,
@@ -566,8 +560,10 @@ export class ExportService {
         commitment: string;
         record_ciphertext: string;
         salt_ciphertext: string;
+        submitted_by: string | null;
+        submitted_at: string | Date | null;
       }>(
-        `SELECT version, commitment, record_ciphertext, salt_ciphertext
+        `SELECT version, commitment, record_ciphertext, salt_ciphertext, submitted_by, submitted_at
          FROM expense_versions
          WHERE workspace_id = $1 AND expense_id = $2
          ORDER BY version ASC;`,
@@ -605,7 +601,7 @@ export class ExportService {
           [workspaceId, exp.expense_id, v.version],
         );
 
-        const evidenceManifestItems = evRows.rows.map((r) => ({
+        const evidenceItems = evRows.rows.map((r) => ({
           evidenceId: r.evidence_id,
           sha256Hash: r.sha256_hash,
           byteLength: Number(r.byte_length),
@@ -616,24 +612,37 @@ export class ExportService {
               : new Date(r.created_at).toISOString(),
         }));
 
-        const evidenceManifestObj = {
-          schemaVersion: 1,
-          workspaceId,
-          expenseId: exp.expense_id,
-          version: v.version,
-          items: evidenceManifestItems,
-        };
+        const { manifest: evidenceManifest } = buildCanonicalEvidenceManifest({
+          evidenceItems,
+        });
 
         if (options.disclosureLevel === "FULL") {
-          // Decrypt record
-          const recordPayload = this.decryptRecordPayload(
+          const draftPayload = this.decryptRecordPayload(
             workspaceId,
             exp.expense_id,
             v.version,
             v.record_ciphertext,
           );
+          if (!v.submitted_by || !v.submitted_at) {
+            throw new ProtocolError("INTERNAL_ERROR", {
+              message:
+                "A submitted-by address and canonical submission timestamp are required for a full verification export.",
+            });
+          }
+          const submittedAt =
+            new Date(v.submitted_at).toISOString().slice(0, 19) + "Z";
+          const { canonicalExpense } = buildCanonicalExpenseRecord({
+            workspaceId: workspaceId as `0x${string}`,
+            expenseId: exp.expense_id as `0x${string}`,
+            version: v.version,
+            payload: draftPayload as unknown as ExpenseDraftPayload,
+            evidenceManifestHash:
+              hashCanonicalEvidenceManifestV1(evidenceManifest),
+            submittedBy: v.submitted_by as `0x${string}`,
+            submittedAt,
+          });
           const recordBytes = Buffer.from(
-            canonicalizeJson(recordPayload),
+            canonicalizeJson(canonicalExpense),
             "utf8",
           );
           const recordPath = `expenses/${exp.expense_id}/v${v.version}/record.json`;
@@ -642,7 +651,7 @@ export class ExportService {
             sizeBytes: recordBytes.length,
             sha256: computePackageFileHash(recordBytes),
             mediaType: "application/json",
-            privacyClass: "CONFIDENTIAL",
+            privacyClass: "WORKSPACE_CONFIDENTIAL",
           });
           zipEntries.push({
             path: `clario-export/${recordPath}`,
@@ -673,7 +682,7 @@ export class ExportService {
 
           // Evidence manifest
           const evManifestBytes = Buffer.from(
-            canonicalizeJson(evidenceManifestObj),
+            canonicalizeJson(evidenceManifest),
             "utf8",
           );
           const evManifestPath = `expenses/${exp.expense_id}/v${v.version}/evidence-manifest.json`;
@@ -682,7 +691,7 @@ export class ExportService {
             sizeBytes: evManifestBytes.length,
             sha256: computePackageFileHash(evManifestBytes),
             mediaType: "application/json",
-            privacyClass: "CONFIDENTIAL",
+            privacyClass: "WORKSPACE_CONFIDENTIAL",
           });
           zipEntries.push({
             path: `clario-export/${evManifestPath}`,
@@ -725,7 +734,7 @@ export class ExportService {
             sizeBytes: 0,
             sha256: "0".repeat(64),
             mediaType: "application/json",
-            privacyClass: "CONFIDENTIAL",
+            privacyClass: "WORKSPACE_CONFIDENTIAL",
             isRedacted: true,
           });
 
@@ -736,6 +745,16 @@ export class ExportService {
             sha256: "0".repeat(64),
             mediaType: "text/plain",
             privacyClass: "SECURITY_SENSITIVE",
+            isRedacted: true,
+          });
+
+          const evManifestPath = `expenses/${exp.expense_id}/v${v.version}/evidence-manifest.json`;
+          manifestFileEntries.push({
+            path: evManifestPath,
+            sizeBytes: 0,
+            sha256: "0".repeat(64),
+            mediaType: "application/json",
+            privacyClass: "WORKSPACE_CONFIDENTIAL",
             isRedacted: true,
           });
 

@@ -5,15 +5,12 @@ import {
   validateVerificationPackageManifestV1,
   computePackageFileHash,
   computeCanonicalManifestHash,
+  verifyPackage,
 } from "@clario/protocol";
 import { ExportService } from "./service";
 import { MemoryStorageDriver } from "../evidence/storage";
 import { extractZipEntries } from "./zip";
-import {
-  GLOBAL_SCOPE,
-  RecordNotFoundError,
-  type AuthContext,
-} from "../auth/policy";
+import { GLOBAL_SCOPE, type AuthContext } from "../auth/policy";
 import { createSessionPayload } from "../auth/session";
 import {
   generateDataEncryptionKey,
@@ -21,6 +18,7 @@ import {
   encryptEvidence,
 } from "../evidence/crypto";
 import { getEvidenceKek } from "../evidence/service";
+import type { DeploymentManifest } from "../../config/schema";
 
 function encryptTestPayload(
   workspaceId: string,
@@ -150,6 +148,8 @@ class MockExportDatabase implements DatabaseClient {
     commitment: string;
     record_ciphertext: string;
     salt_ciphertext: string;
+    submitted_by: string | null;
+    submitted_at: string | null;
     amount: string;
     currency: string;
     recipient: string;
@@ -178,6 +178,7 @@ class MockExportDatabase implements DatabaseClient {
   indexedEvents: Array<{
     workspace_id: string;
     block_number: number;
+    block_hash: string;
     transaction_hash: string;
     log_index: number;
     event_name: string;
@@ -223,14 +224,15 @@ class MockExportDatabase implements DatabaseClient {
       const wsId = params?.[0];
       const addr = (params?.[2] as string)?.toLowerCase();
       const mem = this.memberships.find(
-        (m) =>
-          m.workspace_id === wsId && m.address.toLowerCase() === addr,
+        (m) => m.workspace_id === wsId && m.address.toLowerCase() === addr,
       );
       return { rows: (mem ? [mem] : []) as T[], rowCount: mem ? 1 : 0 };
     }
 
     // 3. SELECT role, scope FROM role_grants WHERE workspace_id = $1 AND LOWER(address) = LOWER($2) AND revoked_at IS NULL
-    if (s.includes("FROM role_grants WHERE workspace_id = $1 AND LOWER(address)")) {
+    if (
+      s.includes("FROM role_grants WHERE workspace_id = $1 AND LOWER(address)")
+    ) {
       const wsId = params?.[0];
       const addr = (params?.[1] as string)?.toLowerCase();
       const grants = this.roleGrants.filter(
@@ -243,7 +245,9 @@ class MockExportDatabase implements DatabaseClient {
     }
 
     // 4. SELECT role, address, scope, granted_at FROM role_grants WHERE workspace_id = $1 AND revoked_at IS NULL
-    if (s.includes("SELECT role, address, scope, granted_at FROM role_grants")) {
+    if (
+      s.includes("SELECT role, address, scope, granted_at FROM role_grants")
+    ) {
       const wsId = params?.[0];
       const grants = this.roleGrants.filter(
         (g) => g.workspace_id === wsId && !g.revoked_at,
@@ -257,7 +261,10 @@ class MockExportDatabase implements DatabaseClient {
       const policies = this.workspacePolicies
         .filter((p) => p.workspace_id === wsId)
         .sort((a, b) => b.policy_version - a.policy_version);
-      return { rows: policies.slice(0, 1) as T[], rowCount: Math.min(1, policies.length) };
+      return {
+        rows: policies.slice(0, 1) as T[],
+        rowCount: Math.min(1, policies.length),
+      };
     }
 
     // 6. SELECT block_number, transaction_hash, log_index, event_name, contract_address, payload FROM indexed_events
@@ -279,7 +286,11 @@ class MockExportDatabase implements DatabaseClient {
     }
 
     // 8. SELECT version, amount, currency, recipient FROM expense_versions
-    if (s.includes("SELECT version, amount, currency, recipient FROM expense_versions")) {
+    if (
+      s.includes(
+        "SELECT version, amount, currency, recipient FROM expense_versions",
+      )
+    ) {
       const wsId = params?.[0];
       const expId = params?.[1];
       const vers = this.expenseVersions.filter(
@@ -289,7 +300,11 @@ class MockExportDatabase implements DatabaseClient {
     }
 
     // 9. SELECT version, commitment, record_ciphertext, salt_ciphertext FROM expense_versions
-    if (s.includes("SELECT version, commitment, record_ciphertext, salt_ciphertext FROM expense_versions")) {
+    if (
+      s.includes(
+        "SELECT version, commitment, record_ciphertext, salt_ciphertext, submitted_by, submitted_at FROM expense_versions",
+      )
+    ) {
       const wsId = params?.[0];
       const expId = params?.[1];
       const vers = this.expenseVersions.filter(
@@ -313,7 +328,11 @@ class MockExportDatabase implements DatabaseClient {
     }
 
     // 11. SELECT evidence_id, storage_key, sha256_hash, byte_length, mime_type, encryption_metadata, created_at FROM evidence_objects
-    if (s.includes("SELECT evidence_id, storage_key, sha256_hash, byte_length, mime_type")) {
+    if (
+      s.includes(
+        "SELECT evidence_id, storage_key, sha256_hash, byte_length, mime_type",
+      )
+    ) {
       const wsId = params?.[0];
       const expId = params?.[1];
       const ver = params?.[2];
@@ -327,7 +346,11 @@ class MockExportDatabase implements DatabaseClient {
     }
 
     // 12. SELECT status FROM reimbursements
-    if (s.includes("FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2")) {
+    if (
+      s.includes(
+        "FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2",
+      )
+    ) {
       const wsId = params?.[0];
       const expId = params?.[1];
       const reims = this.reimbursements.filter(
@@ -387,23 +410,48 @@ describe("ExportService (VER-001)", () => {
   let storage: MemoryStorageDriver;
   let service: ExportService;
 
-  const WORKSPACE_ID = "ws_test_export_123";
+  const WORKSPACE_ID = `0x${"10".repeat(32)}`;
+  const EXPENSE_ID = `0x${"20".repeat(32)}`;
   const OWNER_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
   const AUDITOR_ADDRESS = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
   const SUBMITTER_ADDRESS = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";
+  const DEPLOYMENT_MANIFEST_FIXTURE: DeploymentManifest = {
+    schemaVersion: 1,
+    environment: "preview",
+    sourceCommit: "0123456789abcdef0123456789abcdef01234567",
+    chainFamily: "monad",
+    chainId: 10143,
+    deployer: OWNER_ADDRESS,
+    deployedAt: "2026-09-19T00:00:00Z",
+    contracts: {
+      ClarioRegistry: {
+        address: "0x1111111111111111111111111111111111111111",
+        deploymentBlock: 100,
+        transactionHash:
+          "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        abiHash:
+          "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        verifiedSourceUrl:
+          "https://testnet.monadexplorer.com/address/0x1111111111111111111111111111111111111111",
+      },
+    },
+    tokens: {
+      USDC: {
+        address: "0x754704Bc059F8C67012fEd69BC8A327a5aafb603",
+        decimals: 6,
+      },
+    },
+  };
 
   function createAuthContext(address: string, isConfirmed = true): AuthContext {
     const session = createSessionPayload({
       userId: `user_${address}`,
       address,
-      chainId: 10143,
+      lastConfirmedAt: isConfirmed ? Date.now() : Date.now() - 60 * 60 * 1000,
     });
-    if (isConfirmed) {
-      session.confirmedAt = new Date().toISOString();
-    }
     return {
       userId: `user_${address}`,
-      address,
+      address: address as `0x${string}`,
       session,
     };
   }
@@ -411,7 +459,12 @@ describe("ExportService (VER-001)", () => {
   beforeEach(async () => {
     db = new MockExportDatabase();
     storage = new MemoryStorageDriver();
-    service = new ExportService(db, storage);
+    service = new ExportService(
+      db,
+      storage,
+      undefined,
+      DEPLOYMENT_MANIFEST_FIXTURE,
+    );
 
     // Setup workspace and memberships
     db.workspaces.push({
@@ -473,7 +526,7 @@ describe("ExportService (VER-001)", () => {
     });
 
     // Populate an expense with private encrypted record and evidence
-    const expenseId = "exp_001";
+    const expenseId = EXPENSE_ID;
     const privatePayload = {
       title: "Confidential Consulting Services",
       businessPurpose: "Q3 Auditing Services",
@@ -509,6 +562,8 @@ describe("ExportService (VER-001)", () => {
       commitment: "0x" + "aa".repeat(32),
       record_ciphertext: recordCiphertext,
       salt_ciphertext: saltCiphertext,
+      submitted_by: SUBMITTER_ADDRESS,
+      submitted_at: "2026-09-10T12:10:00Z",
       amount: "5000000000",
       currency: "USDC",
       recipient: "0x" + "33".repeat(20),
@@ -544,6 +599,7 @@ describe("ExportService (VER-001)", () => {
     db.indexedEvents.push({
       workspace_id: WORKSPACE_ID,
       block_number: 100,
+      block_hash: "0x" + "98".repeat(32),
       transaction_hash: "0x" + "99".repeat(32),
       log_index: 0,
       event_name: "ExpenseVersionSubmitted",
@@ -585,7 +641,11 @@ describe("ExportService (VER-001)", () => {
 
     it("succeeds for auditor with fresh confirmation", async () => {
       const auditorContext = createAuthContext(AUDITOR_ADDRESS, true);
-      const preview = await service.previewDisclosure(WORKSPACE_ID, {}, auditorContext);
+      const preview = await service.previewDisclosure(
+        WORKSPACE_ID,
+        {},
+        auditorContext,
+      );
       expect(preview.totalExpenses).toBe(1);
     });
   });
@@ -593,7 +653,11 @@ describe("ExportService (VER-001)", () => {
   describe("previewDisclosure", () => {
     it("returns truthful disclosure metrics, confidential fields, and impact notices", async () => {
       const context = createAuthContext(OWNER_ADDRESS, true);
-      const preview = await service.previewDisclosure(WORKSPACE_ID, {}, context);
+      const preview = await service.previewDisclosure(
+        WORKSPACE_ID,
+        {},
+        context,
+      );
 
       expect(preview.workspaceId).toBe(WORKSPACE_ID);
       expect(preview.totalExpenses).toBe(1);
@@ -604,7 +668,9 @@ describe("ExportService (VER-001)", () => {
       expect(preview.confidentialFieldNames).toContain("businessPurpose");
       expect(preview.modes.FULL.disclosesPrivateRecords).toBe(true);
       expect(preview.modes.REDACTED.disclosesPrivateRecords).toBe(false);
-      expect(preview.modes.REDACTED.verificationImpact).toContain("UNVERIFIABLE/UNAVAILABLE");
+      expect(preview.modes.REDACTED.verificationImpact).toContain(
+        "UNVERIFIABLE/UNAVAILABLE",
+      );
     });
   });
 
@@ -622,10 +688,14 @@ describe("ExportService (VER-001)", () => {
       expect(result.zipBuffer.length).toBeGreaterThan(0);
 
       // Validate manifest using @clario/protocol validator
-      const validatedManifest = validateVerificationPackageManifestV1(result.manifest);
+      const validatedManifest = validateVerificationPackageManifestV1(
+        result.manifest,
+      );
       expect(validatedManifest.disclosureLevel).toBe("FULL");
       expect(validatedManifest.schemaVersion).toBe(1);
-      expect(computeCanonicalManifestHash(validatedManifest)).toBe(result.packageHash);
+      expect(computeCanonicalManifestHash(validatedManifest)).toBe(
+        result.packageHash,
+      );
 
       // Unpack ZIP and verify entries
       const entries = extractZipEntries(result.zipBuffer);
@@ -635,29 +705,67 @@ describe("ExportService (VER-001)", () => {
       expect(paths).toContain("clario-export/workspace-policy.json");
       expect(paths).toContain("clario-export/chain/deployment-manifest.json");
       expect(paths).toContain("clario-export/chain/expected-events.json");
-      expect(paths).toContain("clario-export/expenses/exp_001/v1/record.json");
-      expect(paths).toContain("clario-export/expenses/exp_001/v1/salt.txt");
-      expect(paths).toContain("clario-export/expenses/exp_001/v1/evidence-manifest.json");
+      expect(paths).toContain(
+        `clario-export/expenses/${EXPENSE_ID}/v1/record.json`,
+      );
+      expect(paths).toContain(
+        `clario-export/expenses/${EXPENSE_ID}/v1/salt.txt`,
+      );
+      expect(paths).toContain(
+        `clario-export/expenses/${EXPENSE_ID}/v1/evidence-manifest.json`,
+      );
       expect(paths).toContain("clario-export/evidence/ev_receipt_001.pdf");
 
       // Verify decrypted record matches original confidential title
-      const recordEntry = entries.find((e) => e.path === "clario-export/expenses/exp_001/v1/record.json")!;
+      const recordEntry = entries.find(
+        (e) => e.path === `clario-export/expenses/${EXPENSE_ID}/v1/record.json`,
+      )!;
       const recordJson = JSON.parse(recordEntry.data.toString("utf8"));
       expect(recordJson.title).toBe("Confidential Consulting Services");
       expect(recordJson.merchant).toBe("TopTier Legal LLC");
 
       // Verify decrypted evidence matches original bytes
-      const evidenceEntry = entries.find((e) => e.path === "clario-export/evidence/ev_receipt_001.pdf")!;
-      expect(evidenceEntry.data.toString("utf8")).toBe("%PDF-1.4 dummy evidence pdf content");
+      const evidenceEntry = entries.find(
+        (e) => e.path === "clario-export/evidence/ev_receipt_001.pdf",
+      )!;
+      expect(evidenceEntry.data.toString("utf8")).toBe(
+        "%PDF-1.4 dummy evidence pdf content",
+      );
 
       // Verify salt.txt contains 32-byte hex
-      const saltEntry = entries.find((e) => e.path === "clario-export/expenses/exp_001/v1/salt.txt")!;
+      const saltEntry = entries.find(
+        (e) => e.path === `clario-export/expenses/${EXPENSE_ID}/v1/salt.txt`,
+      )!;
       expect(saltEntry.data.toString("utf8")).toMatch(/^0x[0-9a-f]{64}$/);
+
+      const verifierFiles = new Map(
+        entries
+          .filter((entry) => entry.path !== "clario-export/manifest.json")
+          .map((entry) => [
+            entry.path.replace(/^clario-export\//, ""),
+            entry.data,
+          ]),
+      );
+      const offlineReport = await verifyPackage({
+        bundle: { manifest: result.manifest, files: verifierFiles },
+      });
+      expect(offlineReport.overall).toBe("UNVERIFIABLE");
+      expect(
+        offlineReport.checks.find((check) =>
+          check.id.endsWith(".canonical-record"),
+        )?.status,
+      ).toBe("VERIFIED");
+      expect(
+        offlineReport.checks.find((check) => check.id.endsWith(".evidence"))
+          ?.status,
+      ).toBe("VERIFIED");
 
       // Verify audit events recorded without private data
       expect(db.auditEvents.length).toBe(1);
       expect(db.auditEvents[0]!.event_type).toBe("export_generated");
-      expect(db.auditEvents[0]!.metadata).not.toContain("Confidential Consulting Services");
+      expect(db.auditEvents[0]!.metadata).not.toContain(
+        "Confidential Consulting Services",
+      );
       expect(db.auditEvents[0]!.metadata).not.toContain("TopTier Legal LLC");
     });
   });
@@ -674,7 +782,9 @@ describe("ExportService (VER-001)", () => {
       expect(result.disclosureLevel).toBe("REDACTED");
 
       // Validate manifest
-      const validatedManifest = validateVerificationPackageManifestV1(result.manifest);
+      const validatedManifest = validateVerificationPackageManifestV1(
+        result.manifest,
+      );
       expect(validatedManifest.disclosureLevel).toBe("REDACTED");
 
       // Unpack ZIP
@@ -682,8 +792,12 @@ describe("ExportService (VER-001)", () => {
       const paths = entries.map((e) => e.path);
 
       // Private files must NOT exist in the ZIP
-      expect(paths).not.toContain("clario-export/expenses/exp_001/v1/record.json");
-      expect(paths).not.toContain("clario-export/expenses/exp_001/v1/salt.txt");
+      expect(paths).not.toContain(
+        `clario-export/expenses/${EXPENSE_ID}/v1/record.json`,
+      );
+      expect(paths).not.toContain(
+        `clario-export/expenses/${EXPENSE_ID}/v1/salt.txt`,
+      );
       expect(paths).not.toContain("clario-export/evidence/ev_receipt_001.pdf");
 
       // Public files must be present
@@ -694,7 +808,7 @@ describe("ExportService (VER-001)", () => {
 
       // Manifest files must flag omitted confidential records with isRedacted: true and 64 zeros hash
       const recordMeta = result.manifest.files.find(
-        (f) => f.path === "expenses/exp_001/v1/record.json",
+        (f) => f.path === `expenses/${EXPENSE_ID}/v1/record.json`,
       );
       expect(recordMeta).toBeDefined();
       expect(recordMeta?.isRedacted).toBe(true);
@@ -726,7 +840,9 @@ describe("ExportService (VER-001)", () => {
       expect(stored.data.equals(generated.zipBuffer)).toBe(true);
 
       // Simulate expired export
-      const expRow = db.exports.find((e) => e.export_id === generated.exportId)!;
+      const expRow = db.exports.find(
+        (e) => e.export_id === generated.exportId,
+      )!;
       expRow.expires_at = new Date(Date.now() - 1000).toISOString();
 
       await expect(

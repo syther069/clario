@@ -2,7 +2,7 @@
 
 **Status:** Active founding roadmap  
 **Version:** 1.0  
-**Current phase:** Phase 0 — Foundation  
+**Current phase:** Phase 6 — Intelligence, Design, and Resilience (`ACTIVE`)  
 **Execution checklist:** [TASKS.md](./TASKS.md)  
 **Governing rules:** [RULES.md](./RULES.md)  
 **Product source:** [PRD](./prd.md)  
@@ -448,7 +448,7 @@ After founder approval, changes to canonical bytes, public identifiers, event si
 
 ## Phase 5 — Settlement and Independent Verification
 
-**Status:** `NOT_STARTED`  
+**Status:** `COMPLETE` — founder approved 2026-09-22  
 **Goal:** Close the expense lifecycle by reimbursing the approved current version and proving the complete chain outside Clario’s private database.
 
 ### Entry criteria
@@ -510,7 +510,7 @@ At the end of Phase 5, Clario’s narrow product promise must work without AI, g
 
 ## Phase 6 — Intelligence, Design, and Resilience
 
-**Status:** `NOT_STARTED`  
+**Status:** `ACTIVE` — `AI-001` and `INT-001` complete; `DES-001` in progress  
 **Goal:** Reduce effort and improve confidence without weakening the trusted manual workflow.
 
 ### Entry criteria

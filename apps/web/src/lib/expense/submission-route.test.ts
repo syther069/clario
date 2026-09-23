@@ -59,6 +59,7 @@ class MockDbForSubmissionRoutes implements DatabaseClient {
     recipient: string;
     status: string;
     submitted_by?: string;
+    submitted_at?: string;
     submitted_transaction_hash?: string;
     created_at: string;
   }> = [];
@@ -249,13 +250,14 @@ class MockDbForSubmissionRoutes implements DatabaseClient {
     ) {
       const v = this.expenseVersions.find(
         (ev) =>
-          ev.workspace_id === params[2] &&
-          ev.expense_id === params[3] &&
-          ev.version === params[4],
+          ev.workspace_id === params[3] &&
+          ev.expense_id === params[4] &&
+          ev.version === params[5],
       );
       if (v) {
         v.commitment = String(params[0]);
         v.submitted_by = String(params[1]);
+        v.submitted_at = String(params[2]);
       }
       return { rows: [], rowCount: 1 };
     }

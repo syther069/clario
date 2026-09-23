@@ -21,6 +21,7 @@
     "build:contracts": "forge build --root contracts",
     "deploy:contracts": "node scripts/deploy.mjs",
     "verify:contracts": "node scripts/verify.mjs",
+    "verify:package": "pnpm --filter @clario/protocol build && node scripts/verify-package.mjs",
     "migrate:db": "node scripts/migrate.mjs",
     "format": "pnpm format:code && pnpm format:contracts",
     "format:code": "prettier --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \".github/**/*.{yaml,yml}\" \"scripts/**/*.{mjs,js,json}\" \"*.{json,yaml,yml,mjs}\"",

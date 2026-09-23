@@ -35,7 +35,8 @@ export function computePackageFileHash(
 export function computeCanonicalManifestHash(
   manifest: VerificationPackageManifestV1,
 ): string {
-  const { exporterSignature: _, ...unsignedManifest } = manifest;
+  const unsignedManifest = { ...manifest };
+  delete unsignedManifest.exporterSignature;
   const canonicalJson = canonicalizeJson(unsignedManifest);
   return computePackageFileHash(canonicalJson);
 }
@@ -73,7 +74,9 @@ export function validateVerificationPackageManifestV1(
   }
 
   if (obj.disclosureLevel !== "FULL" && obj.disclosureLevel !== "REDACTED") {
-    throw new Error("Manifest disclosureLevel must be either 'FULL' or 'REDACTED'.");
+    throw new Error(
+      "Manifest disclosureLevel must be either 'FULL' or 'REDACTED'.",
+    );
   }
 
   if (
@@ -101,7 +104,9 @@ export function validateVerificationPackageManifestV1(
   }
 
   if (obj.canonicalizationSpec !== CLARIO_CANONICALIZATION_SPEC_V1) {
-    throw new Error(`Manifest canonicalizationSpec must be '${CLARIO_CANONICALIZATION_SPEC_V1}'.`);
+    throw new Error(
+      `Manifest canonicalizationSpec must be '${CLARIO_CANONICALIZATION_SPEC_V1}'.`,
+    );
   }
 
   if (
@@ -124,14 +129,18 @@ export function validateVerificationPackageManifestV1(
         expItem === null ||
         Array.isArray(expItem)
       ) {
-        throw new Error(`Manifest expenses[${index}] must be a non-null object.`);
+        throw new Error(
+          `Manifest expenses[${index}] must be a non-null object.`,
+        );
       }
       const expObj = expItem as Record<string, unknown>;
       if (
         typeof expObj.expenseId !== "string" ||
         expObj.expenseId.trim().length === 0
       ) {
-        throw new Error(`Manifest expenses[${index}].expenseId must be a non-empty string.`);
+        throw new Error(
+          `Manifest expenses[${index}].expenseId must be a non-empty string.`,
+        );
       }
       if (
         !Array.isArray(expObj.versions) ||
@@ -198,23 +207,29 @@ export function validateVerificationPackageManifestV1(
       !Number.isInteger(fObj.sizeBytes) ||
       fObj.sizeBytes < 0
     ) {
-      throw new Error(`Manifest files[${index}].sizeBytes must be a non-negative integer.`);
+      throw new Error(
+        `Manifest files[${index}].sizeBytes must be a non-negative integer.`,
+      );
     }
 
     if (typeof fObj.sha256 !== "string" || !HEX_64_REGEX.test(fObj.sha256)) {
-      throw new Error(`Manifest files[${index}].sha256 must be a 64-character hex string.`);
+      throw new Error(
+        `Manifest files[${index}].sha256 must be a 64-character hex string.`,
+      );
     }
 
     if (
       typeof fObj.mediaType !== "string" ||
       fObj.mediaType.trim().length === 0
     ) {
-      throw new Error(`Manifest files[${index}].mediaType must be a non-empty string.`);
+      throw new Error(
+        `Manifest files[${index}].mediaType must be a non-empty string.`,
+      );
     }
 
     const validPrivacyClasses = [
       "PUBLIC",
-      "CONFIDENTIAL",
+      "WORKSPACE_CONFIDENTIAL",
       "EVIDENCE_CONFIDENTIAL",
       "SECURITY_SENSITIVE",
     ];
@@ -233,7 +248,8 @@ export function validateVerificationPackageManifestV1(
       sha256: fObj.sha256.toLowerCase(),
       mediaType: fObj.mediaType,
       privacyClass: fObj.privacyClass as PackageFileEntry["privacyClass"],
-      isRedacted: fObj.isRedacted !== undefined ? Boolean(fObj.isRedacted) : undefined,
+      isRedacted:
+        fObj.isRedacted !== undefined ? Boolean(fObj.isRedacted) : undefined,
     };
   });
 

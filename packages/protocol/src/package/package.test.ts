@@ -7,7 +7,6 @@ import {
   computePackageFileHash,
   computeCanonicalManifestHash,
 } from "./index.js";
-import { ProtocolError } from "../errors.js";
 
 const VALID_MANIFEST: VerificationPackageManifestV1 = {
   schemaVersion: 1,
@@ -40,7 +39,7 @@ const VALID_MANIFEST: VerificationPackageManifestV1 = {
       sizeBytes: 300,
       sha256: computePackageFileHash('{"title":"Expense 1"}'),
       mediaType: "application/json",
-      privacyClass: "CONFIDENTIAL",
+      privacyClass: "WORKSPACE_CONFIDENTIAL",
     },
     {
       path: "evidence/ev-1.pdf",
@@ -136,10 +135,7 @@ describe("Verification Package Protocol Schema v1", () => {
     expect(() =>
       validateVerificationPackageManifestV1({
         ...VALID_MANIFEST,
-        files: [
-          VALID_MANIFEST.files[0]!,
-          VALID_MANIFEST.files[0]!,
-        ],
+        files: [VALID_MANIFEST.files[0]!, VALID_MANIFEST.files[0]!],
       }),
     ).toThrow(/Duplicate file path/);
   });

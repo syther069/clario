@@ -7,6 +7,7 @@ import type { DecisionType } from "@/lib/review/decision";
 import { DecisionDialog } from "./decision-dialog";
 import { ProofSpineTimeline } from "./proof-spine-timeline";
 import { ReimbursementDialog } from "./reimbursement-dialog";
+import { ExpenseWarningPanel } from "./expense-warning-panel";
 
 export interface ReviewDetailViewProps {
   workspaceId: string;
@@ -376,6 +377,14 @@ export function ReviewDetailView({
             </div>
           </div>
         </div>
+      )}
+
+      {detail.isCurrentVersion && (
+        <ExpenseWarningPanel
+          workspaceId={workspaceId}
+          expenseId={expenseId}
+          csrfToken={csrfToken}
+        />
       )}
 
       {/* Main 7 / 5 Evidence Ledger Grid */}

@@ -25,6 +25,8 @@ import {
   validateExpenseDraft,
 } from "@/lib/expense/validation";
 import { ExpenseSubmitDialog } from "./expense-submit-dialog";
+import { AiExtractionPanel, type AppliedAiFields } from "./ai-extraction-panel";
+import { ExpenseWarningPanel } from "./expense-warning-panel";
 
 interface ExpenseDraftEditorProps {
   workspaceId: string;
@@ -82,6 +84,7 @@ export function ExpenseDraftEditor({
     [],
   );
   const [uploadingEvidence, setUploadingEvidence] = useState(false);
+  const [warningRevision, setWarningRevision] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -277,6 +280,7 @@ export function ExpenseDraftEditor({
         const data = (await res.json()) as { draft: ExpenseDraftRecord };
         if (data.draft) {
           setSaveStatus("saved");
+          setWarningRevision((revision) => revision + 1);
         }
         setError(null);
       } catch (err) {
@@ -303,6 +307,36 @@ export function ExpenseDraftEditor({
     autosaveTimerRef.current = setTimeout(() => {
       void saveDraft(currentPayload);
     }, 1000);
+  };
+
+  const handleApplyAiSuggestions = async (fields: AppliedAiFields) => {
+    const nextPayload: ExpenseDraftPayload = {
+      ...currentPayload,
+      ...(fields.merchant !== undefined ? { merchant: fields.merchant } : {}),
+      ...(fields.expenseDate !== undefined
+        ? { expenseDate: fields.expenseDate }
+        : {}),
+      ...(fields.invoiceNumber !== undefined
+        ? { invoiceNumber: fields.invoiceNumber }
+        : {}),
+      ...(fields.claimAmount !== undefined
+        ? { claimAmount: fields.claimAmount }
+        : {}),
+      ...(fields.category !== undefined ? { category: fields.category } : {}),
+      ...(fields.project !== undefined ? { project: fields.project } : {}),
+    };
+
+    if (fields.merchant !== undefined) setMerchant(fields.merchant);
+    if (fields.expenseDate !== undefined) setExpenseDate(fields.expenseDate);
+    if (fields.invoiceNumber !== undefined) {
+      setInvoiceNumber(fields.invoiceNumber);
+      setShowOptionalFields(true);
+    }
+    if (fields.claimAmount !== undefined) setClaimAmount(fields.claimAmount);
+    if (fields.category !== undefined) setCategory(fields.category);
+    if (fields.project !== undefined) setProject(fields.project);
+    setFieldErrors(validateExpenseDraft(nextPayload, false).errors);
+    await saveDraft(nextPayload);
   };
 
   // 4. Warn beforeunload if unsaved
@@ -406,6 +440,7 @@ export function ExpenseDraftEditor({
           draft: ExpenseDraftRecord;
         };
         setEvidenceList(draftData.draft.evidence || []);
+        setWarningRevision((revision) => revision + 1);
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Evidence upload error.");
@@ -440,6 +475,7 @@ export function ExpenseDraftEditor({
       setEvidenceList((prev) =>
         prev.filter((item) => item.evidenceId !== evidenceId),
       );
+      setWarningRevision((revision) => revision + 1);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to delete evidence.");
     }
@@ -1590,6 +1626,24 @@ export function ExpenseDraftEditor({
               </div>
             )}
           </div>
+
+          <AiExtractionPanel
+            workspaceId={workspaceId}
+            expenseId={expenseId}
+            evidence={evidenceList}
+            csrfToken={csrfToken}
+            onApply={handleApplyAiSuggestions}
+            onAnalysisChange={() =>
+              setWarningRevision((revision) => revision + 1)
+            }
+          />
+
+          <ExpenseWarningPanel
+            workspaceId={workspaceId}
+            expenseId={expenseId}
+            csrfToken={csrfToken}
+            refreshKey={warningRevision}
+          />
 
           {/* Workflow Proof Spine indicator */}
           <div className="card" style={{ padding: "16px" }}>

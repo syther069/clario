@@ -2,9 +2,9 @@
 
 **Status:** Active persistent context  
 **Memory version:** 1.0  
-**Last verified:** 2026-09-19  
-**Current phase:** Phase 5 — Reimbursement and verification (`ACTIVE`)  
-**Next executable task:** `VER-001 — Define portable verification package v1` in [TASKS.md](./TASKS.md)
+**Last verified:** 2026-09-23  
+**Current phase:** Phase 6 — Intelligence, design, and resilience (`ACTIVE`)  
+**Next executable task:** Continue `DES-001 — Implement the design foundation` in [TASKS.md](./TASKS.md)
 
 > Read this file at the start of every Clario task. It records verified project state, durable decisions, unresolved questions, and facts future agents must preserve. It is context, not a substitute for the governing documents.
 
@@ -71,6 +71,10 @@ The founding documentation set is established:
 - `IDX-002`: Authoritative Proof Spine timeline (`apps/web/src/lib/timeline/`) with 3-dimensional timestamp model (`applicationTime`, `blockTime`, `indexerTime`), indexer lag detection, reorg conflict indicators, authorized route `/api/workspaces/[id]/expenses/[id]/timeline`, and `ProofSpineTimeline` UI component, passing 10 tests (524 total monorepo tests).
 - `SET-001`: Official Monad Testnet USDC provenance (`docs/MONAD_PROVENANCE.md`: Chain ID 10143, USDC token `0x754704Bc059F8C67012fEd69BC8A327a5aafb603`, 6 decimals). Hardened fail-closed configuration resolver (`config.ts`) requiring validated `DeploymentManifest` via `getServerConfiguration()`. Zero fallback to raw `NEXT_PUBLIC_*` or zero addresses. `SettlementService` enforcing pre-conditions (role, fresh 15-minute confirmation, current version, exact approval, token/registry non-zero addresses, network, asset symbol matching, duplicate prevention, balance check, allowance check, read-only simulation probe). Privacy-verified calldata generator (`calldata.ts`), authorized routes (`/settlement/queue`, `/settlement/prepare`, `/settlement/reconcile`), `TreasuryQueueView`, and `ReimbursementDialog` with browser wallet execution and labeled non-production demo simulation, passing 43 settlement tests (340 web tests, 567 total monorepo tests).
 - `SET-002`: Comprehensive reimbursement lifecycle reconciliation and receipt verification engine (`apps/web/src/lib/settlement/receipt.ts` and `service.ts`). Decodes and validates `SettlementRecorded` and ERC-20 `Transfer` events using Viem, enforces exact parameter bindings (contract, event, token, recipient, amount, chain, version, commitment), treats reverted transactions as safe retriable failures without marking reimbursed, supports reorg retracting to `failed`, provides truthful settlement proof with block number and explorer URL, enforces that `SUBMITTED` state is never displayed as paid or final, unblocks retry for failed/cancelled attempts while rejecting retry on confirmed/active submissions (duplicate guard), adds API routes (`/settlement/confirm`, `/settlement/status`, `/settlement/retry`), and updates UI (`ReimbursementDialog`, `TreasuryQueueView`, `TimelineService`), passing 76 settlement tests (368 web tests, 595 total monorepo tests, clean `pnpm check`).
+- `VER-001`: Portable verification package v1 schema and export service. `@clario/protocol` defines and validates `VerificationPackageManifestV1`, `FULL`/`REDACTED` disclosure modes, safe package file entries, workspace policy snapshots, expected event exports, per-file SHA-256 hashes, and canonical manifest hashing. `apps/web/src/lib/export/` generates deterministic ZIP packages, disclosure previews, retention-bound retrieval, and audit records. Export requires owner/admin/auditor authority plus recent wallet confirmation. FULL mode includes intentionally disclosed private records, salts, evidence manifests, and evidence bytes only inside the archive; REDACTED mode omits those inputs and marks checks unavailable/unverifiable. API routes under `/api/workspaces/[workspaceId]/exports` expose preview, generation, and download. Placeholder deployment-manifest fallback was removed; package generation requires a validated deployment manifest. Focused export and package tests pass.
+- `VER-002`: Independent deterministic verifier library, bounded in-memory ZIP loader, compatible Monad RPC source, standalone JSON CLI, and operator documentation. It verifies package/file integrity, canonical record and evidence hashes, commitments, version/supersession state, historical reviewer authority, active current approval, settlement terms, ERC-20 transfer, and conflicting-settlement indicators without authenticated Clario APIs. FULL exports now reconstruct the exact canonical record from a persisted canonical submission timestamp; event exports use persisted block hashes. Valid/tampered/redacted matrices pass, and root `pnpm check` is clean.
+- `AI-001`: Provider-neutral, disabled-by-default receipt extraction with explicit evidence consent, fixed tool-free instructions, strict schema validation, bounded job retry/timeout, encrypted suggestion and correction history, and human-only apply/reject UI. No live provider is approved or enabled.
+- `INT-001`: Deterministic-first duplicate and mismatch warnings for evidence, source claims, and settlement state, followed by non-blocking AI comparison signals. Stable warning identifiers, affected fields, authorized current-version UI, and immutable privacy-safe human dispositions are implemented; deterministic financial blocks cannot be dismissed.
 
 ### What is not complete
 
@@ -358,7 +362,7 @@ Dark mode is specified but not confirmed as MVP scope. It may be deferred; if sh
 - `APP-001 — Create PostgreSQL schema and migrations` is `[x]` with 20 relational tables, strict version/settlement/idempotency constraints, checksummed migrator, CLI runner, runbook, and 15 tests.
 - `APP-002 — Implement authentication and workspace authorization` is `[x]` with EIP-4361 SIWE challenge/verification, HMAC-SHA256 sessions, CSRF defense, scoped authorization policy, and 39 Vitest tests.
 - `APP-003 — Implement encrypted evidence storage` is `[x]` with AES-256-GCM envelope encryption, canonicalized JSON AAD context binding, KEK wrapping, memory/disk storage drivers with path traversal defense, opaque storage keys (`evidence/<ws>/<ev>.enc`), immutability enforcement on submitted versions, admin evidence isolation, safe 404/NOT_FOUND masking, Next.js upload/download/preview/delete route handlers, and 45 tests.
-- No task is currently `[~]` or `[-]`; `APP-004 — Implement workspace and role management workflow` is the next permitted critical-path task.
+- Phase 5 was approved by the human founder on 2026-09-22. `AI-001` and `INT-001` are complete. `DES-001` is `[~]` with the first design-foundation slice verified: semantic aliases, motion/accessibility CSS primitives, typed token exports, reusable native UI primitives, and numeric contrast tests. Remaining completion checks include broader screen refactor, automated accessibility pass, Lighthouse, and Playwright visual baselines.
 
 ### Critical path
 
@@ -414,6 +418,7 @@ These are open. Do not silently resolve them while implementing an adjacent task
 ### Providers
 
 - Wallet, RPC, indexer, source-chain import, AI, price/risk, storage, key-management, and observability providers are not configured.
+- AI receipt extraction is implemented behind a provider-neutral interface and is disabled by default. Do not add or activate a live adapter, or disclose evidence to one, until the founder explicitly approves provider, region, retention, privacy terms, and consent policy.
 - Sponsor/bounty eligibility can change and must be rechecked near execution/submission.
 - Source chains included in the demo are not chosen.
 
@@ -536,6 +541,11 @@ Record only accepted durable decisions. Proposals stay in “Known issues and un
 | 2026-09-17 | Canonical expense submission with RFC 8785 manifest/record hashing, golden commitment verification, calldata privacy scanner, secure salt encryption, and Monad submitVersion preparation/reconciliation | Accepted and verified | `EXP-003`, `apps/web` |
 | 2026-09-17 | Authorized review queue and exact-version detail view with field-level material diff computation, APPROVER_ROLE enforcement, self-approval blocking, stale/superseded version warnings, in-modal evidence preview preserving review state, and 4-milestone Proof Spine rail | Accepted and verified | `REV-001`, `apps/web` |
 | 2026-09-17 | Exact-version decision recording and supersession engine with direct/relayed EIP-712 support, self-approval prevention, mandatory reason commitments, and successor draft creation with predecessor binding | Accepted and verified | `REV-002`, `apps/web` |
+| 2026-09-20 | Portable verification package v1 uses explicit FULL/REDACTED disclosure, deterministic manifest hashing, per-file hashes, authorized export preview/generation/download, and validated deployment-manifest provenance with no placeholder fallback | Accepted and verified | `VER-001`, `@clario/protocol`, `apps/web` |
+| 2026-09-22 | Independent verification uses deterministic package checks plus direct compatible-Monad RPC reads, reports missing allowed inputs as UNVERIFIABLE, and has no authenticated Clario API dependency | Accepted and verified | `VER-002`, `@clario/protocol`, `docs/INDEPENDENT_VERIFIER.md` |
+| 2026-09-22 | Phase 5 gate accepted; the narrow private-evidence-to-independent-verification workflow is approved for Phase 6 advancement | Accepted by human founder | Phase 5 gate |
+| 2026-09-22 | AI extraction remains tool-free, advisory, human-confirmed, encrypted at rest, and disabled by default until external-provider privacy terms are explicitly approved | Accepted and verified | `AI-001`, `apps/web/src/lib/ai`, `AiExtractionPanel` |
+| 2026-09-22 | Duplicate/mismatch warnings evaluate exact local and settlement rules before AI-derived signals; human dispositions are audit-only and cannot dismiss deterministic financial blocks | Accepted and verified | `INT-001`, `apps/web/src/lib/warnings`, `ExpenseWarningPanel` |
 
 ## 18. Memory maintenance rules
 
@@ -551,7 +561,7 @@ Record only accepted durable decisions. Proposals stay in “Known issues and un
 
 ## 19. Founder’s continuation brief
 
-With `SEC-001`, `PRO-001`..`PRO-003`, `CHN-001`..`CHN-005`, `APP-001`..`APP-004`, `EXP-001`..`EXP-003`, `REV-001`, and `REV-002` complete, Phase 1 (Protocol foundation), Phase 2 (Private workspace and evidence foundation), and Phase 3 (Verifiable expense core) are fully implemented, and Phase 4 (Approval integrity and indexing) is actively in progress with 95 passing Forge tests, 117 passing protocol tests, 15 passing database tests, and 277 passing web tests (504 total tests monorepo-wide). The next safe move on the critical path is `IDX-001 — Implement idempotent event indexing` (Phase 4 — Approval integrity and indexing) following the one-task execution protocol.
+Phase 5 was founder-approved on 2026-09-22. With `AI-001 — Add human-supervised receipt extraction` and `INT-001 — Add duplicate and mismatch warnings` complete, Phase 6 is active and `DES-001 — Implement the design foundation` is in progress. The first verified slice established semantic design aliases, responsive/accessibility CSS support, typed token exports, reusable native UI primitives, and numeric contrast tests. Continue DES-001 by refactoring core screens away from ad hoc inline styles and adding accessibility, Lighthouse, and Playwright visual evidence. Keep the live AI provider disabled until the unresolved provider/privacy approvals are recorded.
 
 Build the narrow proof chain before adding polish. Keep private data offchain. Freeze canonical bytes before dependent layers. Make every approval and reimbursement refer to the exact current version. Treat AI and providers as fallible. Make failures recoverable and idempotent. Show only real state. Leave the product independently verifiable.
 

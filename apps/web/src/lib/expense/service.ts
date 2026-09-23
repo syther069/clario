@@ -885,6 +885,7 @@ export class ExpenseService {
     }
 
     // 7. Build canonical expense record
+    const submittedAt = new Date().toISOString().slice(0, 19) + "Z";
     const { privateRecordHash } = buildCanonicalExpenseRecord({
       workspaceId: workspaceId as `0x${string}`,
       expenseId: expenseId as `0x${string}`,
@@ -892,6 +893,7 @@ export class ExpenseService {
       payload,
       evidenceManifestHash: manifestHash,
       submittedBy: context.address as `0x${string}`,
+      submittedAt,
     });
 
     // 8. Resolve Monad chain & registry address
@@ -934,11 +936,12 @@ export class ExpenseService {
     // 12. Save prepared commitment on draft version
     await this.db.query(
       `UPDATE expense_versions
-       SET commitment = $1, submitted_by = $2
-       WHERE workspace_id = $3 AND expense_id = $4 AND version = $5;`,
+       SET commitment = $1, submitted_by = $2, submitted_at = $3
+       WHERE workspace_id = $4 AND expense_id = $5 AND version = $6;`,
       [
         commitment,
         context.address,
+        submittedAt,
         workspaceId,
         expenseId,
         currentDraft.version,

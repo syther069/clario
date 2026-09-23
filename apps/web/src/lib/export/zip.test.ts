@@ -21,7 +21,9 @@ describe("Deterministic ZIP module", () => {
 
   describe("normalizeZipPath", () => {
     it("normalizes backslashes to forward slashes and trims slashes", () => {
-      expect(normalizeZipPath("clario-export\\manifest.json")).toBe("clario-export/manifest.json");
+      expect(normalizeZipPath("clario-export\\manifest.json")).toBe(
+        "clario-export/manifest.json",
+      );
       expect(normalizeZipPath("/foo/bar/baz.txt/")).toBe("foo/bar/baz.txt");
     });
 
@@ -39,9 +41,18 @@ describe("Deterministic ZIP module", () => {
   describe("createDeterministicZip & extractZipEntries", () => {
     it("creates a zip and extracts entries identically (round-trip)", () => {
       const files = [
-        { path: "clario-export/manifest.json", data: Buffer.from('{"version": 1}', "utf8") },
-        { path: "clario-export/workspace-policy.json", data: Buffer.from('{"rules": []}', "utf8") },
-        { path: "clario-export/expenses/exp_1/v1/record.json", data: Buffer.from('{"amount": 100}', "utf8") },
+        {
+          path: "clario-export/manifest.json",
+          data: Buffer.from('{"version": 1}', "utf8"),
+        },
+        {
+          path: "clario-export/workspace-policy.json",
+          data: Buffer.from('{"rules": []}', "utf8"),
+        },
+        {
+          path: "clario-export/expenses/exp_1/v1/record.json",
+          data: Buffer.from('{"amount": 100}', "utf8"),
+        },
       ];
 
       const zipBuf = createDeterministicZip(files);
@@ -51,7 +62,9 @@ describe("Deterministic ZIP module", () => {
       expect(extracted.length).toBe(3);
 
       // Verify lexicographical order
-      expect(extracted[0]!.path).toBe("clario-export/expenses/exp_1/v1/record.json");
+      expect(extracted[0]!.path).toBe(
+        "clario-export/expenses/exp_1/v1/record.json",
+      );
       expect(extracted[1]!.path).toBe("clario-export/manifest.json");
       expect(extracted[2]!.path).toBe("clario-export/workspace-policy.json");
 
@@ -83,12 +96,18 @@ describe("Deterministic ZIP module", () => {
         { path: "./foo.txt", data: Buffer.from("second") },
       ];
 
-      expect(() => createDeterministicZip(duplicates)).toThrow(/Duplicate entry path/);
+      expect(() => createDeterministicZip(duplicates)).toThrow(
+        /Duplicate entry path/,
+      );
     });
 
     it("rejects corrupted zip files gracefully", () => {
-      expect(() => extractZipEntries(Buffer.alloc(10))).toThrow(/buffer too small/);
-      expect(() => extractZipEntries(Buffer.alloc(30))).toThrow(/EOCD signature not found/);
+      expect(() => extractZipEntries(Buffer.alloc(10))).toThrow(
+        /buffer too small/,
+      );
+      expect(() => extractZipEntries(Buffer.alloc(30))).toThrow(
+        /EOCD signature not found/,
+      );
     });
   });
 });
