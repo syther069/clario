@@ -2,7 +2,7 @@
 
 **Status:** Active persistent context  
 **Memory version:** 1.0  
-**Last verified:** 2026-09-23  
+**Last verified:** 2026-09-29
 **Current phase:** Phase 6 — Intelligence, design, and resilience (`ACTIVE`)  
 **Next executable task:** Continue `DES-001 — Implement the design foundation` in [TASKS.md](./TASKS.md)
 
@@ -78,18 +78,15 @@ The founding documentation set is established:
 
 ### What is not complete
 
-The repository is scaffolded, but product behavior is not implemented. Specifically, there is no verified:
+The product workflow, protocol, contracts, storage, verifier, and route components listed above are implemented locally. Remaining release work includes:
 
-- Product route tree beyond the truthful foundation page and authentication endpoints.
-- UI component, stylesheet, or token implementation.
-- Product smart contract, canonical protocol, or invariant suite beyond pure commitment verification.
-- Object storage or encryption implementation.
-- Provider integration.
-- Deployed contract or application.
-- Contract, token, RPC, or explorer address.
-- Remotely executed and branch-protected CI, demo, or release artifact.
+- `DES-001` design foundation completion: refactor remaining ad hoc screen styling and record accessibility, responsive, Lighthouse, and visual-baseline evidence.
+- `OBS-001` privacy-safe observability and recovery.
+- `E2E-001`, `REL-001`, `REL-002`, and `SUB-001` release preparation and founder-authorized end-to-end validation.
+- Remote CI activation/branch protection and deployment. No deployed contract/application or live address is recorded.
+- External AI provider activation remains disabled pending the documented provider and privacy approvals. `GAS-001` remains optional and cuttable.
 
-Do not describe any planned capability as implemented. `FND-001` is complete; `FND-002` is locally implemented but blocked on remote activation; Phase 0 is active and its gate remains incomplete.
+Do not describe any planned capability as implemented. `FND-001` is complete; `FND-002` is locally implemented but blocked on remote activation. No deployment, signing, broadcast, fund movement, or live infrastructure action has been authorized.
 
 ## 3. Product memory
 
@@ -362,7 +359,7 @@ Dark mode is specified but not confirmed as MVP scope. It may be deferred; if sh
 - `APP-001 — Create PostgreSQL schema and migrations` is `[x]` with 20 relational tables, strict version/settlement/idempotency constraints, checksummed migrator, CLI runner, runbook, and 15 tests.
 - `APP-002 — Implement authentication and workspace authorization` is `[x]` with EIP-4361 SIWE challenge/verification, HMAC-SHA256 sessions, CSRF defense, scoped authorization policy, and 39 Vitest tests.
 - `APP-003 — Implement encrypted evidence storage` is `[x]` with AES-256-GCM envelope encryption, canonicalized JSON AAD context binding, KEK wrapping, memory/disk storage drivers with path traversal defense, opaque storage keys (`evidence/<ws>/<ev>.enc`), immutability enforcement on submitted versions, admin evidence isolation, safe 404/NOT_FOUND masking, Next.js upload/download/preview/delete route handlers, and 45 tests.
-- Phase 5 was approved by the human founder on 2026-09-22. `AI-001` and `INT-001` are complete. `DES-001` is `[~]` with the first design-foundation slice verified: semantic aliases, motion/accessibility CSS primitives, typed token exports, reusable native UI primitives, and numeric contrast tests. Remaining completion checks include broader screen refactor, automated accessibility pass, Lighthouse, and Playwright visual baselines.
+- Phase 5 was approved by the human founder on 2026-09-22. `AI-001` and `INT-001` are complete. `DES-001` is `[~]`: the foundation has semantic aliases, motion/accessibility CSS primitives, typed token exports, reusable native UI primitives, and numeric contrast tests. On 2026-09-29, the shared shell gained responsive labeled navigation, persistent light/dark theme control, accurate local-development network labeling, and measured primary-action contrast in both themes. The full root `pnpm check` passed, including 15 database tests, 133 protocol tests, 429 web tests, and 95 Foundry tests. Remaining work includes broader screen-styling cleanup, automated accessibility, Lighthouse, and visual baselines at specified sizes and zoom.
 
 ### Critical path
 
@@ -561,7 +558,7 @@ Record only accepted durable decisions. Proposals stay in “Known issues and un
 
 ## 19. Founder’s continuation brief
 
-Phase 5 was founder-approved on 2026-09-22. With `AI-001 — Add human-supervised receipt extraction` and `INT-001 — Add duplicate and mismatch warnings` complete, Phase 6 is active and `DES-001 — Implement the design foundation` is in progress. The first verified slice established semantic design aliases, responsive/accessibility CSS support, typed token exports, reusable native UI primitives, and numeric contrast tests. Continue DES-001 by refactoring core screens away from ad hoc inline styles and adding accessibility, Lighthouse, and Playwright visual evidence. Keep the live AI provider disabled until the unresolved provider/privacy approvals are recorded.
+Phase 5 was founder-approved on 2026-09-22. With `AI-001 — Add human-supervised receipt extraction` and `INT-001 — Add duplicate and mismatch warnings` complete, Phase 6 is active and `DES-001 — Implement the design foundation` is in progress. The verified design slice now includes semantic tokens, reusable primitives, measured contrast pairs, responsive navigation, and persistent light/dark theme switching. Consult `MONAD_HACKATHON_RESOURCES.md` for relevant references on each build task, without expanding Clario into unrelated or unapproved protocol features. Continue DES-001 by refactoring core screens away from ad hoc inline styles and collecting accessibility, Lighthouse, and visual evidence. Keep the live AI provider disabled until the unresolved provider/privacy approvals are recorded.
 
 Build the narrow proof chain before adding polish. Keep private data offchain. Freeze canonical bytes before dependent layers. Make every approval and reimbursement refer to the exact current version. Treat AI and providers as fallible. Make failures recoverable and idempotent. Show only real state. Leave the product independently verifiable.
 

@@ -9,7 +9,7 @@
 
 ## Repository audit
 
-At this revision, the repository contains only `prd.md`, `architecture.md`, and this file. There is no frontend application, package manifest, route tree, component library, stylesheet, token file, or rendered UI to preserve. This is a founding contract, not a description of existing code.
+This specification began as a founding design contract. The repository now contains a Next.js application, product routes and components, and a partial implementation of the design foundation. `MEMORY.md` and `TASKS.md` record verified implementation state; this file remains the target contract and must not be read as a claim that every design requirement is already implemented.
 
 Clario is a verifiable expense workflow for crypto teams: private evidence, immutable expense versions, scoped human approval, Monad reimbursement, and independent verification. Markets, wagers, trading positions, and generic protocol analytics are outside the approved MVP. Related patterns below are explicitly conditional and must not be implemented until the PRD and architecture authorize them.
 
@@ -601,7 +601,7 @@ Evidence Ledger combines graphite structure, cobalt proof signals, muted iris an
 
 ### Files likely to change later
 
-No application files exist. A likely Next.js implementation may add or touch `app/layout.tsx`, route layouts, `app/globals.css` or a token stylesheet, `components/ui/*`, `components/clario/*`, shared chart tokens, component previews, and Playwright accessibility/visual fixtures. These are forecasts, not instructions to create them now.
+The current Next.js implementation uses `apps/web/src/app/layout.tsx`, `apps/web/src/app/globals.css`, and `apps/web/src/components/*`, including `components/ui/*` and the product workflow components. Continue adapting those existing files and add accessibility or visual fixtures as the relevant task requires; do not create duplicate design systems or routes.
 
 ### Safe implementation order
 

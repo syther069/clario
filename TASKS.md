@@ -1118,9 +1118,11 @@ AI, sponsorship, advanced reporting, and broad multichain support are not on the
 
 **Verification:** Component tests, automated accessibility, Lighthouse, and Playwright visual baselines.
 
-**Evidence:** Pending.
+**Evidence:** In progress. The full root `pnpm check` passed on 2026-09-29, including lint, Solidity formatting, typecheck, 15 database tests, 133 protocol tests, 429 web tests, 95 Foundry tests, package/contracts builds, Next.js production build, and Prettier. The local preview was inspected at the available 498px browser viewport for navigation, theme, and truthful local-chain labeling. Full task acceptance is still open.
 
 **Progress:** 2026-09-23 by Codex. Added the first production design-foundation slice: semantic token aliases for legacy component usage, gradient/font/motion variables, reduced-motion and forced-colors handling, mobile shell/table behavior, skeleton/callout/mono-badge primitives, explicit root theme marker, typed design-token exports, reusable native UI primitives, and numeric WCAG contrast tests for documented semantic pairs. Verified with full `pnpm check`: lint, contract formatting, typecheck, 15 database tests, 133 protocol tests, 429 web tests, 95 Foundry tests, package builds, Next production build, contract build, and Prettier check. Remaining before completion: broader screen refactor away from ad hoc inline styles, automated accessibility pass, Lighthouse, and Playwright visual baselines.
+
+**Progress:** 2026-09-29 by Codex. Rebuilt the shared navigation shell with semantic labeled navigation, compact responsive disclosure, persistent light/dark theme control, and accurate “Local development” labeling for chain 31337. Added theme-aware primary-action foreground tokens with numeric contrast coverage and a navigation regression test. Verified the full root `pnpm check` and a browser preview at the available 498px viewport. Updated stale design-spec audit text and added the supplied Monad resource catalog as `MONAD_HACKATHON_RESOURCES.md`, referenced by `AGENTS.md` for future build tasks. Remaining: load approved/self-hosted fonts, refactor the many remaining inline screen styles, test at 320px/desktop/200% zoom/forced colors, and produce automated accessibility, Lighthouse, and Playwright visual evidence. Do not mark DES-001 complete until those checks are recorded.
 
 ### [ ] OBS-001 — Add privacy-safe observability and recovery
 

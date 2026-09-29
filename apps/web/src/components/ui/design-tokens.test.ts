@@ -25,6 +25,11 @@ describe("Clario design tokens", () => {
         themeTokens.light.surfaceCard,
       ],
       [
+        "light primary button label",
+        themeTokens.light.textOnAccent,
+        themeTokens.light.accentPrimary,
+      ],
+      [
         "light success",
         themeTokens.light.success,
         themeTokens.light.successSoft,
@@ -55,6 +60,11 @@ describe("Clario design tokens", () => {
         "dark accent",
         themeTokens.dark.accentPrimary,
         themeTokens.dark.surfaceCard,
+      ],
+      [
+        "dark primary button label",
+        themeTokens.dark.textOnAccent,
+        themeTokens.dark.accentPrimary,
       ],
       ["dark success", themeTokens.dark.success, themeTokens.dark.successSoft],
       ["dark warning", themeTokens.dark.warning, themeTokens.dark.warningSoft],

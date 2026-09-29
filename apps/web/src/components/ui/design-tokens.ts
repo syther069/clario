@@ -17,6 +17,7 @@ export interface ThemeTokens {
   accentPrimary: string;
   accentPrimaryHover: string;
   accentPrimaryStrong: string;
+  textOnAccent: string;
   accentSecondary: string;
   accentSoft: string;
   successSoft: string;
@@ -51,6 +52,7 @@ export const themeTokens: Record<ThemeName, ThemeTokens> = {
     accentPrimary: "#2457f5",
     accentPrimaryHover: "#1947d8",
     accentPrimaryStrong: "#1036a9",
+    textOnAccent: "#ffffff",
     accentSecondary: "#6758b8",
     accentSoft: "#e8eeff",
     successSoft: "#e1f4ec",
@@ -83,6 +85,7 @@ export const themeTokens: Record<ThemeName, ThemeTokens> = {
     accentPrimary: "#86a3ff",
     accentPrimaryHover: "#a2b7ff",
     accentPrimaryStrong: "#c7d4ff",
+    textOnAccent: "#101318",
     accentSecondary: "#b7a8f3",
     accentSoft: "#17234a",
     successSoft: "#12392e",
