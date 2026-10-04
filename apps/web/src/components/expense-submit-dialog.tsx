@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ExpenseSubmissionPreview } from "@/lib/expense/submission";
 import { getExplorerTxUrl, getSupportedChain } from "@/lib/import/chains";
+import { X, Blocks, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export type SubmissionLifecycleStatus =
   | "idle"
@@ -268,10 +269,15 @@ export function ExpenseSubmitDialog({
             onClick={handleClose}
             disabled={isPending}
             className="btn-secondary"
-            style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+            style={{
+              padding: "4px 8px",
+              fontSize: "0.8rem",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
             aria-label="Close dialog"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -348,7 +354,7 @@ export function ExpenseSubmitDialog({
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
-                  <span style={{ fontSize: "1.1rem" }}>⛓</span>
+                  <Blocks className="w-4 h-4 text-[#836EF9] shrink-0" />
                   <strong style={{ fontSize: "0.95rem" }}>
                     Public Onchain Record (Monad)
                   </strong>
@@ -403,7 +409,7 @@ export function ExpenseSubmitDialog({
                   marginBottom: "10px",
                 }}
               >
-                <span style={{ fontSize: "1.1rem" }}>🛡</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                 <strong style={{ fontSize: "0.95rem", color: "#10b981" }}>
                   Confidential Offchain Ledger (Never Visible to Monad)
                 </strong>
@@ -568,12 +574,12 @@ export function ExpenseSubmitDialog({
           <div style={{ padding: "30px 20px", textAlign: "center" }}>
             <div
               style={{
-                fontSize: "2.5rem",
-                color: "#10b981",
+                display: "flex",
+                justifyContent: "center",
                 marginBottom: "12px",
               }}
             >
-              ✓
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
             </div>
             <h3
               style={{

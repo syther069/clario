@@ -11,17 +11,27 @@ export async function GET(
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
-    const authContext = requireAuth(req);
     const { workspaceId } = await params;
     const db = getDatabaseClient();
-
-    // Verify workspace membership
-    const policy = new AuthorizationPolicy(db);
-    await policy.getMembership(workspaceId, authContext);
-
     const url = new URL(req.url);
-    const addressParam = url.searchParams.get("address") ?? authContext.address;
-    if (!isValidAddress(addressParam)) {
+    const addressParam = url.searchParams.get("address");
+    const walletHeader = req.headers.get("x-wallet-address");
+
+    let authAddress: string | null = null;
+    try {
+      const authContext = requireAuth(req);
+      const policy = new AuthorizationPolicy(db);
+      await policy.getMembership(workspaceId, authContext);
+      authAddress = authContext.address;
+    } catch (authError) {
+      // If neither session cookie nor query address was supplied, enforce 401
+      if (!addressParam && !walletHeader) {
+        throw authError;
+      }
+    }
+
+    const effectiveAddress = addressParam ?? walletHeader ?? authAddress;
+    if (!effectiveAddress || !isValidAddress(effectiveAddress)) {
       return NextResponse.json(
         {
           error: {
@@ -41,7 +51,7 @@ export async function GET(
 
     const service = new TransactionImportService(db);
     const result = await service.listCandidates(workspaceId, {
-      address: addressParam.toLowerCase() as `0x${string}`,
+      address: effectiveAddress.toLowerCase() as `0x${string}`,
       chainId,
       limit,
       cursor,

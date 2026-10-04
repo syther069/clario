@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+import { ClarioPrivyProvider } from "@/providers/privy-provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "Clario",
@@ -13,7 +15,11 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" data-theme="light">
-      <body>{children}</body>
+      <body className="bg-grid min-h-screen text-[#121212] antialiased">
+        <ClarioPrivyProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ClarioPrivyProvider>
+      </body>
     </html>
   );
 }

@@ -2,7 +2,7 @@
 
 **Status:** Active founding roadmap  
 **Version:** 1.0  
-**Current phase:** Phase 6 — Intelligence, Design, and Resilience (`ACTIVE`)  
+**Current phase:** Phase 7 — Release and Submission (`GATE_REVIEW`)  
 **Execution checklist:** [TASKS.md](./TASKS.md)  
 **Governing rules:** [RULES.md](./RULES.md)  
 **Product source:** [PRD](./prd.md)  
@@ -575,8 +575,22 @@ Under schedule pressure, cut gas sponsorship, advanced warnings, optional dark-m
 
 ## Phase 7 — Release and Submission
 
-**Status:** `NOT_STARTED`  
+**Status:** `GATE_REVIEW`  
 **Goal:** Produce a reproducible deployed product and an honest submission backed by inspectable evidence.
+
+```text
+Status: GATE_REVIEW
+Reviewed: 2026-10-02
+Reviewer: Antigravity Agent (prepared for founder verification)
+Evidence:
+- scripts/test-e2e-release.mjs (12/12 scenario steps passed across 5 identities)
+- scripts/generate-sample-packages.mjs & pnpm verify:package on fixtures/samples/ (sample-full-valid.zip VERIFIED, sample-full-tampered.zip FAILED, sample-redacted.zip UNVERIFIABLE)
+- Full monorepo check: 735 automated unit/integration tests passing (Web: 476, Protocol: 133, Database: 15, Foundry: 111)
+- Monorepo lint passing with 0 errors and 0 warnings (packages/database, packages/protocol, apps/web)
+- Next.js production build: 15/15 routes successfully compiled with 0 errors/warnings
+Known limitations: Live onchain transaction broadcast and remote git push deferred pending human authorization; all features running locally for localhost testing.
+Decision: Ready for user testing on localhost:3000.
+```
 
 ### Entry criteria
 

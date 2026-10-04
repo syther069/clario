@@ -1,32 +1,66 @@
 "use client";
 
 /**
- * Clario Attributable Transaction Import Dialog
+ * Clario Attributable Transaction Import Dialog (Montally Neo-Brutalist)
  * Source: PRD §9.3; Architecture §4
- * Founder Invariant #12: Imported facts are provider/source-chain records, not Monad-verified truth.
+ *
+ * Implements strict rules:
+ * 1. Only transactions from or to the connected wallet.
+ * 2. Mainnets only.
+ * 3. Chain order: Monad, Ethereum, Base, Hyperliquid, then other EVM chains.
+ * 4. Token order: USDC, USDT, native tokens, then others.
+ * 5. Real USD value at the time of transaction (never $0 or guessed).
+ * 6. Exact date and time from block timestamp in user's local timezone.
+ * 7. Deduplication, decimal accuracy, failed txn protection, and spam rejection.
+ * 8. Hackathon bounty attribution: "Fetched via Alchemy".
+ * 9. Real vector logos for all tokens and chains.
+ * 10. Pixel-perfect alignment across cards and labels.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   type TransactionImportCandidate,
   type NormalizedTransaction,
   IMPORTED_FACTS_DISCLAIMER,
+  formatTransactionDateTime,
 } from "../lib/import/types";
 import {
-  SUPPORTED_SOURCE_CHAINS,
+  SUPPORTED_IMPORT_CHAINS,
   getExplorerTxUrl,
   type SourceChainConfig,
 } from "../lib/import/chains";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  RefreshCw,
+  X,
+  AlertTriangle,
+  Search,
+  Wallet,
+  ArrowDownLeft,
+} from "lucide-react";
+import {
+  CryptoChainIcon,
+  CryptoCoinIcon,
+  AlchemyAttributionBadge,
+  AlchemyLogo,
+} from "@/components/ui/crypto-icon";
+
+function isValidEvmAddress(address?: string | null): boolean {
+  if (!address) return false;
+  return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
+}
 
 export interface TransactionImportDialogProps {
   isOpen: boolean;
   workspaceId: string;
-  userAddress: string;
+  userAddress?: string | undefined;
   onClose: () => void;
   onSelectTransaction: (
     tx: NormalizedTransaction,
     paymentSource: "imported_transaction" | "transaction_hash",
   ) => void;
+  onConnectWallet?: (() => void) | undefined;
 }
 
 export function TransactionImportDialog({
@@ -35,15 +69,26 @@ export function TransactionImportDialog({
   userAddress,
   onClose,
   onSelectTransaction,
+  onConnectWallet,
 }: TransactionImportDialogProps) {
   const [activeTab, setActiveTab] = useState<"wallet" | "hash">("wallet");
-  const [selectedChainId, setSelectedChainId] = useState<number>(10143); // Default to Monad Testnet
-  const [queryAddress, setQueryAddress] = useState<string>(userAddress);
+  // Default to Monad Testnet (10143) or Monad Mainnet (143)
+  const [selectedChainId, setSelectedChainId] = useState<number>(10143);
+  const [queryAddress, setQueryAddress] = useState<string>(userAddress || "");
   const [transactions, setTransactions] = useState<
     readonly TransactionImportCandidate[]
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync with prop when wallet connects or changes
+  const [prevUserAddress, setPrevUserAddress] = useState<string | undefined>(
+    userAddress,
+  );
+  if (userAddress !== prevUserAddress) {
+    setPrevUserAddress(userAddress);
+    setQueryAddress(userAddress || "");
+  }
 
   // Hash lookup states
   const [lookupHash, setLookupHash] = useState<string>("");
@@ -52,8 +97,11 @@ export function TransactionImportDialog({
   const [lookupCandidate, setLookupCandidate] =
     useState<TransactionImportCandidate | null>(null);
 
-  const handleRefresh = async () => {
-    if (!queryAddress || !workspaceId) return;
+  const fetchTransactions = useCallback(async () => {
+    if (!isValidEvmAddress(queryAddress) || !workspaceId) {
+      setTransactions([]);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -61,13 +109,16 @@ export function TransactionImportDialog({
         `/api/workspaces/${workspaceId}/import/transactions`,
         window.location.origin,
       );
-      url.searchParams.set("address", queryAddress);
+      url.searchParams.set("address", queryAddress.trim());
       if (selectedChainId) {
         url.searchParams.set("chainId", selectedChainId.toString());
       }
 
       const res = await fetch(url.toString(), {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-wallet-address": queryAddress.trim(),
+        },
       });
       const data = await res.json();
       if (!res.ok) {
@@ -81,56 +132,26 @@ export function TransactionImportDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [queryAddress, selectedChainId, workspaceId]);
 
   useEffect(() => {
-    let ignore = false;
-    if (!isOpen || activeTab !== "wallet" || !queryAddress || !workspaceId) {
-      return;
-    }
-
-    async function load() {
-      try {
-        const url = new URL(
-          `/api/workspaces/${workspaceId}/import/transactions`,
-          window.location.origin,
-        );
-        url.searchParams.set("address", queryAddress);
-        if (selectedChainId) {
-          url.searchParams.set("chainId", selectedChainId.toString());
-        }
-
-        const res = await fetch(url.toString(), {
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            data.error?.message || "Failed to fetch transactions.",
-          );
-        }
-        if (!ignore) {
-          setTransactions(data.items || []);
-          setError(null);
-        }
-      } catch (err) {
-        if (!ignore) {
-          setError(
-            err instanceof Error ? err.message : "Error loading transactions.",
-          );
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+    if (!isOpen || activeTab !== "wallet") return;
+    const timer = setTimeout(() => {
+      if (isValidEvmAddress(queryAddress) && workspaceId) {
+        void fetchTransactions();
+      } else {
+        setTransactions([]);
       }
-    }
-
-    load();
-    return () => {
-      ignore = true;
-    };
-  }, [isOpen, activeTab, queryAddress, selectedChainId, workspaceId]);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    activeTab,
+    queryAddress,
+    selectedChainId,
+    workspaceId,
+    fetchTransactions,
+  ]);
 
   const handleLookup = async () => {
     if (!lookupHash || !workspaceId) return;
@@ -146,11 +167,17 @@ export function TransactionImportDialog({
       url.searchParams.set("hash", lookupHash.trim());
 
       const res = await fetch(url.toString(), {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-wallet-address":
+            queryAddress || "0x0000000000000000000000000000000000000000",
+        },
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error?.message || "Transaction not found.");
+        throw new Error(
+          data.error?.message || "Transaction not found on this chain.",
+        );
       }
       setLookupCandidate(data.transaction);
     } catch (err) {
@@ -169,190 +196,128 @@ export function TransactionImportDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="import-dialog-title"
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.75)",
-        backdropFilter: "blur(4px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        padding: "16px",
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
     >
-      <div
-        style={{
-          backgroundColor: "var(--card-bg, #0d0e15)",
-          border: "1px solid var(--border, #242738)",
-          borderRadius: "12px",
-          width: "100%",
-          maxWidth: "760px",
-          maxHeight: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          boxShadow: "0 24px 48px rgba(0,0,0,0.8)",
-        }}
-      >
+      <div className="relative z-10 w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border-2 border-[#121212] bg-white text-[#121212] shadow-[8px_8px_0_0_#121212] overflow-hidden font-sans">
         {/* Header */}
-        <div
-          style={{
-            padding: "20px 24px",
-            borderBottom: "1px solid var(--border, #242738)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <h3
-              id="import-dialog-title"
-              style={{
-                margin: 0,
-                fontSize: "1.15rem",
-                fontWeight: 600,
-                color: "var(--foreground, #fff)",
-              }}
-            >
-              Import Attributable Transaction
-            </h3>
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontSize: "0.8rem",
-                color: "var(--muted, #8b92a8)",
-              }}
-            >
-              Select an onchain payment from Monad, Ethereum, or Base to attach
-              as verifiable source provenance.
-            </p>
+        <div className="p-5 border-b-2 border-[#121212] flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
+                  [ONCHAIN ACTIVITY]
+                </span>
+                <AlchemyAttributionBadge />
+              </div>
+              <h3
+                id="import-dialog-title"
+                className="text-base font-black uppercase tracking-wider text-[#121212]"
+              >
+                Import Attributable Transaction
+              </h3>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--muted, #8b92a8)",
-              fontSize: "1.25rem",
-              cursor: "pointer",
-              padding: "4px 8px",
-            }}
             aria-label="Close dialog"
+            className="rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-all"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Disclaimer Banner */}
-        <div
-          style={{
-            padding: "10px 24px",
-            backgroundColor: "rgba(102, 77, 255, 0.08)",
-            borderBottom: "1px solid rgba(102, 77, 255, 0.2)",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            fontSize: "0.78rem",
-            color: "#a49fff",
-          }}
-        >
-          <span aria-hidden="true">ℹ️</span>
-          <span>{IMPORTED_FACTS_DISCLAIMER}</span>
+        <div className="px-5 py-2 bg-[#f3f0ff] border-b-2 border-[#121212] flex items-center justify-between gap-2 text-xs font-mono text-[#836EF9]">
+          <div className="flex items-center gap-1.5 truncate">
+            <span className="font-bold">ℹ</span>
+            <span className="truncate">{IMPORTED_FACTS_DISCLAIMER}</span>
+          </div>
+          <span className="shrink-0 text-[10px] font-black uppercase bg-white px-2 py-0.5 rounded border border-[#836EF9]">
+            MONAD &amp; MAINNETS
+          </span>
         </div>
 
-        {/* Tabs & Controls */}
-        <div
-          style={{
-            padding: "16px 24px 12px",
-            borderBottom: "1px solid var(--border, #242738)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "14px",
-          }}
-        >
-          <div style={{ display: "flex", gap: "8px" }}>
+        {/* Tabs & Filters */}
+        <div className="p-5 border-b-2 border-[#121212] bg-[#fbfbfb] flex flex-col gap-4">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("wallet")}
-              className={
-                activeTab === "wallet" ? "btn-primary" : "btn-secondary"
-              }
-              style={{ fontSize: "0.85rem", padding: "6px 14px" }}
+              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all ${
+                activeTab === "wallet"
+                  ? "bg-[#836EF9] text-white"
+                  : "bg-white text-[#121212] hover:bg-slate-50"
+              }`}
             >
               Browse Wallet Transactions
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("hash")}
-              className={activeTab === "hash" ? "btn-primary" : "btn-secondary"}
-              style={{ fontSize: "0.85rem", padding: "6px 14px" }}
+              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all ${
+                activeTab === "hash"
+                  ? "bg-[#836EF9] text-white"
+                  : "bg-white text-[#121212] hover:bg-slate-50"
+              }`}
             >
               Direct Hash Lookup
             </button>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "12px",
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "0.75rem",
-                  color: "var(--muted, #8b92a8)",
-                  marginBottom: "4px",
-                }}
-              >
-                Source Chain
+              <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                Source Chain (Rule 3 Order: Monad First)
               </label>
-              <select
-                className="input-field"
-                value={selectedChainId}
-                onChange={(e) => setSelectedChainId(Number(e.target.value))}
-                style={{ fontSize: "0.85rem" }}
-              >
-                {SUPPORTED_SOURCE_CHAINS.map((c: SourceChainConfig) => (
-                  <option key={c.chainId} value={c.chainId}>
-                    {c.name} (Chain ID: {c.chainId})
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212]">
+                  <CryptoChainIcon
+                    chain={selectedChainId}
+                    className="h-5 w-5"
+                  />
+                </div>
+                <select
+                  value={selectedChainId}
+                  onChange={(e) => setSelectedChainId(Number(e.target.value))}
+                  className="w-full border-2 border-[#121212] rounded-xl px-3 py-2 text-xs font-mono font-bold bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                >
+                  {SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => (
+                    <option key={c.chainId} value={c.chainId}>
+                      {c.name} ({c.shortName})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {activeTab === "wallet" && (
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "0.75rem",
-                    color: "var(--muted, #8b92a8)",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Wallet Address
+                <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                  Connected Wallet Address (Rule 1)
                 </label>
-                <div style={{ display: "flex", gap: "6px" }}>
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    className="input-field font-mono"
                     value={queryAddress}
                     onChange={(e) => setQueryAddress(e.target.value)}
-                    style={{ fontSize: "0.8rem" }}
+                    placeholder="Connect an EVM wallet to fetch"
+                    readOnly={Boolean(userAddress)}
+                    className="flex-1 border-2 border-[#121212] rounded-xl px-3 py-2 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                   <button
                     type="button"
-                    onClick={handleRefresh}
-                    className="btn-secondary"
-                    disabled={loading}
-                    style={{ fontSize: "0.8rem", padding: "6px 12px" }}
+                    onClick={fetchTransactions}
+                    disabled={loading || !isValidEvmAddress(queryAddress)}
+                    title="Refresh transactions via Alchemy"
+                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-all"
                   >
-                    {loading ? "..." : "Refresh"}
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+                    />
                   </button>
                 </div>
               </div>
@@ -361,52 +326,59 @@ export function TransactionImportDialog({
         </div>
 
         {/* Content Area */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "20px 24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-          }}
-        >
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3 bg-white">
           {activeTab === "wallet" ? (
             <>
-              {error && (
-                <div
-                  style={{
-                    padding: "12px",
-                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: "6px",
-                    color: "#ef4444",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  {error}
+              {!isValidEvmAddress(queryAddress) ? (
+                <div className="text-center py-12 border-2 border-dashed border-[#121212] rounded-xl bg-[#fbf9fe] p-6 flex flex-col items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                    <Wallet className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
+                      [WALLET REQUIRED]
+                    </span>
+                    <p className="font-mono text-sm font-bold uppercase text-[#121212] mt-2 mb-1">
+                      Connect your EVM wallet to fetch blockchain transactions.
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-sm">
+                      An active external EVM wallet is required to index onchain
+                      transactions via Alchemy.
+                    </p>
+                  </div>
+                  {onConnectWallet && (
+                    <button
+                      type="button"
+                      onClick={onConnectWallet}
+                      className="mt-2 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2.5 px-5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                    >
+                      <Wallet className="h-4 w-4" />
+                      <span>CONNECT EVM WALLET</span>
+                    </button>
+                  )}
                 </div>
-              )}
-
-              {loading ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "40px",
-                    color: "var(--muted, #8b92a8)",
-                  }}
-                >
-                  Fetching transaction candidates...
+              ) : error ? (
+                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-3 rounded-xl text-xs font-mono font-bold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              ) : loading ? (
+                <div className="text-center py-12 text-slate-500 font-mono text-xs flex flex-col items-center gap-2">
+                  <RefreshCw className="h-6 w-6 animate-spin text-[#836EF9]" />
+                  <div className="flex items-center gap-2 mt-1">
+                    <AlchemyLogo className="h-4 w-4" />
+                    <span className="font-bold">
+                      Fetching verified transfers via Alchemy Asset API...
+                    </span>
+                  </div>
                 </div>
               ) : transactions.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "40px",
-                    color: "var(--muted, #8b92a8)",
-                  }}
-                >
-                  No transactions found for this address on the selected chain.
+                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-mono text-xs p-6">
+                  No attributable transactions found for this wallet on{" "}
+                  {SUPPORTED_IMPORT_CHAINS.find(
+                    (c) => c.chainId === selectedChainId,
+                  )?.name || "selected chain"}
+                  .
                 </div>
               ) : (
                 transactions.map((tx) => {
@@ -414,90 +386,91 @@ export function TransactionImportDialog({
                     tx.sourceChainId,
                     tx.sourceTransactionHash,
                   );
+                  const isSender =
+                    queryAddress.toLowerCase() === tx.sender.toLowerCase();
+
                   return (
                     <div
                       key={`${tx.sourceChainId}-${tx.sourceTransactionHash}-${tx.claimSlot}`}
-                      style={{
-                        backgroundColor: tx.isClaimed
-                          ? "rgba(239, 68, 68, 0.04)"
-                          : "rgba(255, 255, 255, 0.02)",
-                        border: `1px solid ${
-                          tx.isClaimed
-                            ? "rgba(239, 68, 68, 0.3)"
-                            : "var(--border, #242738)"
-                        }`,
-                        borderRadius: "8px",
-                        padding: "14px 16px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                      }}
+                      className={`border-2 border-[#121212] rounded-xl p-4 shadow-[3px_3px_0_0_#121212] flex flex-col gap-3 transition-all ${
+                        tx.isClaimed
+                          ? "bg-slate-50 opacity-75"
+                          : "bg-white hover:bg-[#faf8fe]"
+                      }`}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                          gap: "8px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <span
-                            className="font-mono"
-                            style={{
-                              fontSize: "1.05rem",
-                              fontWeight: 600,
-                              color: "var(--foreground, #fff)",
-                            }}
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        {/* Left: Direction + Token + Amounts */}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] p-1 ${
+                              isSender
+                                ? "bg-[#fee2e2] text-[#dc2626]"
+                                : "bg-[#dcfce7] text-[#16a34a]"
+                            }`}
+                            title={
+                              isSender ? "Outgoing Outflow" : "Incoming Inflow"
+                            }
                           >
-                            {tx.formattedAmount} {tx.assetSymbol}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "0.7rem",
-                              padding: "2px 6px",
-                              borderRadius: "4px",
-                              textTransform: "uppercase",
-                              fontWeight: 600,
-                              backgroundColor:
-                                tx.status === "confirmed"
-                                  ? "rgba(34, 197, 94, 0.15)"
-                                  : tx.status === "failed"
-                                    ? "rgba(239, 68, 68, 0.15)"
-                                    : "rgba(234, 179, 8, 0.15)",
-                              color:
-                                tx.status === "confirmed"
-                                  ? "#22c55e"
-                                  : tx.status === "failed"
-                                    ? "#ef4444"
-                                    : "#eab308",
-                            }}
-                          >
-                            {tx.status}
-                          </span>
-                          {tx.isClaimed && (
-                            <span
-                              style={{
-                                fontSize: "0.7rem",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                backgroundColor: "rgba(239, 68, 68, 0.2)",
-                                color: "#ef4444",
-                                fontWeight: 600,
-                              }}
-                            >
-                              CLAIMED IN WORKSPACE
-                            </span>
-                          )}
+                            {isSender ? (
+                              <ArrowUpRight className="h-5 w-5" />
+                            ) : (
+                              <ArrowDownLeft className="h-5 w-5" />
+                            )}
+                          </div>
+
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] p-1.5">
+                            <CryptoCoinIcon
+                              symbol={tx.assetSymbol}
+                              className="h-6 w-6"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-mono text-base font-black text-[#121212]">
+                                {tx.formattedAmount} {tx.assetSymbol}
+                              </span>
+                              {tx.usdValueFormatted && (
+                                <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
+                                  {tx.usdValueFormatted} USD
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span
+                                className={`text-[10px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
+                                  tx.status === "confirmed"
+                                    ? "bg-[#dcfce7] text-[#16a34a]"
+                                    : tx.status === "failed"
+                                      ? "bg-[#fee2e2] text-[#dc2626]"
+                                      : "bg-[#fef9c3] text-[#ca8a04]"
+                                }`}
+                              >
+                                {tx.status}
+                              </span>
+                              <span className="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-300 flex items-center gap-1">
+                                <CryptoChainIcon
+                                  chain={tx.sourceChainId}
+                                  className="h-3 w-3"
+                                />
+                                {SUPPORTED_IMPORT_CHAINS.find(
+                                  (c) => c.chainId === tx.sourceChainId,
+                                )?.shortName || `Chain ${tx.sourceChainId}`}
+                              </span>
+                              <span className="text-[10px] font-mono text-[#0052FF] bg-[#f0f4ff] px-1.5 py-0.2 rounded border border-[#0052FF]/30 flex items-center gap-1">
+                                <AlchemyLogo className="h-2.5 w-2.5" />
+                                Alchemy
+                              </span>
+                              {tx.isClaimed && (
+                                <span className="text-[10px] font-black uppercase bg-[#fee2e2] text-[#dc2626] px-1.5 py-0.2 rounded border border-[#121212]">
+                                  CLAIMED
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
 
+                        {/* Right: Autofill button */}
                         <button
                           type="button"
                           disabled={tx.isClaimed || tx.status === "failed"}
@@ -505,85 +478,71 @@ export function TransactionImportDialog({
                             onSelectTransaction(tx, "imported_transaction");
                             onClose();
                           }}
-                          className={
+                          className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
                             tx.isClaimed || tx.status === "failed"
-                              ? "btn-secondary"
-                              : "btn-primary"
-                          }
-                          style={{ fontSize: "0.8rem", padding: "6px 14px" }}
+                              ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                              : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
+                          }`}
                         >
-                          {tx.isClaimed
-                            ? "Already Claimed"
-                            : tx.status === "failed"
-                              ? "Payment Failed"
-                              : "Autofill Draft →"}
+                          {tx.isClaimed ? (
+                            "Claimed"
+                          ) : tx.status === "failed" ? (
+                            "Failed"
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Autofill →
+                            </>
+                          )}
                         </button>
                       </div>
 
-                      {/* Details row */}
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(200px, 1fr))",
-                          gap: "8px",
-                          fontSize: "0.75rem",
-                          color: "var(--muted, #8b92a8)",
-                        }}
-                      >
-                        <div>
-                          <span>Hash: </span>
-                          <span className="font-mono">
-                            {tx.sourceTransactionHash.slice(0, 10)}...
-                            {tx.sourceTransactionHash.slice(-8)}
+                      {/* Detail row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2 border-t border-slate-100">
+                        <div className="flex items-center gap-1">
+                          <span className="text-slate-400">Tx:</span>
+                          <span className="font-bold">
+                            {tx.sourceTransactionHash.slice(0, 8)}...
+                            {tx.sourceTransactionHash.slice(-6)}
                           </span>
                           {explorerUrl && (
                             <a
                               href={explorerUrl}
                               target="_blank"
                               rel="noreferrer"
-                              style={{
-                                color: "var(--monad-purple, #836ef9)",
-                                marginLeft: "6px",
-                                textDecoration: "none",
-                              }}
+                              className="text-[#836EF9] hover:underline inline-flex items-center"
+                              title="View on block explorer"
                             >
-                              ↗
+                              <ArrowUpRight className="h-3.5 w-3.5" />
                             </a>
                           )}
                         </div>
-                        <div>
-                          <span>To: </span>
-                          <span className="font-mono">
-                            {tx.recipient
-                              ? `${tx.recipient.slice(0, 8)}...${tx.recipient.slice(-6)}`
-                              : "Contract creation"}
+
+                        <div className="truncate">
+                          <span className="text-slate-400">
+                            {isSender ? "To:" : "From:"}
+                          </span>{" "}
+                          <span className="font-bold">
+                            {isSender
+                              ? tx.recipient
+                                ? `${tx.recipient.slice(0, 6)}...${tx.recipient.slice(-4)}`
+                                : "Contract"
+                              : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
                           </span>
                         </div>
-                        {tx.blockTimestamp && (
-                          <div>
-                            <span>Date: </span>
-                            <span>
-                              {new Date(tx.blockTimestamp).toLocaleString()}
-                            </span>
-                          </div>
-                        )}
+
+                        <div className="sm:text-right">
+                          <span className="text-slate-400">Time:</span>{" "}
+                          <span className="font-bold text-[#121212]">
+                            {formatTransactionDateTime(tx.blockTimestamp)}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Warning notification */}
                       {tx.warning && (
-                        <div
-                          style={{
-                            fontSize: "0.72rem",
-                            color: tx.isClaimed ? "#ef4444" : "#eab308",
-                            backgroundColor: tx.isClaimed
-                              ? "rgba(239, 68, 68, 0.08)"
-                              : "rgba(234, 179, 8, 0.08)",
-                            padding: "6px 8px",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          ⚠️ {tx.warning}
+                        <div className="border border-[#ca8a04] bg-[#fefce8] text-[#854d0e] p-2 rounded-lg text-xs font-mono flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                          <span>{tx.warning}</span>
                         </div>
                       )}
                     </div>
@@ -593,112 +552,91 @@ export function TransactionImportDialog({
             </>
           ) : (
             /* Direct Hash Lookup Tab */
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-            >
+            <div className="flex flex-col gap-4">
               <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "0.8rem",
-                    color: "var(--muted, #8b92a8)",
-                    marginBottom: "6px",
-                  }}
-                >
+                <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
                   Enter Source Transaction Hash (0x...)
                 </label>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    className="input-field font-mono"
                     placeholder="0x..."
                     value={lookupHash}
                     onChange={(e) => setLookupHash(e.target.value)}
-                    style={{ fontSize: "0.85rem" }}
+                    className="flex-1 border-2 border-[#121212] rounded-xl px-3 py-2.5 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                   <button
                     type="button"
                     onClick={handleLookup}
                     disabled={lookupLoading || !lookupHash.trim()}
-                    className="btn-primary"
-                    style={{ fontSize: "0.85rem", padding: "8px 18px" }}
+                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all"
                   >
-                    {lookupLoading ? "Looking up..." : "Lookup"}
+                    {lookupLoading ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Search className="h-3.5 w-3.5" />
+                    )}
+                    <span>Lookup</span>
                   </button>
                 </div>
               </div>
 
               {lookupError && (
-                <div
-                  style={{
-                    padding: "12px",
-                    backgroundColor: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: "6px",
-                    color: "#ef4444",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  {lookupError}
+                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-3 rounded-xl text-xs font-mono font-bold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{lookupError}</span>
                 </div>
               )}
 
               {lookupCandidate && (
                 <div
-                  style={{
-                    backgroundColor: lookupCandidate.isClaimed
-                      ? "rgba(239, 68, 68, 0.04)"
-                      : "rgba(255, 255, 255, 0.02)",
-                    border: `1px solid ${
-                      lookupCandidate.isClaimed
-                        ? "rgba(239, 68, 68, 0.3)"
-                        : "var(--border, #242738)"
-                    }`,
-                    borderRadius: "8px",
-                    padding: "16px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                  }}
+                  className={`border-2 border-[#121212] rounded-xl p-4 shadow-[4px_4px_0_0_#121212] flex flex-col gap-3 ${
+                    lookupCandidate.isClaimed ? "bg-slate-50" : "bg-white"
+                  }`}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div>
-                      <div
-                        className="font-mono"
-                        style={{
-                          fontSize: "1.1rem",
-                          fontWeight: 600,
-                          color: "var(--foreground, #fff)",
-                        }}
-                      >
-                        {lookupCandidate.formattedAmount}{" "}
-                        {lookupCandidate.assetSymbol}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212] p-1">
+                        <CryptoCoinIcon
+                          symbol={lookupCandidate.assetSymbol}
+                          className="h-7 w-7"
+                        />
                       </div>
-                      <div
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--muted, #8b92a8)",
-                          marginTop: "2px",
-                        }}
-                      >
-                        Status:{" "}
-                        <span
-                          style={{
-                            fontWeight: 600,
-                            color:
+                      <div>
+                        <div className="font-mono text-lg font-black text-[#121212] flex items-center gap-2">
+                          <span>
+                            {lookupCandidate.formattedAmount}{" "}
+                            {lookupCandidate.assetSymbol}
+                          </span>
+                          {lookupCandidate.usdValueFormatted && (
+                            <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#16a34a]/30">
+                              {lookupCandidate.usdValueFormatted} USD
+                            </span>
+                          )}
+                          <span className="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-300 flex items-center gap-1">
+                            <CryptoChainIcon
+                              chain={lookupCandidate.sourceChainId}
+                              className="h-3.5 w-3.5"
+                            />
+                            {SUPPORTED_IMPORT_CHAINS.find(
+                              (c) =>
+                                c.chainId === lookupCandidate.sourceChainId,
+                            )?.shortName ||
+                              `Chain ${lookupCandidate.sourceChainId}`}
+                          </span>
+                        </div>
+                        <div className="text-xs font-mono text-slate-500 mt-0.5">
+                          Status:{" "}
+                          <span
+                            className={`font-black uppercase ${
                               lookupCandidate.status === "confirmed"
-                                ? "#22c55e"
-                                : "#ef4444",
-                          }}
-                        >
-                          {lookupCandidate.status.toUpperCase()}
-                        </span>
+                                ? "text-[#16a34a]"
+                                : "text-[#dc2626]"
+                            }`}
+                          >
+                            {lookupCandidate.status}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -715,67 +653,42 @@ export function TransactionImportDialog({
                         );
                         onClose();
                       }}
-                      className={
+                      className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
                         lookupCandidate.isClaimed ||
                         lookupCandidate.status === "failed"
-                          ? "btn-secondary"
-                          : "btn-primary"
-                      }
-                      style={{ fontSize: "0.85rem", padding: "8px 16px" }}
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                          : "bg-[#836EF9] hover:bg-[#725aeb] text-white"
+                      }`}
                     >
-                      {lookupCandidate.isClaimed
-                        ? "Already Claimed"
-                        : lookupCandidate.status === "failed"
-                          ? "Payment Failed"
-                          : "Use Transaction Hash →"}
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Use Transaction Hash →
                     </button>
                   </div>
 
                   {lookupCandidate.warning && (
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: lookupCandidate.isClaimed
-                          ? "#ef4444"
-                          : "#eab308",
-                        backgroundColor: lookupCandidate.isClaimed
-                          ? "rgba(239, 68, 68, 0.08)"
-                          : "rgba(234, 179, 8, 0.08)",
-                        padding: "8px 10px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      ⚠️ {lookupCandidate.warning}
+                    <div className="border border-[#ca8a04] bg-[#fefce8] text-[#854d0e] p-2 rounded-lg text-xs font-mono flex items-center gap-1.5">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      <span>{lookupCandidate.warning}</span>
                     </div>
                   )}
 
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "var(--muted, #8b92a8)",
-                      lineHeight: "1.6",
-                    }}
-                  >
+                  <div className="text-xs font-mono text-slate-600 space-y-1">
                     <div>
-                      Sender:{" "}
-                      <span className="font-mono">
-                        {lookupCandidate.sender}
-                      </span>
+                      <span className="text-slate-400">Sender:</span>{" "}
+                      <span>{lookupCandidate.sender}</span>
                     </div>
                     <div>
-                      Recipient:{" "}
-                      <span className="font-mono">
-                        {lookupCandidate.recipient || "None"}
-                      </span>
+                      <span className="text-slate-400">Recipient:</span>{" "}
+                      <span>{lookupCandidate.recipient || "None"}</span>
                     </div>
-                    {lookupCandidate.blockTimestamp && (
-                      <div>
-                        Timestamp:{" "}
-                        {new Date(
+                    <div>
+                      <span className="text-slate-400">Exact Time:</span>{" "}
+                      <span className="font-bold text-[#121212]">
+                        {formatTransactionDateTime(
                           lookupCandidate.blockTimestamp,
-                        ).toLocaleString()}
-                      </div>
-                    )}
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -784,19 +697,17 @@ export function TransactionImportDialog({
         </div>
 
         {/* Footer */}
-        <div
-          style={{
-            padding: "14px 24px",
-            borderTop: "1px solid var(--border, #242738)",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className="p-4 border-t-2 border-[#121212] bg-[#fbfbfb] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlchemyLogo className="h-4 w-4" />
+            <span className="text-[11px] font-mono font-bold text-slate-600">
+              Powered by Alchemy Asset Transfers & Price APIs
+            </span>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="btn-secondary"
-            style={{ fontSize: "0.85rem", padding: "6px 14px" }}
+            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all"
           >
             Close
           </button>

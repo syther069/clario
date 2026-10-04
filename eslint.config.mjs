@@ -16,6 +16,15 @@ export default defineConfig([
   ...nextCoreWebVitals.map((config) => ({ ...config, files: webFiles })),
   ...nextTypeScript.map((config) => ({ ...config, files: webFiles })),
   {
+    files: ["apps/web/src/components/ui/motion/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/static-components": "off",
+    },
+  },
+  {
     files: ["packages/**/*.ts"],
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended],
   },

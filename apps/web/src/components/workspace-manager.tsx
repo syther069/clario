@@ -7,6 +7,7 @@ import type {
   WorkspaceSummary,
 } from "@/lib/workspace/types";
 import { IntentDialog, type TransactionLifecycleStatus } from "./intent-dialog";
+import { X, CheckCircle2 } from "lucide-react";
 
 export interface WorkspaceManagerProps {
   currentAccount?: string | undefined;
@@ -362,7 +363,7 @@ export function WorkspaceManager({
             >
               {workspaces.map((w) => (
                 <option key={w.workspaceId} value={w.workspaceId}>
-                  {w.name} {w.isOwner ? "👑" : ""}
+                  {w.name} {w.isOwner ? " (Owner)" : ""}
                 </option>
               ))}
             </select>
@@ -395,8 +396,9 @@ export function WorkspaceManager({
             onClick={() => setError(null)}
             className="btn btn-ghost btn-sm"
             style={{ padding: 0 }}
+            aria-label="Dismiss error"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -584,7 +586,10 @@ export function WorkspaceManager({
                           </div>
                         </td>
                         <td>
-                          <span className="badge badge-success">● Active</span>
+                          <span className="badge badge-success inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <span>Active</span>
+                          </span>
                         </td>
                         <td>
                           <div
@@ -648,6 +653,7 @@ export function WorkspaceManager({
                                       }
                                       className="btn btn-ghost btn-sm"
                                       title="Revoke role"
+                                      aria-label="Revoke role"
                                       style={{
                                         padding: "0 2px",
                                         height: 18,
@@ -655,7 +661,7 @@ export function WorkspaceManager({
                                         color: "var(--danger)",
                                       }}
                                     >
-                                      ✕
+                                      <X className="w-3 h-3" />
                                     </button>
                                   </div>
                                 );

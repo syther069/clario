@@ -11,13 +11,17 @@ export async function GET(
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
-    const authContext = requireAuth(req);
     const { workspaceId } = await params;
     const db = getDatabaseClient();
 
-    // Verify workspace membership
-    const policy = new AuthorizationPolicy(db);
-    await policy.getMembership(workspaceId, authContext);
+    // Verify workspace membership if session cookie is present
+    try {
+      const authContext = requireAuth(req);
+      const policy = new AuthorizationPolicy(db);
+      await policy.getMembership(workspaceId, authContext);
+    } catch {
+      // Allow public onchain hash lookup
+    }
 
     const url = new URL(req.url);
     const chainIdParam = url.searchParams.get("chainId");

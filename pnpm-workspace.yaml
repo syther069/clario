@@ -3,7 +3,11 @@ packages:
   - "packages/*"
 
 allowBuilds:
+  "@reown/appkit": true
+  bufferutil: true
+  keccak: true
   unrs-resolver: true
+  utf-8-validate: true
 
 catalog:
   "@eslint/js": 9.39.5
@@ -24,3 +28,6 @@ minimumReleaseAgeExclude:
   - "@vitest/mocker@5.0.1"
   - "@vitest/spy@5.0.1"
   - vitest@5.0.1
+
+patchedDependencies:
+  "@privy-io/react-auth": patches/@privy-io__react-auth.patch

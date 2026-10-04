@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { PreparedDecision } from "@/lib/review/decision-service";
 import type { DecisionType } from "@/lib/review/decision";
 import { getExplorerTxUrl, getSupportedChain } from "@/lib/import/chains";
+import { X, Copy, Check, CheckCircle2 } from "lucide-react";
 
 export type DecisionLifecycleStatus =
   | "idle"
@@ -381,9 +382,12 @@ export function DecisionDialog({
               padding: "0 8px",
               fontSize: "0.8125rem",
               opacity: isPending ? 0.5 : 1,
+              display: "inline-flex",
+              alignItems: "center",
             }}
+            aria-label="Close dialog"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -564,12 +568,24 @@ export function DecisionDialog({
                         }
                         className="btn btn-secondary"
                         style={{
-                          height: "20px",
-                          padding: "0 4px",
+                          height: "22px",
+                          padding: "0 6px",
                           fontSize: "0.6875rem",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
                         }}
                       >
-                        {copiedField === "commitment" ? "✓ Copied" : "Copy"}
+                        {copiedField === "commitment" ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-600" />{" "}
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3 text-gray-500" /> Copy
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -610,14 +626,24 @@ export function DecisionDialog({
                           }
                           className="btn btn-secondary"
                           style={{
-                            height: "20px",
-                            padding: "0 4px",
+                            height: "22px",
+                            padding: "0 6px",
                             fontSize: "0.6875rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
                           }}
                         >
-                          {copiedField === "reasonCommitment"
-                            ? "✓ Copied"
-                            : "Copy"}
+                          {copiedField === "reasonCommitment" ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-600" />{" "}
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-gray-500" /> Copy
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -775,8 +801,16 @@ export function DecisionDialog({
                       gap: "var(--space-2)",
                     }}
                   >
-                    <div style={{ fontWeight: 600 }}>
-                      ✓ Decision recorded successfully onchain and verified!
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Decision
+                      recorded successfully onchain and verified!
                     </div>
                     {txHash && (
                       <div

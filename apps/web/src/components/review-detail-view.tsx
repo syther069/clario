@@ -8,6 +8,7 @@ import { DecisionDialog } from "./decision-dialog";
 import { ProofSpineTimeline } from "./proof-spine-timeline";
 import { ReimbursementDialog } from "./reimbursement-dialog";
 import { ExpenseWarningPanel } from "./expense-warning-panel";
+import { AlertTriangle, Eye, X } from "lucide-react";
 
 export interface ReviewDetailViewProps {
   workspaceId: string;
@@ -323,7 +324,7 @@ export function ReviewDetailView({
             gap: "var(--space-3)",
           }}
         >
-          <span style={{ fontSize: "1.25rem" }}>⚠️</span>
+          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
           <div>
             <div
               style={{
@@ -357,7 +358,7 @@ export function ReviewDetailView({
             gap: "var(--space-3)",
           }}
         >
-          <span style={{ fontSize: "1.25rem" }}>⚠️</span>
+          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
           <div>
             <div
               style={{
@@ -817,9 +818,15 @@ export function ReviewDetailView({
                         <button
                           onClick={() => setActivePreviewEvidence(ev)}
                           className="btn btn-secondary"
-                          style={{ height: "30px", fontSize: "0.75rem" }}
+                          style={{
+                            height: "30px",
+                            fontSize: "0.75rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
                         >
-                          👁️ Preview
+                          <Eye className="w-3.5 h-3.5" /> Preview
                         </button>
                       )}
                       <a
@@ -1395,9 +1402,12 @@ export function ReviewDetailView({
                   height: "30px",
                   padding: "0 10px",
                   fontSize: "0.8125rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
                 }}
               >
-                ✕ Close
+                <X className="w-3.5 h-3.5" /> Close
               </button>
             </div>
 

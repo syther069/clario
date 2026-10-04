@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { X, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import type { PreparedTransactionIntent } from "@/lib/workspace/types";
 
 export type TransactionLifecycleStatus =
@@ -99,9 +100,9 @@ export function IntentDialog({
             disabled={isPending}
             className="btn btn-ghost btn-sm"
             aria-label="Close dialog"
-            style={{ fontSize: "1.25rem", padding: "0 var(--space-2)" }}
+            style={{ padding: "var(--space-1)" }}
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -116,12 +117,18 @@ export function IntentDialog({
               color: "var(--danger-strong)",
               fontSize: "0.8125rem",
               marginBottom: "var(--space-4)",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "var(--space-2)",
             }}
           >
-            <strong>⚠️ Unsupported Network:</strong> Your wallet is connected to
-            Chain ID {connectedChainId}, but this transaction targets Monad
-            Chain ID {intent.chainId}. Please switch networks in your wallet
-            before signing.
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <strong>Unsupported Network:</strong> Your wallet is connected to
+              Chain ID {connectedChainId}, but this transaction targets Monad
+              Chain ID {intent.chainId}. Please switch networks in your wallet
+              before signing.
+            </div>
           </div>
         )}
 
@@ -136,10 +143,16 @@ export function IntentDialog({
               color: "var(--warning-strong)",
               fontSize: "0.8125rem",
               marginBottom: "var(--space-4)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-1)",
             }}
           >
             {intent.warnings.map((w, i) => (
-              <div key={i}>⚠️ {w}</div>
+              <div key={i} className="flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>{w}</span>
+              </div>
             ))}
           </div>
         )}
@@ -261,9 +274,15 @@ export function IntentDialog({
               style={{
                 margin: "var(--space-1) 0 0",
                 color: "var(--success-strong)",
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--space-2)",
               }}
             >
-              ✓ Confirmed on Monad. Role state is authoritatively active.
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>
+                Confirmed on Monad. Role state is authoritatively active.
+              </span>
             </p>
           )}
 
@@ -278,10 +297,16 @@ export function IntentDialog({
               margin: "var(--space-2) 0 0",
               fontSize: "0.75rem",
               color: "var(--text-muted)",
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-1)",
             }}
           >
-            ℹ️ Roles are never displayed as active before authoritative
-            confirmation on Monad.
+            <Info className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+            <span>
+              Roles are never displayed as active before authoritative
+              confirmation on Monad.
+            </span>
           </p>
         </div>
 

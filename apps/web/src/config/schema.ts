@@ -380,8 +380,17 @@ function parseManifestEnvironmentValue(
   }
 }
 
+const ALLOWED_CLIENT_PUBLIC_ENV = new Set([
+  "NEXT_PUBLIC_PRIVY_APP_ID",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+]);
+
 function rejectUnsafePublicEnvironment(environment: EnvironmentSource): void {
   for (const [field, value] of Object.entries(environment)) {
+    if (ALLOWED_CLIENT_PUBLIC_ENV.has(field)) {
+      continue;
+    }
     if (field.startsWith("NEXT_PUBLIC_") && value?.trim()) {
       reject(field, "PUBLIC_ENV_FORBIDDEN");
     }

@@ -3,6 +3,12 @@
 import React, { useEffect, useState } from "react";
 import type { ExpenseSummary } from "@/lib/expense/types";
 import { findTokenAsset, SUPPORTED_TOKENS } from "@/lib/expense/amount";
+import {
+  Badge,
+  Button,
+  EmptyState,
+  StatusSentence,
+} from "@/components/ui/primitives";
 
 interface ExpenseListProps {
   workspaceId: string;
@@ -26,6 +32,7 @@ export function ExpenseList({
   useEffect(() => {
     let ignore = false;
     async function load() {
+      setLoading(true);
       try {
         const url =
           filter === "all"
@@ -94,297 +101,174 @@ export function ExpenseList({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Header bar */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
+    <section className="expense-list" aria-labelledby="expense-list-title">
+      <header className="expense-list-header">
         <div>
-          <h2
-            style={{
-              fontSize: "1.25rem",
-              fontWeight: 600,
-              color: "var(--foreground)",
-              margin: 0,
-            }}
-          >
+          <h2 id="expense-list-title" className="expense-list-title">
             Verifiable Expense Ledger
           </h2>
-          <p
-            style={{
-              fontSize: "0.85rem",
-              color: "var(--muted)",
-              margin: "4px 0 0 0",
-            }}
-          >
-            Offchain private drafts, immutable commitments, and Monad settlement
-            tracking.
+          <p className="expense-list-description">
+            Private drafts, immutable commitments, and reimbursement status.
           </p>
         </div>
+        <Button
+          className="expense-create-button"
+          variant="primary"
+          disabled={creating}
+          isLoading={creating}
+          loadingLabel="Creating draft"
+          onClick={() => void handleCreateDraft()}
+        >
+          New expense draft
+        </Button>
+      </header>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={creating}
-            onClick={() => void handleCreateDraft()}
-            style={{ fontSize: "0.85rem", padding: "8px 16px" }}
-          >
-            {creating ? "Creating Draft..." : "+ New Expense Draft"}
-          </button>
-        </div>
-      </div>
+      {error ? (
+        <StatusSentence
+          className="expense-list-error"
+          role="alert"
+          tone="danger"
+        >
+          {error}
+        </StatusSentence>
+      ) : null}
 
-      {error && (
-        <div className="callout-box warning" style={{ margin: 0 }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {/* Filter Tabs */}
       <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          borderBottom: "1px solid var(--border)",
-          paddingBottom: "10px",
-        }}
+        className="expense-filter-list"
+        role="group"
+        aria-label="Filter expenses by status"
       >
         {["all", "draft", "submitted", "current", "superseded"].map(
           (status) => (
-            <button
+            <Button
               key={status}
-              type="button"
+              className={
+                filter === status
+                  ? "filter-button is-selected"
+                  : "filter-button"
+              }
+              variant="ghost"
+              aria-pressed={filter === status}
               onClick={() => setFilter(status)}
-              style={{
-                padding: "4px 12px",
-                borderRadius: "4px",
-                border: "none",
-                fontSize: "0.8rem",
-                cursor: "pointer",
-                background:
-                  filter === status ? "var(--monad-purple)" : "transparent",
-                color: filter === status ? "#fff" : "var(--muted)",
-                fontWeight: filter === status ? 600 : 400,
-              }}
             >
-              {status.toUpperCase()}
-            </button>
+              {status === "all" ? "All expenses" : status}
+            </Button>
           ),
         )}
       </div>
 
-      {/* Expenses Table */}
       {loading ? (
         <div
-          style={{
-            padding: "40px",
-            color: "var(--muted)",
-            textAlign: "center",
-          }}
+          className="expense-list-loading"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading workspace expenses"
+          aria-busy="true"
         >
-          Loading workspace expenses...
+          <span
+            className="skeleton expense-skeleton-title"
+            aria-hidden="true"
+          />
+          <span className="skeleton expense-skeleton-row" aria-hidden="true" />
+          <span className="skeleton expense-skeleton-row" aria-hidden="true" />
+          <span className="skeleton expense-skeleton-row" aria-hidden="true" />
         </div>
       ) : expenses.length === 0 ? (
-        <div
-          className="card"
-          style={{
-            padding: "48px 24px",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "12px",
-          }}
+        <EmptyState
+          className="expense-empty-state"
+          title="No expenses found"
+          action={
+            <Button
+              className="expense-empty-action"
+              variant="primary"
+              disabled={creating}
+              isLoading={creating}
+              loadingLabel="Creating draft"
+              onClick={() => void handleCreateDraft()}
+            >
+              Create an expense draft
+            </Button>
+          }
         >
-          <div style={{ fontSize: "2rem" }}>📄</div>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: "1.05rem",
-              fontWeight: 600,
-              color: "var(--foreground)",
-            }}
-          >
-            No expenses found
-          </h3>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.85rem",
-              color: "var(--muted)",
-              maxWidth: "420px",
-            }}
-          >
-            Start by creating a private offchain expense draft with receipt or
-            invoice evidence.
-          </p>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={creating}
-            onClick={() => void handleCreateDraft()}
-            style={{
-              marginTop: "8px",
-              fontSize: "0.85rem",
-              padding: "8px 16px",
-            }}
-          >
-            + Create First Expense Draft
-          </button>
-        </div>
+          Create a private offchain draft to start tracking an expense and its
+          supporting evidence.
+        </EmptyState>
       ) : (
-        <div
-          className="card"
-          style={{
-            overflowX: "auto",
-            padding: 0,
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "0.85rem",
-            }}
-          >
+        <div className="table-container expense-table-container">
+          <table className="ledger-table expense-table">
+            <caption className="sr-only">Expenses in this workspace</caption>
             <thead>
-              <tr
-                style={{
-                  borderBottom: "1px solid var(--border)",
-                  color: "var(--muted)",
-                  textAlign: "left",
-                }}
-              >
-                <th style={{ padding: "12px 16px" }}>Title & Merchant</th>
-                <th style={{ padding: "12px 16px" }}>Category</th>
-                <th style={{ padding: "12px 16px" }}>Date</th>
-                <th style={{ padding: "12px 16px" }}>Evidence</th>
-                <th style={{ padding: "12px 16px" }}>Amount</th>
-                <th style={{ padding: "12px 16px" }}>Status</th>
-                <th style={{ padding: "12px 16px", textAlign: "right" }}>
+              <tr>
+                <th scope="col">Expense</th>
+                <th scope="col">Category</th>
+                <th scope="col">Date</th>
+                <th scope="col">Evidence</th>
+                <th scope="col" className="expense-amount-heading">
+                  Amount
+                </th>
+                <th scope="col">Status</th>
+                <th scope="col" className="expense-action-heading">
                   Action
                 </th>
               </tr>
             </thead>
             <tbody>
-              {expenses.map((exp) => {
+              {expenses.map((expense) => {
                 const token =
-                  findTokenAsset(exp.currency) || SUPPORTED_TOKENS[0]!;
-                const formattedAmount = exp.claimAmount ? exp.claimAmount : "0";
+                  findTokenAsset(expense.currency) || SUPPORTED_TOKENS[0]!;
+                const amount = expense.claimAmount || "0";
+                const statusTone =
+                  expense.status === "current"
+                    ? "success"
+                    : expense.status === "submitted"
+                      ? "info"
+                      : expense.status === "draft"
+                        ? "neutral"
+                        : "warning";
 
                 return (
-                  <tr
-                    key={exp.expenseId}
-                    style={{
-                      borderBottom: "1px solid var(--border)",
-                      cursor: "pointer",
-                      transition: "background 0.15s ease",
-                    }}
-                    onClick={() => onSelectExpense(exp.expenseId)}
-                  >
-                    <td style={{ padding: "12px 16px" }}>
-                      <div
-                        style={{ fontWeight: 600, color: "var(--foreground)" }}
-                      >
-                        {exp.title}
-                      </div>
-                      <div
-                        style={{ fontSize: "0.75rem", color: "var(--muted)" }}
-                      >
-                        {exp.merchant}
+                  <tr key={expense.expenseId}>
+                    <td data-label="Expense">
+                      <div className="expense-row-copy">
+                        <div className="expense-row-title">{expense.title}</div>
+                        <div className="expense-row-merchant">
+                          {expense.merchant}
+                        </div>
                       </div>
                     </td>
-
-                    <td style={{ padding: "12px 16px" }}>
-                      <span
-                        className="mono-badge"
-                        style={{ fontSize: "0.75rem" }}
-                      >
-                        {exp.category}
+                    <td data-label="Category">
+                      <span className="mono-badge expense-category">
+                        {expense.category || "Uncategorized"}
                       </span>
                     </td>
-
-                    <td style={{ padding: "12px 16px", color: "var(--muted)" }}>
-                      {exp.expenseDate}
+                    <td data-label="Date" className="expense-date">
+                      <time dateTime={expense.expenseDate}>
+                        {expense.expenseDate}
+                      </time>
                     </td>
-
-                    <td style={{ padding: "12px 16px" }}>
-                      {exp.evidenceCount > 0 ? (
-                        <span
-                          style={{
-                            color: "var(--foreground)",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          📎 {exp.evidenceCount} file
-                          {exp.evidenceCount > 1 ? "s" : ""}
-                        </span>
-                      ) : (
-                        <span
-                          style={{ color: "var(--muted)", fontSize: "0.8rem" }}
-                        >
-                          None
-                        </span>
-                      )}
+                    <td data-label="Evidence">
+                      {expense.evidenceCount > 0
+                        ? `${expense.evidenceCount} ${expense.evidenceCount === 1 ? "file" : "files"}`
+                        : "No evidence"}
                     </td>
-
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        fontWeight: 600,
-                        color: "var(--foreground)",
-                      }}
-                    >
-                      <span className="font-mono">
-                        {formattedAmount} {token.symbol}
+                    <td data-label="Amount" className="expense-amount">
+                      <span className="font-mono tabular-nums">
+                        {amount} {token.symbol}
                       </span>
                     </td>
-
-                    <td style={{ padding: "12px 16px" }}>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                          fontSize: "0.75rem",
-                          fontWeight: 500,
-                          background:
-                            exp.status === "draft"
-                              ? "rgba(131, 110, 249, 0.15)"
-                              : exp.status === "current"
-                                ? "rgba(0, 229, 153, 0.15)"
-                                : "rgba(255, 255, 255, 0.05)",
-                          color:
-                            exp.status === "draft"
-                              ? "var(--monad-purple)"
-                              : exp.status === "current"
-                                ? "var(--success)"
-                                : "var(--muted)",
-                        }}
-                      >
-                        {exp.status.toUpperCase()}
-                      </span>
+                    <td data-label="Status">
+                      <Badge tone={statusTone}>{expense.status}</Badge>
                     </td>
-
-                    <td style={{ padding: "12px 16px", textAlign: "right" }}>
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        style={{ fontSize: "0.75rem", padding: "4px 8px" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectExpense(exp.expenseId);
-                        }}
+                    <td data-label="Action" className="expense-action">
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={() => onSelectExpense(expense.expenseId)}
                       >
-                        {exp.status === "draft" ? "Edit Draft" : "View"}
-                      </button>
+                        {expense.status === "draft"
+                          ? "Edit draft"
+                          : "View expense"}
+                      </Button>
                     </td>
                   </tr>
                 );
@@ -393,6 +277,6 @@ export function ExpenseList({
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -22,6 +22,18 @@ import type {
   SettlementProof,
 } from "@/lib/settlement/service";
 import { getExplorerTxUrl, getSupportedChain } from "@/lib/import/chains";
+import { MonadLogo, UsdcLogo } from "@/components/ui/crypto-icon";
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Banknote,
+  AlertTriangle,
+  Copy,
+  Check,
+  X,
+  Info,
+} from "lucide-react";
 
 export type SettlementLifecycleStatus =
   | "idle"
@@ -445,13 +457,15 @@ export function ReimbursementDialog({
         <div className="settlement-header">
           <div className="settlement-header-left">
             <span className="settlement-icon" aria-hidden="true">
-              {status === "confirmed"
-                ? "✅"
-                : status === "submitted"
-                  ? "⏳"
-                  : status === "failed"
-                    ? "❌"
-                    : "💸"}
+              {status === "confirmed" ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              ) : status === "submitted" ? (
+                <Clock className="w-5 h-5 text-amber-500 animate-pulse" />
+              ) : status === "failed" ? (
+                <XCircle className="w-5 h-5 text-rose-600" />
+              ) : (
+                <Banknote className="w-5 h-5 text-[#836EF9]" />
+              )}
             </span>
             <div>
               <h2 id="settlement-dialog-title" className="settlement-title">
@@ -474,7 +488,7 @@ export function ReimbursementDialog({
             aria-label="Close reimbursement dialog"
             id="settlement-close-button"
           >
-            ×
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -503,7 +517,7 @@ export function ReimbursementDialog({
                     role="alert"
                   >
                     <span className="settlement-alert-icon" aria-hidden="true">
-                      ⚠️
+                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                     </span>
                     <div>
                       <strong>Wrong Network</strong>
@@ -588,7 +602,16 @@ export function ReimbursementDialog({
                       1
                     </div>
                     <div className="settlement-step-body">
-                      <strong>Approve USDC Spend</strong>
+                      <strong
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <UsdcLogo className="h-4 w-4 inline" />
+                        Approve USDC Spend
+                      </strong>
                       <p>
                         The registry contract needs approval to transfer{" "}
                         {prepared.amountDisplay} {prepared.token.symbol} from
@@ -596,7 +619,8 @@ export function ReimbursementDialog({
                       </p>
                       {approveTxHash ? (
                         <div className="settlement-step-done">
-                          ✅ Approval submitted:{" "}
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 inline mr-1" />{" "}
+                          Approval submitted:{" "}
                           <span className="settlement-mono">
                             {approveTxHash.slice(0, 10)}…
                           </span>
@@ -631,7 +655,14 @@ export function ReimbursementDialog({
                     {prepared.needsApproval ? "2" : "1"}
                   </div>
                   <div className="settlement-step-body">
-                    <strong>
+                    <strong
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <UsdcLogo className="h-4 w-4 inline" />
                       Sign Reimbursement ({prepared.amountDisplay}{" "}
                       {prepared.token.symbol})
                     </strong>
@@ -640,7 +671,19 @@ export function ReimbursementDialog({
                       <code className="settlement-mono">
                         ClarioSettlementRegistry.reimburse()
                       </code>
-                      , binding the approved commitment to the payment on Monad.
+                      , binding the approved commitment to the payment on{" "}
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        <MonadLogo className="h-3.5 w-3.5 inline" />
+                        Monad
+                      </span>
+                      .
                     </p>
                     <button
                       id="settlement-reimburse-btn"
@@ -758,11 +801,19 @@ export function ReimbursementDialog({
                 )}
               </div>
 
-              <div className="settlement-status-note" role="note">
-                <span aria-hidden="true">ℹ️</span>
-                Status shows <strong>submitted</strong>, not confirmed.
-                Confirmation requires transaction receipt verification against
-                Monad settlement registry rules.
+              <div
+                className="settlement-status-note flex items-start gap-2"
+                role="note"
+              >
+                <Info
+                  className="w-4 h-4 shrink-0 text-slate-500 mt-0.5"
+                  aria-hidden="true"
+                />
+                <div>
+                  Status shows <strong>submitted</strong>, not confirmed.
+                  Confirmation requires transaction receipt verification against
+                  Monad settlement registry rules.
+                </div>
               </div>
 
               <div
@@ -818,7 +869,7 @@ export function ReimbursementDialog({
                 }}
               >
                 <span className="settlement-result-icon" aria-hidden="true">
-                  ✅
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 </span>
                 <div>
                   <h3
@@ -929,7 +980,7 @@ export function ReimbursementDialog({
               role="alert"
             >
               <span className="settlement-alert-icon" aria-hidden="true">
-                ❌
+                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
               </span>
               <div>
                 <strong>Error</strong>
@@ -1011,7 +1062,11 @@ function IntentRow({
             onClick={onCopy}
             aria-label={`Copy ${label}`}
           >
-            {copied ? "✓" : "⧉"}
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-emerald-600 inline" />
+            ) : (
+              <Copy className="w-3.5 h-3.5 text-gray-500 inline" />
+            )}
           </button>
         )}
       </span>

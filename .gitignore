@@ -29,6 +29,7 @@ cache/
 *.db-journal
 /uploads/
 /exports/
+.data/
 
 # Editors and operating systems
 .idea/
@@ -39,3 +40,8 @@ Thumbs.db
 # Logs
 *.log
 pnpm-debug.log*
+
+# Scratch
+scratch/
+scratch_prompt.txt
+

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import type { ExpenseTimelineResponse } from "@/lib/timeline/types";
 
 interface ProofSpineTimelineProps {
@@ -166,19 +167,7 @@ export function ProofSpineTimeline({
             color: "var(--status-warning)",
           }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+          <Clock className="w-4 h-4 shrink-0" aria-hidden="true" />
           <div style={{ flex: 1 }}>
             <span style={{ fontWeight: 600 }}>Indexer Lagging:</span>{" "}
             {timeline.indexerLag.message} (Latest block:{" "}
@@ -205,20 +194,7 @@ export function ProofSpineTimeline({
             color: "var(--status-danger)",
           }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-            <line x1="12" y1="9" x2="12" y2="13" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
+          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
           <div style={{ flex: 1 }}>
             <span style={{ fontWeight: 600 }}>Chain Conflict / Reorg:</span>{" "}
             {timeline.rpcConflict.message}
@@ -644,10 +620,23 @@ export function ProofSpineTimeline({
                                 background: "none",
                                 cursor: "pointer",
                                 padding: "2px",
+                                display: "inline-flex",
+                                alignItems: "center",
                                 color: "var(--text-tertiary)",
                               }}
+                              title="Copy commitment hash"
                             >
-                              {copiedText === `comm-${event.id}` ? "✓" : "📋"}
+                              {copiedText === `comm-${event.id}` ? (
+                                <Check
+                                  className="w-3.5 h-3.5 text-emerald-600"
+                                  aria-label="Copied"
+                                />
+                              ) : (
+                                <Copy
+                                  className="w-3.5 h-3.5 text-gray-500 hover:text-black"
+                                  aria-label="Copy"
+                                />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -689,10 +678,23 @@ export function ProofSpineTimeline({
                                 background: "none",
                                 cursor: "pointer",
                                 padding: "2px",
+                                display: "inline-flex",
+                                alignItems: "center",
                                 color: "var(--text-tertiary)",
                               }}
+                              title="Copy transaction hash"
                             >
-                              {copiedText === `tx-${event.id}` ? "✓" : "📋"}
+                              {copiedText === `tx-${event.id}` ? (
+                                <Check
+                                  className="w-3.5 h-3.5 text-emerald-600"
+                                  aria-label="Copied"
+                                />
+                              ) : (
+                                <Copy
+                                  className="w-3.5 h-3.5 text-gray-500 hover:text-black"
+                                  aria-label="Copy"
+                                />
+                              )}
                             </button>
                           </div>
                         </div>

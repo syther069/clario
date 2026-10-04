@@ -28,11 +28,12 @@ export function canonicalizeJson(value: unknown): string {
 
   const obj = value as Record<string, unknown>;
   const sortedKeys = Object.keys(obj).sort();
-  const pairs = sortedKeys.map((key) => {
-    const encodedKey = JSON.stringify(key);
-    const encodedVal = canonicalizeJson(obj[key]);
-    return `${encodedKey}:${encodedVal}`;
-  });
+  const pairs: string[] = [];
+  for (const key of sortedKeys) {
+    if (obj[key] !== undefined) {
+      pairs.push(`${JSON.stringify(key)}:${canonicalizeJson(obj[key])}`);
+    }
+  }
 
   return `{${pairs.join(",")}}`;
 }

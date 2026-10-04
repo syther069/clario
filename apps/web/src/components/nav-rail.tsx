@@ -1,6 +1,18 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  LayoutDashboard,
+  Receipt,
+  ClipboardCheck,
+  Landmark,
+  ShieldCheck,
+  Building2,
+  Menu,
+  X,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 export interface NavRailProps {
   currentRoute: string;
@@ -14,28 +26,32 @@ const navItems = [
   {
     id: "overview",
     label: "Overview",
-    icon: "M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9 20v-6h6v6",
+    Icon: LayoutDashboard,
   },
   {
     id: "expenses",
     label: "Expenses",
-    icon: "M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5M8 13h8M8 17h8",
+    Icon: Receipt,
   },
-  { id: "review", label: "Review", icon: "m5 12 4 4L19 6M4 3h16v18H4z" },
+  {
+    id: "review",
+    label: "Review",
+    Icon: ClipboardCheck,
+  },
   {
     id: "treasury",
     label: "Treasury",
-    icon: "M3 9h18L12 3 3 9Zm2 2v8m5-8v8m4-8v8m5-8v8M3 21h18",
+    Icon: Landmark,
   },
   {
     id: "verification",
     label: "Verification",
-    icon: "M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Zm-3-11 2 2 4-4",
+    Icon: ShieldCheck,
   },
   {
     id: "workspace",
     label: "Workspace",
-    icon: "M4 5h16v14H4zM8 9h8M8 13h5M8 17h3",
+    Icon: Building2,
   },
 ];
 
@@ -113,13 +129,11 @@ export function NavRail({
           onClick={() => setMenuOpen((open) => !open)}
         >
           <span>{menuOpen ? "Close menu" : "Menu"}</span>
-          <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
-            {menuOpen ? (
-              <path d="m5 5 10 10M15 5 5 15" />
-            ) : (
-              <path d="M3 5h14M3 10h14M3 15h14" />
-            )}
-          </svg>
+          {menuOpen ? (
+            <X className="w-5 h-5 shrink-0" aria-hidden="true" />
+          ) : (
+            <Menu className="w-5 h-5 shrink-0" aria-hidden="true" />
+          )}
         </button>
 
         <nav
@@ -129,6 +143,7 @@ export function NavRail({
         >
           {navItems.map((item) => {
             const isActive = currentRoute === item.id;
+            const ItemIcon = item.Icon;
             return (
               <button
                 key={item.id}
@@ -140,9 +155,7 @@ export function NavRail({
                 aria-current={isActive ? "page" : undefined}
                 className={`nav-link${isActive ? " is-active" : ""}`}
               >
-                <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-                  <path d={item.icon} />
-                </svg>
+                <ItemIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
                 <span>{item.label}</span>
               </button>
             );
@@ -170,13 +183,11 @@ export function NavRail({
           </div>
         ) : null}
         <button type="button" className="theme-toggle" onClick={toggleTheme}>
-          <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-            {theme === "light" ? (
-              <path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z" />
-            ) : (
-              <path d="M12 3v2m0 14v2M3 12h2m14 0h2m-2.6-6.4-1.4 1.4M7 17l-1.4 1.4m12.8 0L17 17M7 7 5.6 5.6M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />
-            )}
-          </svg>
+          {theme === "light" ? (
+            <Moon className="w-4 h-4 shrink-0" aria-hidden="true" />
+          ) : (
+            <Sun className="w-4 h-4 shrink-0" aria-hidden="true" />
+          )}
           <span>Use {theme === "light" ? "dark" : "light"} theme</span>
         </button>
       </footer>

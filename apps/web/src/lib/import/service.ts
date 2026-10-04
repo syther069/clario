@@ -65,21 +65,24 @@ export class TransactionImportService {
     const { items, nextCursor } = await this.adapter.fetchTransactions(filter);
 
     // 2. Query workspace claimed source transactions for duplicate detection
-    const existingClaimsRes = await this.db.query<SourceTransactionRow>(
-      `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
-       FROM source_transactions
-       WHERE workspace_id = $1`,
-      [workspaceId],
-    );
-
     const claimMap = new Map<string, SourceTransactionRow>();
-    for (const claim of existingClaimsRes.rows) {
-      const key = makeClaimKey(
-        claim.source_chain_id,
-        claim.source_transaction_hash,
-        claim.claim_slot,
+    try {
+      const existingClaimsRes = await this.db.query<SourceTransactionRow>(
+        `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
+         FROM source_transactions
+         WHERE workspace_id = $1`,
+        [workspaceId],
       );
-      claimMap.set(key, claim);
+      for (const claim of existingClaimsRes.rows) {
+        const key = makeClaimKey(
+          claim.source_chain_id,
+          claim.source_transaction_hash,
+          claim.claim_slot,
+        );
+        claimMap.set(key, claim);
+      }
+    } catch {
+      // In dev or before migrations run, allow transaction listing to proceed without claims
     }
 
     // 3. Annotate candidates with claim and status warnings
@@ -165,14 +168,18 @@ export class TransactionImportService {
     }
 
     // 2. Check if already claimed in this workspace
-    const claimRes = await this.db.query<SourceTransactionRow>(
-      `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
-       FROM source_transactions
-       WHERE workspace_id = $1 AND source_chain_id = $2 AND source_transaction_hash = $3 AND claim_slot = $4`,
-      [workspaceId, chainId, normalizedHash, tx.claimSlot],
-    );
-
-    const existing = claimRes.rows[0];
+    let existing: SourceTransactionRow | undefined;
+    try {
+      const claimRes = await this.db.query<SourceTransactionRow>(
+        `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
+         FROM source_transactions
+         WHERE workspace_id = $1 AND source_chain_id = $2 AND source_transaction_hash = $3 AND claim_slot = $4`,
+        [workspaceId, chainId, normalizedHash, tx.claimSlot],
+      );
+      existing = claimRes.rows[0];
+    } catch {
+      existing = undefined;
+    }
     if (existing) {
       return {
         ...tx,

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   SUPPORTED_SOURCE_CHAINS,
+  SUPPORTED_IMPORT_CHAINS,
   getSupportedChain,
   isChainSupported,
   getExplorerTxUrl,
@@ -61,5 +62,14 @@ describe("Supported Source Chains Registry", () => {
 
     const ethAddrUrl = getExplorerAddressUrl(1, address);
     expect(ethAddrUrl).toBe(`https://etherscan.io/address/${address}`);
+  });
+
+  it("prioritizes Monad Testnet first in SUPPORTED_IMPORT_CHAINS for user import", () => {
+    const importChainIds = SUPPORTED_IMPORT_CHAINS.map((c) => c.chainId);
+    expect(importChainIds[0]).toBe(10143); // Monad Testnet first (Rule 3)
+    expect(importChainIds).toContain(143); // Monad Mainnet
+    expect(importChainIds).toContain(1); // Ethereum
+    expect(importChainIds).toContain(8453); // Base
+    expect(importChainIds).toContain(999); // Hyperliquid
   });
 });

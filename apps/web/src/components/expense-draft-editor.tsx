@@ -14,11 +14,13 @@ import type {
   ExpenseDraftRecord,
 } from "@/lib/expense/types";
 import { TransactionImportDialog } from "./transaction-import-dialog";
+import { useClarioAuth } from "@/lib/auth/use-clario-auth";
 import { getSupportedChain, getExplorerTxUrl } from "@/lib/import/chains";
 import {
   type NormalizedTransaction,
   IMPORTED_FACTS_DISCLAIMER,
 } from "@/lib/import/types";
+import { CryptoChainIcon, CryptoCoinIcon } from "@/components/ui/crypto-icon";
 import {
   EXPENSE_CATEGORIES,
   PAYMENT_SOURCES,
@@ -27,6 +29,15 @@ import {
 import { ExpenseSubmitDialog } from "./expense-submit-dialog";
 import { AiExtractionPanel, type AppliedAiFields } from "./ai-extraction-panel";
 import { ExpenseWarningPanel } from "./expense-warning-panel";
+import {
+  Check,
+  AlertTriangle,
+  Loader2,
+  Clock,
+  Info,
+  CircleDot,
+  Circle,
+} from "lucide-react";
 
 interface ExpenseDraftEditorProps {
   workspaceId: string;
@@ -48,6 +59,7 @@ export function ExpenseDraftEditor({
   onBack,
   onDeleted,
 }: ExpenseDraftEditorProps) {
+  const auth = useClarioAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
@@ -567,7 +579,8 @@ export function ExpenseDraftEditor({
                 gap: "6px",
               }}
             >
-              ● Saving changes...
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#836EF9]" />
+              <span>Saving changes...</span>
             </span>
           )}
           {saveStatus === "unsaved" && (
@@ -580,7 +593,8 @@ export function ExpenseDraftEditor({
                 gap: "6px",
               }}
             >
-              ● Unsaved changes
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span>Unsaved changes</span>
             </span>
           )}
           {saveStatus === "saved" && (
@@ -593,7 +607,8 @@ export function ExpenseDraftEditor({
                 gap: "6px",
               }}
             >
-              ✓ Saved to private ledger
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Saved to private ledger</span>
             </span>
           )}
           {saveStatus === "error" && (
@@ -607,9 +622,13 @@ export function ExpenseDraftEditor({
                 border: "none",
                 cursor: "pointer",
                 textDecoration: "underline",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
               }}
             >
-              ⚠ Save failed (click to retry)
+              <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+              <span>Save failed (click to retry)</span>
             </button>
           )}
 
@@ -983,20 +1002,46 @@ export function ExpenseDraftEditor({
                     Settlement Asset{" "}
                     <span style={{ color: "var(--error)" }}>*</span>
                   </label>
-                  <select
-                    className="input-field"
-                    value={claimAsset}
-                    onChange={(e) => {
-                      setClaimAsset(e.target.value as `0x${string}`);
-                      handleFieldChange();
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
                     }}
                   >
-                    {SUPPORTED_TOKENS.map((token) => (
-                      <option key={token.address} value={token.address}>
-                        {token.symbol} ({token.decimals} dec)
-                      </option>
-                    ))}
-                  </select>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "8px",
+                        border: "2px solid #121212",
+                        background: "#fbf9fe",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CryptoCoinIcon
+                        symbol={findTokenAsset(claimAsset)?.symbol || "USDC"}
+                        className="h-5 w-5"
+                      />
+                    </div>
+                    <select
+                      className="input-field"
+                      value={claimAsset}
+                      onChange={(e) => {
+                        setClaimAsset(e.target.value as `0x${string}`);
+                        handleFieldChange();
+                      }}
+                    >
+                      {SUPPORTED_TOKENS.map((token) => (
+                        <option key={token.address} value={token.address}>
+                          {token.symbol} ({token.decimals} dec)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -1134,15 +1179,27 @@ export function ExpenseDraftEditor({
                     }}
                   >
                     <span
-                      style={{ fontSize: "0.75rem", color: "var(--muted)" }}
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--muted)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
                     >
-                      Source Chain:{" "}
-                      <strong>
-                        {sourceChainId
-                          ? getSupportedChain(sourceChainId)?.name ||
-                            `Chain ${sourceChainId}`
-                          : "Monad Testnet (10143)"}
-                      </strong>
+                      <CryptoChainIcon
+                        chain={sourceChainId || 10143}
+                        className="h-4 w-4"
+                      />
+                      <span>
+                        Source Chain:{" "}
+                        <strong>
+                          {sourceChainId
+                            ? getSupportedChain(sourceChainId)?.name ||
+                              `Chain ${sourceChainId}`
+                            : "Monad Testnet (10143)"}
+                        </strong>
+                      </span>
                     </span>
                     <button
                       type="button"
@@ -1232,7 +1289,7 @@ export function ExpenseDraftEditor({
                       gap: "6px",
                     }}
                   >
-                    <span>ℹ️</span>
+                    <Info className="w-4 h-4 shrink-0 text-[#836EF9]" />
                     <span>{IMPORTED_FACTS_DISCLAIMER}</span>
                   </div>
                 </div>
@@ -1673,7 +1730,8 @@ export function ExpenseDraftEditor({
                   color: "var(--monad-purple)",
                 }}
               >
-                <span>●</span> <strong>Stage 1:</strong> Private Draft (Active)
+                <CircleDot className="w-3.5 h-3.5 shrink-0 text-[#836EF9]" />{" "}
+                <strong>Stage 1:</strong> Private Draft (Active)
               </div>
               <div
                 style={{
@@ -1683,7 +1741,8 @@ export function ExpenseDraftEditor({
                   color: "var(--muted)",
                 }}
               >
-                <span>○</span> Stage 2: Canonical Salted Commitment
+                <Circle className="w-3.5 h-3.5 shrink-0 text-slate-400" /> Stage
+                2: Canonical Salted Commitment
               </div>
               <div
                 style={{
@@ -1693,7 +1752,8 @@ export function ExpenseDraftEditor({
                   color: "var(--muted)",
                 }}
               >
-                <span>○</span> Stage 3: Monad Onchain Registration
+                <Circle className="w-3.5 h-3.5 shrink-0 text-slate-400" /> Stage
+                3: Monad Onchain Registration
               </div>
               <div
                 style={{
@@ -1703,7 +1763,8 @@ export function ExpenseDraftEditor({
                   color: "var(--muted)",
                 }}
               >
-                <span>○</span> Stage 4: Authorized Review
+                <Circle className="w-3.5 h-3.5 shrink-0 text-slate-400" /> Stage
+                4: Authorized Review
               </div>
             </div>
           </div>
@@ -1713,8 +1774,9 @@ export function ExpenseDraftEditor({
       <TransactionImportDialog
         isOpen={isImportDialogOpen}
         workspaceId={workspaceId}
-        userAddress={userAddress}
+        userAddress={userAddress || auth.connectedEvmAddress || undefined}
         onClose={() => setIsImportDialogOpen(false)}
+        onConnectWallet={auth.connectEvmWallet}
         onSelectTransaction={handleSelectTransaction}
       />
 

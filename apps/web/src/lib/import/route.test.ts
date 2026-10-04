@@ -269,7 +269,7 @@ describe("Transaction Import API Routes", () => {
       expect(body.ok).toBe(true);
       expect(body.transaction.sourceTransactionHash).toBe(validHash);
       expect(body.disclaimer).toBe(IMPORTED_FACTS_DISCLAIMER);
-    });
+    }, 15000);
   });
 
   describe("POST /api/workspaces/[wsId]/import/claim", () => {

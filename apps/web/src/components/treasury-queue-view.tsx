@@ -6,6 +6,7 @@ import type {
   TreasuryQueueResponse,
 } from "@/lib/settlement/service";
 import { ReimbursementDialog } from "./reimbursement-dialog";
+import { Landmark, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 
 export interface TreasuryQueueViewProps {
   workspaceId: string;
@@ -151,7 +152,7 @@ export function TreasuryQueueView({
               marginBottom: "var(--space-1)",
             }}
           >
-            <span style={{ fontSize: "1.5rem" }}>🏦</span>
+            <Landmark className="w-6 h-6 text-[#836EF9] shrink-0" />
             <h1
               style={{
                 margin: 0,
@@ -414,8 +415,14 @@ export function TreasuryQueueView({
           className="card"
           style={{ padding: "var(--space-12)", textAlign: "center" }}
         >
-          <div style={{ fontSize: "2rem", marginBottom: "var(--space-2)" }}>
-            ✓
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: "var(--space-3)",
+            }}
+          >
+            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
           </div>
           <h2
             style={{
@@ -603,7 +610,8 @@ export function TreasuryQueueView({
                             fontWeight: 600,
                           }}
                         >
-                          ✓ Settled
+                          <CheckCircle2 className="w-3 h-3 inline mr-1" />{" "}
+                          Settled
                         </span>
                       ) : item.isFailed ? (
                         <span
@@ -616,7 +624,8 @@ export function TreasuryQueueView({
                             fontWeight: 600,
                           }}
                         >
-                          ⚠️ Failed (Retryable)
+                          <AlertCircle className="w-3 h-3 inline mr-1" /> Failed
+                          (Retryable)
                         </span>
                       ) : item.hasPendingReimbursement || isSubmitting ? (
                         <span
@@ -640,9 +649,13 @@ export function TreasuryQueueView({
                             backgroundColor: "rgba(29, 78, 216, 0.1)",
                             color: "var(--accent-primary)",
                             fontWeight: 600,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
                           }}
                         >
-                          ● Ready for Payment
+                          <Clock className="w-3 h-3 text-[#836EF9] shrink-0" />
+                          <span>Ready for Payment</span>
                         </span>
                       )}
                     </td>

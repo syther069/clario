@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { ReviewQueueItem, ReviewQueueResponse } from "@/lib/review/types";
 import { ReviewDetailView } from "./review-detail-view";
+import { AlertTriangle, Scale, Link, ShieldCheck } from "lucide-react";
 
 export interface ReviewQueueViewProps {
   workspaceId: string;
@@ -219,7 +220,7 @@ export function ReviewQueueView({
               fontSize: "0.8125rem",
             }}
           >
-            <span style={{ color: "var(--status-success)" }}>●</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
             <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
               {reviewerRole.isOwner
                 ? "Workspace Owner"
@@ -311,7 +312,7 @@ export function ReviewQueueView({
               gap: "var(--space-3)",
             }}
           >
-            <span style={{ fontSize: "1.25rem" }}>⚠️</span>
+            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
             <div>
               <h3
                 style={{
@@ -416,10 +417,9 @@ export function ReviewQueueView({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.5rem",
             }}
           >
-            ⚖️
+            <Scale className="w-6 h-6 text-gray-500" />
           </div>
           <h2 style={{ fontSize: "1.125rem", fontWeight: 600, margin: 0 }}>
             {statusFilter === "pending"
@@ -583,8 +583,15 @@ export function ReviewQueueView({
                     {item.hasSourceTransaction && (
                       <>
                         <span>•</span>
-                        <span style={{ color: "var(--accent-primary)" }}>
-                          🔗 Imported Source Tx
+                        <span
+                          style={{
+                            color: "var(--accent-primary)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Link className="w-3 h-3" /> Imported Source Tx
                         </span>
                       </>
                     )}
