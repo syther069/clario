@@ -17,6 +17,9 @@ import {
   MONAD_TESTNET_CHAIN_ID,
 } from "@/lib/blockchain/registry";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import { ReceiptExportDropdown } from "@/components/dashboard/receipt-export-dropdown";
+import { extractTransactionReceiptData } from "@/lib/export/receipt-exporter";
+import { motion, AnimatePresence } from "motion/react";
 
 interface TransactionShareModalProps {
   isOpen: boolean;
@@ -31,7 +34,7 @@ export function TransactionShareModal({
 }: TransactionShareModalProps) {
   const [copied, setCopied] = useState(false);
 
-  if (!isOpen || !transaction) return null;
+  if (!transaction) return null;
 
   const isVerified =
     transaction.verification_state === "verified" ||
@@ -116,8 +119,24 @@ export function TransactionShareModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="neo-card bg-white w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="relative z-10 neo-card bg-white w-full max-w-lg overflow-hidden shadow-[6px_6px_0_0_#121212]"
+          >
         {/* Header */}
         <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -125,9 +144,6 @@ export function TransactionShareModal({
               <MonadLogo className="h-4 w-4" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-black tracking-wider uppercase text-slate-500">
-                [VERIFIABLE ONCHAIN PROOF]
-              </span>
               <h2 className="text-sm font-black uppercase tracking-wide text-[#121212]">
                 Monad Transaction Proof
               </h2>
@@ -278,13 +294,12 @@ export function TransactionShareModal({
               )}
             </button>
 
-            <button
-              onClick={handleDownloadReceipt}
-              className="neo-btn neo-btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Download JSON Receipt</span>
-            </button>
+            <ReceiptExportDropdown
+              receiptData={extractTransactionReceiptData(
+                transaction,
+                contractAddress,
+              )}
+            />
           </div>
 
           {explorerUrl && (
@@ -299,7 +314,9 @@ export function TransactionShareModal({
             </a>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
+  )}
+</AnimatePresence>
   );
 }

@@ -38,6 +38,8 @@ import {
   CircleDot,
   Circle,
 } from "lucide-react";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 
 interface ExpenseDraftEditorProps {
   workspaceId: string;
@@ -805,20 +807,17 @@ export function ExpenseDraftEditor({
                   >
                     Category <span style={{ color: "var(--error)" }}>*</span>
                   </label>
-                  <select
-                    className="input-field"
+                  <NeoSelect
                     value={category}
-                    onChange={(e) => {
-                      setCategory(e.target.value);
+                    onChange={(val) => {
+                      setCategory(val);
                       handleFieldChange();
                     }}
-                  >
-                    {EXPENSE_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
+                    options={EXPENSE_CATEGORIES.map((cat) => ({
+                      value: cat,
+                      label: cat.toUpperCase(),
+                    }))}
+                  />
                 </div>
 
                 <div>
@@ -906,12 +905,10 @@ export function ExpenseDraftEditor({
                   Expense Date (UTC){" "}
                   <span style={{ color: "var(--error)" }}>*</span>
                 </label>
-                <input
-                  type="date"
-                  className="input-field"
+                <NeoDatePicker
                   value={expenseDate}
-                  onChange={(e) => {
-                    setExpenseDate(e.target.value);
+                  onChange={(date) => {
+                    setExpenseDate(date);
                     handleFieldChange();
                   }}
                 />
@@ -1027,20 +1024,17 @@ export function ExpenseDraftEditor({
                         className="h-5 w-5"
                       />
                     </div>
-                    <select
-                      className="input-field"
+                    <NeoSelect
                       value={claimAsset}
-                      onChange={(e) => {
-                        setClaimAsset(e.target.value as `0x${string}`);
+                      onChange={(val) => {
+                        setClaimAsset(val as `0x${string}`);
                         handleFieldChange();
                       }}
-                    >
-                      {SUPPORTED_TOKENS.map((token) => (
-                        <option key={token.address} value={token.address}>
-                          {token.symbol} ({token.decimals} dec)
-                        </option>
-                      ))}
-                    </select>
+                      options={SUPPORTED_TOKENS.map((token) => ({
+                        value: token.address,
+                        label: `${token.symbol} (${token.decimals} dec)`,
+                      }))}
+                    />
                   </div>
                 </div>
               </div>
@@ -1136,27 +1130,24 @@ export function ExpenseDraftEditor({
                     Import from Wallet / Explorer ↗
                   </button>
                 </div>
-                <select
-                  className="input-field"
+                <NeoSelect
                   value={paymentSource}
-                  onChange={(e) => {
+                  onChange={(val) => {
                     setPaymentSource(
-                      e.target.value as
-                        "manual" | "transaction_hash" | "imported_transaction",
+                      val as "manual" | "transaction_hash" | "imported_transaction",
                     );
                     handleFieldChange();
                   }}
-                >
-                  {PAYMENT_SOURCES.map((src) => (
-                    <option key={src} value={src}>
-                      {src === "manual"
+                  options={PAYMENT_SOURCES.map((src) => ({
+                    value: src,
+                    label:
+                      src === "manual"
                         ? "Manual Entry (Invoice / Receipt Only)"
                         : src === "transaction_hash"
                           ? "Existing Transaction Hash"
-                          : "Imported Provider Transaction"}
-                    </option>
-                  ))}
-                </select>
+                          : "Imported Provider Transaction",
+                  }))}
+                />
               </div>
 
               {paymentSource !== "manual" && (

@@ -7,6 +7,7 @@ import { FreelancerDashboard } from "@/components/dashboard/freelancer-dashboard
 import { FamilyDashboard } from "@/components/dashboard/family-dashboard";
 import { BusinessDashboard } from "@/components/dashboard/business-dashboard";
 import { CopilotDrawer } from "@/components/ai/copilot-drawer";
+import { ClarioAssistantTrigger } from "@/components/ai/clario-assistant-trigger";
 import type { CopilotContext } from "@/lib/ai/copilot";
 import { ReceiptUploadModal } from "@/components/dashboard/receipt-upload-modal";
 import { TransactionModal } from "@/components/dashboard/transaction-modal";
@@ -397,7 +398,7 @@ export default function Home() {
         {/* Vault Data Safety & Privacy Reassurance */}
         <VaultSecurityBanner />
 
-        {/* Demo Mode / Connect Reassurance for Unauthenticated Visitors */}
+        {/* Connect Reassurance for Unauthenticated Visitors */}
         {!isAuthenticated && (
           <div className="bg-[#f5f3ff] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-in fade-in duration-200">
             <div className="flex items-center gap-2.5">
@@ -406,11 +407,8 @@ export default function Home() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-black uppercase tracking-wider bg-white border border-[#121212] text-[#836EF9] px-1.5 py-0.5 rounded">
-                    Demo Mode Active
-                  </span>
                   <span className="text-xs font-bold text-[#121212]">
-                    Connect to Monad Testnet (10143)
+                    Connect to Monad Testnet
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-0.5">
@@ -503,6 +501,12 @@ export default function Home() {
         isOpen={copilotOpen}
         onClose={() => setCopilotOpen(false)}
         context={copilotContext}
+      />
+
+      {/* Floating Bottom-Right Clario Circular Button & Greeting Popup */}
+      <ClarioAssistantTrigger
+        isOpen={copilotOpen}
+        onOpen={() => setCopilotOpen(true)}
       />
 
       {/* Receipt Upload & OCR Modal */}

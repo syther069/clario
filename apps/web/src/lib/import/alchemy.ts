@@ -4,9 +4,9 @@
  *
  * Implements strict live onchain ingestion via Alchemy Asset Transfers API:
  * - Rule 1: Strictly transfers FROM or TO the connected wallet address.
- * - Rule 2: Mainnets only. No mock data, no testnets, no fake fallbacks.
+ * - Rule 2: Mainnets and supported testnets with honest provenance.
  * - Rule 3: Chain order: Monad, Ethereum, Base, Hyperliquid, then other EVM chains.
- * - Rule 4: Token order: USDC, USDT, native tokens (ETH, MON, HYPE), then others.
+ * - Rule 4: Token order: USDC, USDT, native tokens (ETH, MON, HYPE, POL), then others.
  * - Rule 5: Exact historical USD valuation at block timestamp (never $0 or guess).
  * - Rule 6: Block timestamp preservation for local timezone formatting.
  * - Rule 7: Strict deduplication, correct decimal scaling, failed txn filtering, and spam rejection.
@@ -32,31 +32,42 @@ export function getAlchemyEndpoint(
   apiKey: string,
 ): string | null {
   if (!apiKey || apiKey.trim().length === 0) return null;
+  const cleanKey = apiKey.trim();
   switch (chainId) {
     case 143:
-      return `https://monad-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://monad-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 10143:
-      return `https://monad-testnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://monad-testnet.g.alchemy.com/v2/${cleanKey}`;
     case 1:
-      return `https://eth-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://eth-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 8453:
-      return `https://base-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://base-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 999:
-      return `https://hyperliquid-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://hyperliquid-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 42161:
-      return `https://arb-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://arb-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 10:
-      return `https://opt-mainnet.g.alchemy.com/v2/${apiKey}`;
+      return `https://opt-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 137:
-      return `https://polygon-mainnet.g.alchemy.com/v2/${apiKey}`;
-    // Testnet endpoints preserved for compatibility tests
+      return `https://polygon-mainnet.g.alchemy.com/v2/${cleanKey}`;
     case 11155111:
-      return `https://eth-sepolia.g.alchemy.com/v2/${apiKey}`;
+      return `https://eth-sepolia.g.alchemy.com/v2/${cleanKey}`;
     case 84532:
-      return `https://base-sepolia.g.alchemy.com/v2/${apiKey}`;
+      return `https://base-sepolia.g.alchemy.com/v2/${cleanKey}`;
     default:
       return null;
   }
+}
+
+/**
+ * Returns Alchemy asset transfer categories supported for a specific chain.
+ * "internal" is only supported on Ethereum Mainnet, Sepolia, and Polygon.
+ */
+function getTransferCategoriesForChain(chainId: number): string[] {
+  if (chainId === 1 || chainId === 11155111 || chainId === 137) {
+    return ["external", "internal", "erc20", "erc721", "erc1155"];
+  }
+  return ["external", "erc20", "erc721", "erc1155"];
 }
 
 // Chain-specific native asset symbols
@@ -254,19 +265,20 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
 
     const targetAddress = filter.address.toLowerCase() as `0x${string}`;
 
-    // Rule 3: Mainnet chain order: Monad (143), Ethereum (1), Base (8453), Hyperliquid (999), Arbitrum (42161), Optimism (10), Polygon (137)
+    // Target chains: if a specific chain is requested (and > 0), use it; otherwise scan all supported chains in priority order
     let targetChainIds: number[];
-    if (filter.chainId) {
+    if (filter.chainId && filter.chainId > 0) {
       if (getAlchemyEndpoint(filter.chainId, this.apiKey)) {
         targetChainIds = [filter.chainId];
       } else {
-        return { items: [], nextCursor: null };
+        targetChainIds = [filter.chainId];
       }
     } else {
-      targetChainIds = [10143, 143, 1, 8453, 999, 42161, 10, 137];
+      // Order: Monad (10143, 143), Base (8453), Ethereum (1), Sepolia (11155111), Hyperliquid (999), Arbitrum (42161), Optimism (10), Polygon (137), Base Sepolia (84532)
+      targetChainIds = [10143, 143, 8453, 1, 11155111, 999, 42161, 10, 137, 84532];
     }
 
-    const maxCountHex = `0x${Math.min(filter.limit ?? 25, 50).toString(16)}`;
+    const maxCountHex = `0x${Math.min(filter.limit ?? 50, 100).toString(16)}`;
 
     try {
       // Query transfers across target chains for BOTH outgoing (fromAddress) and incoming (toAddress)
@@ -274,13 +286,16 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
         const endpoint = getAlchemyEndpoint(chainId, this.apiKey!);
         if (!endpoint) return [];
 
+        const categories = getTransferCategoriesForChain(chainId);
+
         const fetchParams = (addressKey: "fromAddress" | "toAddress") => ({
           fromBlock: "0x0",
           toBlock: "latest",
           [addressKey]: targetAddress,
-          category: ["external", "erc20"],
+          category: categories,
           order: "desc",
           withMetadata: true,
+          excludeZeroValue: false,
           maxCount: maxCountHex,
           ...(filter.cursor ? { pageKey: filter.cursor } : {}),
         });
@@ -296,12 +311,20 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
           }),
         })
           .then((res) => (res.ok ? res.json() : null))
-          .then((data: AlchemyTransfersResponse | null) => ({
-            transfers: data?.result?.transfers ?? [],
-            pageKey: data?.result?.pageKey ?? null,
-            chainId,
-          }))
-          .catch(() => ({ transfers: [], pageKey: null, chainId }));
+          .then((data: AlchemyTransfersResponse | null) => {
+            if (data?.error) {
+              console.warn(`[Alchemy] fromAddress error chain ${chainId}:`, data.error);
+            }
+            return {
+              transfers: data?.result?.transfers ?? [],
+              pageKey: data?.result?.pageKey ?? null,
+              chainId,
+            };
+          })
+          .catch((err) => {
+            console.warn(`[Alchemy] fetch error for chain ${chainId}:`, err);
+            return { transfers: [], pageKey: null, chainId };
+          });
 
         const fetchTo = fetch(endpoint, {
           method: "POST",
@@ -314,12 +337,20 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
           }),
         })
           .then((res) => (res.ok ? res.json() : null))
-          .then((data: AlchemyTransfersResponse | null) => ({
-            transfers: data?.result?.transfers ?? [],
-            pageKey: data?.result?.pageKey ?? null,
-            chainId,
-          }))
-          .catch(() => ({ transfers: [], pageKey: null, chainId }));
+          .then((data: AlchemyTransfersResponse | null) => {
+            if (data?.error) {
+              console.warn(`[Alchemy] toAddress error chain ${chainId}:`, data.error);
+            }
+            return {
+              transfers: data?.result?.transfers ?? [],
+              pageKey: data?.result?.pageKey ?? null,
+              chainId,
+            };
+          })
+          .catch((err) => {
+            console.warn(`[Alchemy] fetch error for chain ${chainId}:`, err);
+            return { transfers: [], pageKey: null, chainId };
+          });
 
         return [fetchFrom, fetchTo];
       });
@@ -363,7 +394,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
       // If Monad was requested (or queried with all chains), but alchemy_getAssetTransfers returned 0 Monad transfers,
       // fallback to direct Monad RPC and explorer indexer so Monad transactions are properly surfaced.
       const shouldQueryMonad =
-        !filter.chainId || filter.chainId === 143 || filter.chainId === 10143;
+        !filter.chainId || filter.chainId === 0 || filter.chainId === 143 || filter.chainId === 10143;
       const targetMonadChain = filter.chainId === 10143 ? 10143 : 143;
       const hasMonadTxs = validTransactions.some(
         (tx) => tx.sourceChainId === targetMonadChain,
@@ -401,10 +432,11 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
       });
 
       return {
-        items: validTransactions.slice(0, filter.limit ?? 25),
+        items: validTransactions.slice(0, filter.limit ?? 50),
         nextCursor,
       };
-    } catch {
+    } catch (err) {
+      console.error("[AlchemyImportAdapter] fetchTransactions error:", err);
       return { items: [], nextCursor: null };
     }
   }

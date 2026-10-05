@@ -16,6 +16,11 @@ import {
   CryptoCoinIcon,
 } from "@/components/ui/crypto-icon";
 import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { motion, AnimatePresence } from "motion/react";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -173,10 +178,7 @@ export function TransactionModal({
                 <Wallet className="h-5 w-5" />
               </div>
               <div>
-                <ClarioBadge variant="purple" size="sm">
-                  [WALLET REQUIRED]
-                </ClarioBadge>
-                <h3 className="text-sm font-black uppercase tracking-wider text-[#121212] mt-0.5">
+                <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
                   EVM Wallet Needed
                 </h3>
               </div>
@@ -237,12 +239,21 @@ export function TransactionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         onClick={onClose}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
       />
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ type: "spring", stiffness: 400, damping: 28 }}
+        className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+      >
         {/* VIEW 1: SELECTION SCREEN */}
         {view === "selection" ? (
           <div>
@@ -252,11 +263,6 @@ export function TransactionModal({
                   <PlusCircle className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <ClarioBadge variant="purple" size="sm">
-                      [LEDGER ENTRY]
-                    </ClarioBadge>
-                  </div>
                   <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
                     Record Transaction
                   </h3>
@@ -452,31 +458,28 @@ export function TransactionModal({
                   <label className="text-xs font-black uppercase tracking-wider text-slate-600">
                     Category
                   </label>
-                  <select
+                  <NeoSelect
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="mt-1 w-full neo-input"
-                  >
-                    <option value="software_tools">Software & Tools</option>
-                    <option value="food_dining">Food & Dining</option>
-                    <option value="transportation">Transportation</option>
-                    <option value="office_expenses">Office Expenses</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="crypto_ops">Crypto Operations</option>
-                    <option value="other">Other</option>
-                  </select>
+                    onChange={setCategory}
+                    options={[
+                      { value: "software_tools", label: "Software & Tools" },
+                      { value: "food_dining", label: "Food & Dining" },
+                      { value: "transportation", label: "Transportation" },
+                      { value: "office_expenses", label: "Office Expenses" },
+                      { value: "utilities", label: "Utilities" },
+                      { value: "crypto_ops", label: "Crypto Operations" },
+                      { value: "other", label: "Other" },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="text-xs font-black uppercase tracking-wider text-slate-600">
                     Date
                   </label>
-                  <input
-                    type="date"
-                    required
+                  <NeoDatePicker
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="mt-1 w-full neo-input font-mono"
+                    onChange={setDate}
                   />
                 </div>
               </div>
@@ -572,32 +575,40 @@ export function TransactionModal({
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t-2 border-[#121212]">
-                <ClarioButton
+                <WatermelonButton
                   type="button"
                   variant="secondary"
                   size="sm"
-                  icon={<ArrowLeft className="h-3.5 w-3.5" />}
+                  textMorph
+                  leftIcon={<ArrowLeft className="h-3.5 w-3.5" />}
                   onClick={() => setView("selection")}
                 >
                   Back
-                </ClarioButton>
+                </WatermelonButton>
                 <div className="flex items-center gap-2">
-                  <ClarioButton
+                  <WatermelonButton
                     type="button"
                     variant="secondary"
+                    size="sm"
+                    textMorph
                     onClick={onClose}
                   >
                     Cancel
-                  </ClarioButton>
-                  <ClarioButton type="submit" variant="primary">
+                  </WatermelonButton>
+                  <WatermelonButton
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                    textMorph
+                  >
                     Add Entry
-                  </ClarioButton>
+                  </WatermelonButton>
                 </div>
               </div>
             </form>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

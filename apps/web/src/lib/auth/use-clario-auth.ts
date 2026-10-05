@@ -9,12 +9,21 @@ import {
   useConnectWallet,
   useLinkAccount,
   useUnlinkWallet,
+  useUnlinkEmail,
+  useUnlinkOAuth,
+  useUnlinkPasskey,
   useSetWalletRecovery,
   useExportWallet,
   getEmbeddedConnectedWallet,
   type ConnectedWallet,
 } from "@privy-io/react-auth";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
+import {
+  getWalletNickname,
+  setWalletNickname as setWalletNicknameStorage,
+  subscribeNicknameUpdates,
+  getAllNicknames,
+} from "./nickname-storage";
 
 export function useClarioAuth() {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
@@ -28,9 +37,24 @@ export function useClarioAuth() {
     linkPasskey,
     linkPhone,
   } = useLinkAccount();
-  const { unlink } = useUnlinkWallet();
+  const { unlink: unlinkWalletRaw } = useUnlinkWallet();
+  const { unlink: unlinkEmailRaw } = useUnlinkEmail();
+  const { unlink: unlinkOAuthRaw } = useUnlinkOAuth();
+  const { unlink: unlinkPasskeyRaw } = useUnlinkPasskey();
   const { setWalletRecovery } = useSetWalletRecovery();
   const { exportWallet } = useExportWallet();
+
+  // Reactive nickname state
+  const [nicknames, setNicknames] = useState<Record<string, string>>(() =>
+    getAllNicknames(),
+  );
+
+  useEffect(() => {
+    setNicknames(getAllNicknames());
+    return subscribeNicknameUpdates(() => {
+      setNicknames(getAllNicknames());
+    });
+  }, []);
 
   // Find embedded wallet using official Privy helper + fallback to walletClientType === "privy"
   const embeddedWallet: ConnectedWallet | null = useMemo(() => {
@@ -164,9 +188,44 @@ export function useClarioAuth() {
 
   const unlinkWallet = useCallback(
     async (address: string) => {
-      await unlink({ address });
+      await unlinkWalletRaw({ address });
     },
-    [unlink],
+    [unlinkWalletRaw],
+  );
+
+  const unlinkEmail = useCallback(
+    async (address: string) => {
+      await unlinkEmailRaw({ address });
+    },
+    [unlinkEmailRaw],
+  );
+
+  const unlinkGoogle = useCallback(
+    async (subject?: string) => {
+      const targetSubject =
+        subject ||
+        user?.google?.subject ||
+        (
+          user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
+            | { subject?: string }
+            | undefined
+        )?.subject;
+      if (!targetSubject) return;
+      await unlinkOAuthRaw({ provider: "google", subject: targetSubject });
+    },
+    [unlinkOAuthRaw, user],
+  );
+
+  const unlinkPasskey = useCallback(
+    async (credentialId?: string) => {
+      const passkeyAcc = user?.linkedAccounts?.find((a) => a.type === "passkey") as
+        | { credentialId?: string; id?: string }
+        | undefined;
+      const targetCredId = credentialId || passkeyAcc?.credentialId || passkeyAcc?.id;
+      if (!targetCredId) return;
+      await unlinkPasskeyRaw({ credentialId: targetCredId });
+    },
+    [unlinkPasskeyRaw, user],
   );
 
   // Connect or link EVM wallet
@@ -192,8 +251,23 @@ export function useClarioAuth() {
     [activeWallet],
   );
 
-  // Primary display identifier
+  // Custom nickname for the current active wallet / user
+  const activeNickname: string | null = useMemo(() => {
+    if (activeWalletAddress) {
+      const byAddr =
+        nicknames[activeWalletAddress.toLowerCase()] ||
+        nicknames[activeWalletAddress];
+      if (byAddr) return byAddr;
+    }
+    if (user?.id && nicknames[`user_${user.id}`]) {
+      return nicknames[`user_${user.id}`]!;
+    }
+    return getWalletNickname(activeWalletAddress);
+  }, [activeWalletAddress, nicknames, user?.id]);
+
+  // Primary display identifier (Nickname > Google Name > Email Prefix > Wallet Address > User ID)
   const displayName: string = useMemo(() => {
+    if (activeNickname) return activeNickname;
     if (!user) return "Guest";
     if (user.google?.name) return user.google.name;
     if (user.email?.address) {
@@ -204,7 +278,32 @@ export function useClarioAuth() {
       return `${activeWalletAddress.slice(0, 6)}...${activeWalletAddress.slice(-4)}`;
     }
     return `User ${user.id.slice(10, 16)}`;
-  }, [user, activeWalletAddress]);
+  }, [activeNickname, user, activeWalletAddress]);
+
+  const setNickname = useCallback(
+    (name: string, targetAddress?: string) => {
+      const addr = targetAddress || activeWalletAddress;
+      if (addr) {
+        setWalletNicknameStorage(addr, name, user?.id);
+      } else if (user?.id) {
+        setWalletNicknameStorage(`user_${user.id}`, name, user.id);
+      }
+    },
+    [activeWalletAddress, user?.id],
+  );
+
+  const getNickname = useCallback(
+    (address?: string) => {
+      const addr = address || activeWalletAddress;
+      if (!addr) return null;
+      return (
+        nicknames[addr.toLowerCase()] ||
+        nicknames[addr] ||
+        getWalletNickname(addr)
+      );
+    },
+    [activeWalletAddress, nicknames],
+  );
 
   const primaryEmail = user?.email?.address || user?.google?.email || null;
 
@@ -213,6 +312,10 @@ export function useClarioAuth() {
     isAuthenticated: authenticated,
     user,
     displayName,
+    nickname: activeNickname,
+    walletNicknames: nicknames,
+    setNickname,
+    getNickname,
     primaryEmail,
     primaryWalletAddress,
     activeWalletAddress,
@@ -236,6 +339,9 @@ export function useClarioAuth() {
     linkPasskey,
     linkPhone,
     unlinkWallet,
+    unlinkEmail,
+    unlinkGoogle,
+    unlinkPasskey,
     setWalletRecovery,
     exportWallet,
     connectEvmWallet,

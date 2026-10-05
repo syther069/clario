@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import {
-  Sparkles,
   X,
   Send,
   Bot,
@@ -15,7 +14,7 @@ import {
   type CopilotContext,
   detectFinancialAnomalies,
 } from "@/lib/ai/copilot";
-import { Skiper64, TextRoll, ArrowIcon } from "@/components/ui/skiper-effects";
+import { TextRoll, ArrowIcon } from "@/components/ui/skiper-effects";
 
 interface CopilotDrawerProps {
   isOpen: boolean;
@@ -28,11 +27,10 @@ export function CopilotDrawer({
   onClose,
   context,
 }: CopilotDrawerProps) {
-  const [showGooeyCore, setShowGooeyCore] = useState(true);
   const [messages, setMessages] = useState<CopilotMessage[]>([
     {
       role: "assistant",
-      content: `Hello! I am your Clario Financial Copilot. I analyze your cash flows, track subscriptions, inspect OCR receipts, and verify cryptographic proof records. What would you like to explore today?`,
+      content: `Hello! I am Clario. I analyze your cash flows, track subscriptions, inspect OCR receipts, and verify cryptographic proof records. What would you like to explore today?`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -143,9 +141,9 @@ export function CopilotDrawer({
             <div>
               <h2 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
                 <TextRoll className="text-base font-black">
-                  Clario Copilot
+                  Clario
                 </TextRoll>
-                <span className="neo-badge neo-badge-purple">GROUNDED AI</span>
+                <span className="neo-badge neo-badge-purple">ASSISTANT</span>
               </h2>
               <p className="text-xs text-slate-500">
                 Zero hallucination · Monad-anchored records
@@ -155,38 +153,14 @@ export function CopilotDrawer({
 
           <div className="flex items-center gap-2">
             <button
-              type="button"
-              onClick={() => setShowGooeyCore(!showGooeyCore)}
-              className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase rounded-lg border-2 border-[#121212] shadow-[1px_1px_0_0_#121212] transition ${
-                showGooeyCore
-                  ? "bg-[#836EF9] text-white"
-                  : "bg-white text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              <Sparkles className="h-3 w-3" aria-hidden="true" />
-              <span>{showGooeyCore ? "Hide Core" : "Gooey Core"}</span>
-            </button>
-
-            <button
               onClick={onClose}
-              aria-label="Close AI Copilot"
+              aria-label="Close Clario"
               className="size-11 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
         </div>
-
-        {/* Skiper 64 Gooey Morphing Neural Core Component */}
-        {showGooeyCore && (
-          <div className="p-4 bg-[#f8f9fa] border-b-2 border-[#121212] transition-all">
-            <Skiper64
-              className="h-44"
-              badgeText="Skiper 64 Neural Core · Drag elements to morph"
-              activeColor="bg-[#836EF9]"
-            />
-          </div>
-        )}
 
         {/* Real-time Anomalies & Multi-Mode Insights Banner */}
         {insights.length > 0 && (
@@ -321,7 +295,7 @@ export function CopilotDrawer({
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              aria-label="Send message to Copilot"
+              aria-label="Send message to Clario"
               className="neo-btn neo-btn-primary min-w-[44px] min-h-[44px] size-11 p-0 shrink-0 inline-flex items-center justify-center"
             >
               <Send className="h-4 w-4" aria-hidden="true" />

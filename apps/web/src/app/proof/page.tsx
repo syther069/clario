@@ -287,11 +287,6 @@ export default function ProofCenterPage() {
             />
           )}
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-[10px] font-black uppercase text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                [INDEPENDENT VERIFIER]
-              </span>
-            </div>
             <h2 className="text-lg font-black uppercase tracking-wider text-[#121212]">
               Onchain Hash Verifier
             </h2>

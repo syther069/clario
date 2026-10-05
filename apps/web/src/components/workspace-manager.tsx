@@ -8,6 +8,7 @@ import type {
 } from "@/lib/workspace/types";
 import { IntentDialog, type TransactionLifecycleStatus } from "./intent-dialog";
 import { X, CheckCircle2 } from "lucide-react";
+import { NeoSelect } from "@/components/ui/neo-select";
 
 export interface WorkspaceManagerProps {
   currentAccount?: string | undefined;
@@ -355,18 +356,14 @@ export function WorkspaceManager({
           }}
         >
           {workspaces.length > 0 && (
-            <select
-              className="form-select"
+            <NeoSelect
               value={selectedWsId ?? ""}
-              onChange={(e) => setSelectedWsId(e.target.value)}
-              aria-label="Select Workspace"
-            >
-              {workspaces.map((w) => (
-                <option key={w.workspaceId} value={w.workspaceId}>
-                  {w.name} {w.isOwner ? " (Owner)" : ""}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedWsId(val)}
+              options={workspaces.map((w) => ({
+                value: w.workspaceId,
+                label: `${w.name}${w.isOwner ? " (Owner)" : ""}`,
+              }))}
+            />
           )}
 
           <button
@@ -790,18 +787,17 @@ export function WorkspaceManager({
                 <label className="form-label" htmlFor="grant-role-select">
                   Role
                 </label>
-                <select
-                  id="grant-role-select"
-                  className="form-select"
+                <NeoSelect
                   value={grantRole}
-                  onChange={(e) => setGrantRole(e.target.value)}
-                >
-                  <option value="APPROVER_ROLE">Expense Approver</option>
-                  <option value="TREASURY_ROLE">Treasury Manager</option>
-                  <option value="AUDITOR_ROLE">Auditor</option>
-                  <option value="ADMIN_ROLE">Administrator</option>
-                  <option value="OWNER_ROLE">Workspace Owner</option>
-                </select>
+                  onChange={setGrantRole}
+                  options={[
+                    { value: "APPROVER_ROLE", label: "Expense Approver" },
+                    { value: "TREASURY_ROLE", label: "Treasury Manager" },
+                    { value: "AUDITOR_ROLE", label: "Auditor" },
+                    { value: "ADMIN_ROLE", label: "Administrator" },
+                    { value: "OWNER_ROLE", label: "Workspace Owner" },
+                  ]}
+                />
               </div>
 
               <div className="form-group">

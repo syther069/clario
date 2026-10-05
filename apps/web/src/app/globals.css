@@ -30,6 +30,64 @@
   border-radius: 14px;
 }
 
+/* Custom Scrollbars for Documentation & Web Layouts */
+*::-webkit-scrollbar-button,
+::-webkit-scrollbar-button,
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d0c8;
+  border-radius: 4px;
+  transition: background-color 150ms ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #836ef9;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Slim Custom Scrollbar for sidebars, tables & drawers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(18, 18, 18, 0.18);
+  border-radius: 9999px;
+  transition: background-color 150ms ease;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(18, 18, 18, 0.4);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #836ef9;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(18, 18, 18, 0.22) transparent;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar {

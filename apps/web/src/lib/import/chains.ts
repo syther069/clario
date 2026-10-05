@@ -165,6 +165,8 @@ export const SUPPORTED_MAINNET_CHAINS: readonly SourceChainConfig[] =
 export const SUPPORTED_IMPORT_CHAINS: readonly SourceChainConfig[] = [
   SUPPORTED_SOURCE_CHAINS.find((c) => c.chainId === 10143)!,
   ...SUPPORTED_MAINNET_CHAINS,
+  SUPPORTED_SOURCE_CHAINS.find((c) => c.chainId === 11155111)!,
+  SUPPORTED_SOURCE_CHAINS.find((c) => c.chainId === 84532)!,
 ].filter(Boolean);
 
 const CHAIN_MAP = new Map<number, SourceChainConfig>(

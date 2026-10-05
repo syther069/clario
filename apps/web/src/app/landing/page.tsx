@@ -21,6 +21,7 @@ import {
   BotOff,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import { ClarioLogo } from "@/components/ui/clario-logo";
 import {
   TextEffect,
   TextLoop,
@@ -68,12 +69,12 @@ const SAMPLE_EXPENSES = [
     hash: "0x3f1e98bb4510ad674902187cc8431920fba61",
     blockHeight: "19,842,980",
     status: "VERIFIED & SETTLED",
-    mode: "crypto",
+    mode: "business",
     privacy: "Audit scope offchain · Hash commitment on Monad",
   },
 ];
 
-// 5 Modes Showcase Details
+// 4 Core Modes Showcase Details
 const MODES_DATA = [
   {
     id: "personal",
@@ -81,7 +82,7 @@ const MODES_DATA = [
     icon: UserRound,
     tagline: "Total Private Financial Clarity",
     description:
-      "Manage your everyday spending, monthly budget caps, and recurring SaaS subscriptions with local-first encrypted storage.",
+      "Manage your everyday spending, monthly budget caps, and recurring SaaS subscriptions with local-first encrypted storage and Monad onchain anchoring.",
     features: [
       "Zero-tracking cashflow & expense ledger",
       "Interactive category budgets with warning alerts",
@@ -120,50 +121,6 @@ const MODES_DATA = [
     },
   },
   {
-    id: "business",
-    name: "Business",
-    icon: Building2,
-    tagline: "Corporate Treasury & Multi-Sig Approval",
-    description:
-      "Department-level budget governance, multi-seat approval queues, and one-click Monad batch reimbursements for global teams.",
-    features: [
-      "Two-phase approval queue: Reviewer & Treasury",
-      "Role-based permission envelopes (Submitter, Reviewer, Admin)",
-      "Strict double-reimbursement prevention onchain",
-      "Departmental burn rates and budget caps",
-    ],
-    preview: {
-      stat1: "$42,800.00",
-      stat1Label: "TEAM MONTHLY BURN",
-      stat2: "3 Pending",
-      stat2Label: "TREASURY APPROVALS",
-      badge: "99.8% AUDIT COMPLIANCE",
-      recent: "AWS Cloud Compute Clusters — $2,840.00",
-    },
-  },
-  {
-    id: "crypto",
-    name: "Crypto / Web3",
-    icon: Wallet,
-    tagline: "Multi-Chain Transaction Accounting",
-    description:
-      "Lookup transactions across Monad Testnet, Ethereum, Sepolia, and Base with sub-second EVM RPC integration.",
-    features: [
-      "Direct EVM RPC transaction lookup by hash",
-      "Monad Testnet sub-second confirmation & finality",
-      "Automated gas fee & token transfer classification",
-      "Multi-chain asset balances & EVM wallet sync",
-    ],
-    preview: {
-      stat1: "1,240 MON",
-      stat1Label: "TREASURY MON BALANCE",
-      stat2: "0.4s Finality",
-      stat2Label: "MONAD SPEED",
-      badge: "CHAIN ID: 10143",
-      recent: "Treasury Distribution Tx (Monad) — 250 MON",
-    },
-  },
-  {
     id: "family",
     name: "Family",
     icon: UsersRound,
@@ -183,6 +140,28 @@ const MODES_DATA = [
       stat2Label: "SETTLEMENT STATUS",
       badge: "4 MEMBERS",
       recent: "City Water & Power Utility — $142.50",
+    },
+  },
+  {
+    id: "business",
+    name: "Business",
+    icon: Building2,
+    tagline: "Corporate Treasury & Multi-Sig Approval",
+    description:
+      "Department-level budget governance, multi-seat approval queues, and one-click Monad batch reimbursements for global teams.",
+    features: [
+      "Two-phase approval queue: Reviewer & Treasury",
+      "Role-based permission envelopes (Submitter, Reviewer, Admin)",
+      "Strict double-reimbursement prevention onchain",
+      "Departmental burn rates and budget caps",
+    ],
+    preview: {
+      stat1: "$42,800.00",
+      stat1Label: "TEAM MONTHLY BURN",
+      stat2: "3 Pending",
+      stat2Label: "TREASURY APPROVALS",
+      badge: "99.8% AUDIT COMPLIANCE",
+      recent: "AWS Cloud Compute Clusters — $2,840.00",
     },
   },
 ];
@@ -370,9 +349,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#836EF9] text-white font-black text-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] transition group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0_0_#121212]">
-              C
-            </div>
+            <ClarioLogo
+              size={40}
+              className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
+            />
             <div className="flex flex-col">
               <span className="text-lg font-black tracking-wider text-[#121212] uppercase flex items-center gap-2">
                 Clario
@@ -1225,9 +1205,7 @@ export default function LandingPage() {
       <footer className="border-t-2 border-[#121212] bg-[#ffffff] py-12 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#836EF9] text-white font-black text-lg border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-              C
-            </div>
+            <ClarioLogo size={36} />
             <div>
               <span className="text-base font-black tracking-wider text-[#121212] uppercase">
                 Clario
@@ -1253,6 +1231,12 @@ export default function LandingPage() {
               className="hover:text-[#836EF9] transition"
             >
               Subscriptions
+            </Link>
+            <Link
+              href="/docs"
+              className="hover:text-[#836EF9] transition text-[#836EF9] font-black"
+            >
+              Docs
             </Link>
             <Link
               href="https://docs.monad.xyz"

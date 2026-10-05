@@ -27,7 +27,10 @@ import {
 } from "@/lib/blockchain/registry";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { formatTransactionDateTime } from "@/lib/import/types";
+import { ReceiptExportDropdown } from "@/components/dashboard/receipt-export-dropdown";
+import { extractCanonicalReceiptData } from "@/lib/export/receipt-exporter";
 import type { Address } from "viem";
+import { motion, AnimatePresence } from "motion/react";
 
 interface ReceiptBundleModalProps {
   isOpen: boolean;
@@ -72,7 +75,7 @@ export function ReceiptBundleModal({
     setVerifyStatus("idle");
   }
 
-  if (!isOpen || !bundle) return null;
+  if (!bundle) return null;
 
   const activeBundle = currentBundle || bundle;
   const receiptName =
@@ -221,8 +224,24 @@ export function ReceiptBundleModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="neo-card bg-white w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="relative z-10 neo-card bg-white w-full max-w-xl overflow-hidden shadow-[6px_6px_0_0_#121212]"
+          >
         {/* Header */}
         <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -230,9 +249,6 @@ export function ReceiptBundleModal({
               <Receipt className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <span className="text-[10px] font-mono font-black tracking-wider uppercase text-slate-500">
-                [RECEIPT BUNDLE PROOF]
-              </span>
               <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] truncate">
                 {receiptName
                   ? receiptName
@@ -570,14 +586,13 @@ export function ReceiptBundleModal({
 
         {/* Footer Actions */}
         <div className="p-4 border-t-2 border-[#121212] bg-[#fbf9fe] flex flex-wrap items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={handleDownloadReceiptFile}
-            className="neo-btn neo-btn-secondary !py-2 !px-3 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
-          >
-            <Download className="h-3.5 w-3.5 text-[#836EF9]" />
-            <span>Download JSON</span>
-          </button>
+          <ReceiptExportDropdown
+            receiptData={extractCanonicalReceiptData(
+              activeBundle,
+              bundledTxs,
+              contractAddress,
+            )}
+          />
 
           <div className="flex items-center gap-2">
             {explorerUrl && (
@@ -602,7 +617,9 @@ export function ReceiptBundleModal({
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
+  )}
+</AnimatePresence>
   );
 }

@@ -35,6 +35,11 @@ import {
 import { WorkspaceManager } from "../workspace-manager";
 import { ReviewQueueView } from "../review-queue-view";
 import { TreasuryQueueView } from "../treasury-queue-view";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
+import { Magnetic } from "@/components/ui/motion/magnetic";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { motion, AnimatePresence } from "motion/react";
 import {
   getBusinessTeam,
   saveBusinessTeamMember,
@@ -49,6 +54,7 @@ import {
   getBusinessAuditEvents,
   recordBusinessAuditEvent,
 } from "@/lib/modes/mode-storage";
+import { NeoSelect } from "@/components/ui/neo-select";
 
 interface BusinessDashboardProps {
   transactions: Transaction[];
@@ -745,11 +751,6 @@ export function BusinessDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
-                [BUSINESS & ENTERPRISE WORKSPACE]
-              </span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212]">
               Corporate Treasury & Expense Control
             </h1>
@@ -760,21 +761,27 @@ export function BusinessDashboard({
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsClaimModalOpen(true)}
-              className="neo-btn neo-btn-secondary"
-            >
-              <Receipt className="h-4 w-4 text-[#836EF9]" />
-              <span>Submit Claim</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                variant="secondary"
+                textMorph
+                onClick={() => setIsClaimModalOpen(true)}
+                leftIcon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
+              >
+                Submit Claim
+              </WatermelonButton>
+            </Magnetic>
 
-            <button
-              onClick={() => setIsInviteModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <UsersRound className="h-4 w-4" />
-              <span>Invite Member</span>
-            </button>
+            <Magnetic range={70} intensity={0.4}>
+              <WatermelonButton
+                variant="primary"
+                textMorph
+                onClick={() => setIsInviteModalOpen(true)}
+                leftIcon={<UsersRound className="h-4 w-4" />}
+              >
+                Invite Member
+              </WatermelonButton>
+            </Magnetic>
           </div>
         </div>
 
@@ -783,84 +790,100 @@ export function BusinessDashboard({
           aria-label="Business Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
         >
-          {[
-            { id: "overview", label: "Operations Overview", icon: Building2 },
-            {
-              id: "team",
-              label: "Team & Roles",
-              icon: UsersRound,
-              count: team.length,
-            },
-            {
-              id: "expenses",
-              label: "Corporate Expenses",
-              icon: Receipt,
-              count: businessExpenses.length,
-            },
-            {
-              id: "reimbursements",
-              label: "Reimbursements",
-              icon: DollarSign,
-              count: claims.length,
-            },
-            {
-              id: "approvals",
-              label: "Approvals Queue",
-              icon: FileCheck,
-              count: pendingClaims.length,
-            },
-            {
-              id: "policies",
-              label: "Spend Policies",
-              icon: Scale,
-              count: policies.length,
-            },
-            {
-              id: "audit",
-              label: "Immutable Audit Log",
-              icon: History,
-              count: auditEvents.length,
-            },
-            { id: "reports", label: "Financial Reports", icon: BarChart3 },
-            {
-              id: "governance",
-              label: "Enterprise Protocol",
-              icon: ShieldCheck,
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeView === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleViewChange(tab.id as BusinessView)}
-                className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
-                }`}
-              >
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+          <AnimatedBackground
+            defaultValue={activeView}
+            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            transition={{
+              type: "spring",
+              bounce: 0.15,
+              duration: 0.4,
+            }}
+            onValueChange={(id) => {
+              if (id) handleViewChange(id as BusinessView);
+            }}
+          >
+            {[
+              { id: "overview", label: "Operations Overview", icon: Building2 },
+              {
+                id: "team",
+                label: "Team & Roles",
+                icon: UsersRound,
+                count: team.length,
+              },
+              {
+                id: "expenses",
+                label: "Corporate Expenses",
+                icon: Receipt,
+                count: businessExpenses.length,
+              },
+              {
+                id: "reimbursements",
+                label: "Reimbursements",
+                icon: DollarSign,
+                count: claims.length,
+              },
+              {
+                id: "approvals",
+                label: "Approvals Queue",
+                icon: FileCheck,
+                count: pendingClaims.length,
+              },
+              {
+                id: "policies",
+                label: "Spend Policies",
+                icon: Scale,
+                count: policies.length,
+              },
+              {
+                id: "audit",
+                label: "Immutable Audit Log",
+                icon: History,
+                count: auditEvents.length,
+              },
+              { id: "reports", label: "Financial Reports", icon: BarChart3 },
+              {
+                id: "governance",
+                label: "Enterprise Protocol",
+                icon: ShieldCheck,
+              },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeView === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  data-id={tab.id}
+                  type="button"
+                  className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
                   }`}
-                  aria-hidden="true"
-                />
-                <span className="shrink-0">{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                >
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
                       isActive
-                        ? "bg-white text-[#121212]"
-                        : "bg-[#f3f0ff] text-[#836EF9]"
+                        ? "text-white"
+                        : "text-[#836EF9] group-hover:text-[#7257f8]"
                     }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                    aria-hidden="true"
+                  />
+                  <span className="shrink-0">{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                        isActive
+                          ? "bg-white text-[#121212]"
+                          : "bg-[#f3f0ff] text-[#836EF9]"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
       </div>
 
@@ -1198,13 +1221,16 @@ export function BusinessDashboard({
                 Contractor, Viewer) and spending limits.
               </p>
             </div>
-            <button
-              onClick={() => setIsInviteModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <UsersRound className="h-4 w-4" />
-              <span>Invite Team Member</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsInviteModalOpen(true)}
+                variant="primary"
+                textMorph
+                leftIcon={<UsersRound className="h-4 w-4" />}
+              >
+                Invite Team Member
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {/* Search & Department Filters */}
@@ -1219,19 +1245,19 @@ export function BusinessDashboard({
                 className="w-full pl-9 pr-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
               />
             </div>
-            <select
+            <NeoSelect
               value={teamDeptFilter}
-              onChange={(e) => setTeamDeptFilter(e.target.value)}
-              className="px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
-            >
-              <option value="all">All Departments</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Operations">Operations</option>
-              <option value="Sales">Sales</option>
-              <option value="Finance">Finance</option>
-              <option value="Executive">Executive</option>
-            </select>
+              onChange={setTeamDeptFilter}
+              options={[
+                { value: "all", label: "All Departments" },
+                { value: "Engineering", label: "Engineering" },
+                { value: "Marketing", label: "Marketing" },
+                { value: "Operations", label: "Operations" },
+                { value: "Sales", label: "Sales" },
+                { value: "Finance", label: "Finance" },
+                { value: "Executive", label: "Executive" },
+              ]}
+            />
           </div>
 
           {team.length === 0 ? (
@@ -1244,13 +1270,17 @@ export function BusinessDashboard({
                 Invite your employees and managers to assign monthly spending
                 allowances and track reimbursements.
               </p>
-              <button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="mt-4 neo-btn neo-btn-primary inline-flex"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Invite First Member</span>
-              </button>
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={() => setIsInviteModalOpen(true)}
+                  variant="primary"
+                  textMorph
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  className="mt-4"
+                >
+                  Invite First Member
+                </WatermelonButton>
+              </Magnetic>
             </div>
           ) : (
             <div className="neo-card overflow-hidden">
@@ -1365,22 +1395,28 @@ export function BusinessDashboard({
                 <span>Export CSV</span>
               </button>
               {onUploadReceipt && (
-                <button
-                  onClick={onUploadReceipt}
-                  className="neo-btn neo-btn-secondary"
-                >
-                  <Receipt className="h-4 w-4 text-[#836EF9]" />
-                  <span>Upload Receipt</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={onUploadReceipt}
+                    variant="secondary"
+                    textMorph
+                    leftIcon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
+                  >
+                    Upload Receipt
+                  </WatermelonButton>
+                </Magnetic>
               )}
               {onAddTransaction && (
-                <button
-                  onClick={onAddTransaction}
-                  className="neo-btn neo-btn-primary"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Record Expense</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                  >
+                    Record Expense
+                  </WatermelonButton>
+                </Magnetic>
               )}
             </div>
           </div>
@@ -1397,31 +1433,31 @@ export function BusinessDashboard({
                 className="w-full pl-9 pr-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
               />
             </div>
-            <select
+            <NeoSelect
               value={expenseDeptFilter}
-              onChange={(e) => setExpenseDeptFilter(e.target.value)}
-              className="px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
-            >
-              <option value="all">All Departments</option>
-              <option value="Engineering">Engineering</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Operations">Operations</option>
-              <option value="Sales">Sales</option>
-              <option value="Finance">Finance</option>
-              <option value="General">General</option>
-            </select>
-            <select
+              onChange={setExpenseDeptFilter}
+              options={[
+                { value: "all", label: "All Departments" },
+                { value: "Engineering", label: "Engineering" },
+                { value: "Marketing", label: "Marketing" },
+                { value: "Operations", label: "Operations" },
+                { value: "Sales", label: "Sales" },
+                { value: "Finance", label: "Finance" },
+                { value: "General", label: "General" },
+              ]}
+            />
+            <NeoSelect
               value={expenseCategoryFilter}
-              onChange={(e) => setExpenseCategoryFilter(e.target.value)}
-              className="px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
-            >
-              <option value="all">All Categories</option>
-              <option value="software">Software & SaaS</option>
-              <option value="travel">Travel & Lodging</option>
-              <option value="equipment">Hardware & Gear</option>
-              <option value="meals">Client Meals</option>
-              <option value="utilities">Utilities & Cloud</option>
-            </select>
+              onChange={setExpenseCategoryFilter}
+              options={[
+                { value: "all", label: "All Categories" },
+                { value: "software", label: "Software & SaaS" },
+                { value: "travel", label: "Travel & Lodging" },
+                { value: "equipment", label: "Hardware & Gear" },
+                { value: "meals", label: "Client Meals" },
+                { value: "utilities", label: "Utilities & Cloud" },
+              ]}
+            />
           </div>
 
           {businessExpenses.length === 0 ? (
@@ -1435,13 +1471,17 @@ export function BusinessDashboard({
                 settlement transactions.
               </p>
               {onAddTransaction && (
-                <button
-                  onClick={onAddTransaction}
-                  className="mt-4 neo-btn neo-btn-primary inline-flex"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Record First Expense</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    className="mt-4"
+                  >
+                    Record First Expense
+                  </WatermelonButton>
+                </Magnetic>
               )}
             </div>
           ) : (
@@ -1563,13 +1603,16 @@ export function BusinessDashboard({
                 company reimbursement.
               </p>
             </div>
-            <button
-              onClick={() => setIsClaimModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Submit Reimbursement</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsClaimModalOpen(true)}
+                variant="primary"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Submit Reimbursement
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {/* Status Tabs */}
@@ -1841,13 +1884,16 @@ export function BusinessDashboard({
                 managerial approval thresholds.
               </p>
             </div>
-            <button
-              onClick={() => setIsPolicyModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Define Policy</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsPolicyModalOpen(true)}
+                variant="primary"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Define Policy
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {policies.length === 0 ? (
@@ -1860,13 +1906,17 @@ export function BusinessDashboard({
                 Establish corporate spending caps, receipt requirements, and
                 approval limits by category.
               </p>
-              <button
-                onClick={() => setIsPolicyModalOpen(true)}
-                className="mt-4 neo-btn neo-btn-primary inline-flex"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Establish First Policy</span>
-              </button>
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={() => setIsPolicyModalOpen(true)}
+                  variant="primary"
+                  textMorph
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  className="mt-4"
+                >
+                  Establish First Policy
+                </WatermelonButton>
+              </Magnetic>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1976,20 +2026,20 @@ export function BusinessDashboard({
                 className="w-full pl-9 pr-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
               />
             </div>
-            <select
+            <NeoSelect
               value={auditSeverityFilter}
-              onChange={(e) =>
+              onChange={(val) =>
                 setAuditSeverityFilter(
-                  e.target.value as "all" | "info" | "warning" | "alert",
+                  val as "all" | "info" | "warning" | "alert",
                 )
               }
-              className="px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
-            >
-              <option value="all">All Severities</option>
-              <option value="info">Info</option>
-              <option value="warning">Warning</option>
-              <option value="alert">Alert</option>
-            </select>
+              options={[
+                { value: "all", label: "All Severities" },
+                { value: "info", label: "Info" },
+                { value: "warning", label: "Warning" },
+                { value: "alert", label: "Alert" },
+              ]}
+            />
           </div>
 
           <div className="neo-card p-5">
@@ -2262,17 +2312,14 @@ export function BusinessDashboard({
                   Target Workspace:
                 </span>
                 {enterpriseWorkspaces.length > 0 ? (
-                  <select
+                  <NeoSelect
                     value={selectedEnterpriseWsId}
-                    onChange={(e) => setSelectedEnterpriseWsId(e.target.value)}
-                    className="px-2.5 py-1.5 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg bg-[#f8f9fa] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  >
-                    {enterpriseWorkspaces.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.name} ({w.id.slice(0, 10)}...)
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedEnterpriseWsId}
+                    options={enterpriseWorkspaces.map((w) => ({
+                      value: w.id,
+                      label: `${w.name} (${w.id.slice(0, 10)}...)`,
+                    }))}
+                  />
                 ) : (
                   <span className="text-xs font-mono bg-slate-100 px-2 py-1 rounded border border-slate-300">
                     Default Workspace (0x00...01)
@@ -2328,207 +2375,361 @@ export function BusinessDashboard({
       {/* ========================================================================= */}
       {/* MODAL: INVITE TEAM MEMBER */}
       {/* ========================================================================= */}
-      {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <UsersRound className="h-5 w-5 text-[#836EF9]" />
-                Invite Team Member
-              </h3>
-              <button
-                onClick={() => setIsInviteModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleInviteMember} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. David Miller"
-                  value={inviteForm.name}
-                  onChange={(e) =>
-                    setInviteForm({ ...inviteForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Corporate Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="david@company.com"
-                  value={inviteForm.email}
-                  onChange={(e) =>
-                    setInviteForm({ ...inviteForm, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Department
-                  </label>
-                  <select
-                    value={inviteForm.department}
-                    onChange={(e) =>
-                      setInviteForm({
-                        ...inviteForm,
-                        department: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                  >
-                    <option value="Engineering">Engineering</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Operations">Operations</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Executive">Executive</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Role
-                  </label>
-                  <select
-                    value={inviteForm.role}
-                    onChange={(e) =>
-                      setInviteForm({
-                        ...inviteForm,
-                        role: e.target.value as BusinessRole,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                  >
-                    <option value="employee">Employee</option>
-                    <option value="manager">Manager</option>
-                    <option value="finance">Finance</option>
-                    <option value="admin">Admin</option>
-                    <option value="contractor">Contractor</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Monthly Spending Limit ({currencySymbol})
-                </label>
-                <input
-                  type="number"
-                  placeholder="2500"
-                  value={inviteForm.spending_limit_monthly}
-                  onChange={(e) =>
-                    setInviteForm({
-                      ...inviteForm,
-                      spending_limit_monthly: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+      <AnimatePresence>
+        {isInviteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsInviteModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <UsersRound className="h-5 w-5 text-[#836EF9]" />
+                  Invite Team Member
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setIsInviteModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Send Invitation</span>
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleInviteMember} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. David Miller"
+                    value={inviteForm.name}
+                    onChange={(e) =>
+                      setInviteForm({ ...inviteForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Corporate Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="david@company.com"
+                    value={inviteForm.email}
+                    onChange={(e) =>
+                      setInviteForm({ ...inviteForm, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Department
+                    </label>
+                    <NeoSelect
+                      value={inviteForm.department}
+                      onChange={(val) =>
+                        setInviteForm({
+                          ...inviteForm,
+                          department: val,
+                        })
+                      }
+                      options={[
+                        { value: "Engineering", label: "Engineering" },
+                        { value: "Marketing", label: "Marketing" },
+                        { value: "Operations", label: "Operations" },
+                        { value: "Sales", label: "Sales" },
+                        { value: "Finance", label: "Finance" },
+                        { value: "Executive", label: "Executive" },
+                      ]}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Role
+                    </label>
+                    <NeoSelect
+                      value={inviteForm.role}
+                      onChange={(val) =>
+                        setInviteForm({
+                          ...inviteForm,
+                          role: val as BusinessRole,
+                        })
+                      }
+                      options={[
+                        { value: "owner", label: "Owner" },
+                        { value: "admin", label: "Admin" },
+                        { value: "manager", label: "Manager" },
+                        { value: "member", label: "Member" },
+                        { value: "auditor", label: "Auditor" },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Monthly Spending Limit ({currencySymbol})
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="2500"
+                    value={inviteForm.spending_limit_monthly}
+                    onChange={(e) =>
+                      setInviteForm({
+                        ...inviteForm,
+                        spending_limit_monthly: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsInviteModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Send Invitation</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* ========================================================================= */}
       {/* MODAL: SUBMIT REIMBURSEMENT CLAIM */}
       {/* ========================================================================= */}
-      {isClaimModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-[#836EF9]" />
-                Submit Reimbursement Claim
-              </h3>
-              <button
-                onClick={() => setIsClaimModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitClaim} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Expense Purpose / Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. AWS Cloud Infrastructure Credits"
-                  value={claimForm.title}
-                  onChange={(e) =>
-                    setClaimForm({ ...claimForm, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
+      <AnimatePresence>
+        {isClaimModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsClaimModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-[#836EF9]" />
+                  Submit Reimbursement Claim
+                </h3>
+                <button
+                  onClick={() => setIsClaimModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Submitting Employee Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. David Miller"
-                  value={claimForm.employee_name}
-                  onChange={(e) =>
-                    setClaimForm({
-                      ...claimForm,
-                      employee_name: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleSubmitClaim} className="mt-4 space-y-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Amount ({currencySymbol}) *
+                    Expense Purpose / Title *
                   </label>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     required
-                    placeholder="120.00"
-                    value={claimForm.amount}
+                    placeholder="e.g. AWS Cloud Infrastructure Credits"
+                    value={claimForm.title}
                     onChange={(e) =>
-                      setClaimForm({ ...claimForm, amount: e.target.value })
+                      setClaimForm({ ...claimForm, title: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Submitting Employee Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. David Miller"
+                    value={claimForm.employee_name}
+                    onChange={(e) =>
+                      setClaimForm({
+                        ...claimForm,
+                        employee_name: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Amount ({currencySymbol}) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      placeholder="120.00"
+                      value={claimForm.amount}
+                      onChange={(e) =>
+                        setClaimForm({ ...claimForm, amount: e.target.value })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Category
+                    </label>
+                    <NeoSelect
+                      value={claimForm.category}
+                      onChange={(val) =>
+                        setClaimForm({ ...claimForm, category: val })
+                      }
+                      options={[
+                        { value: "Software", label: "Software & SaaS" },
+                        { value: "Travel", label: "Travel & Lodging" },
+                        { value: "Equipment", label: "Hardware & Gear" },
+                        { value: "Meals", label: "Client Entertainment" },
+                        { value: "Office", label: "Office Supplies" },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Department
+                  </label>
+                  <NeoSelect
+                    value={claimForm.department}
+                    onChange={(val) =>
+                      setClaimForm({ ...claimForm, department: val })
+                    }
+                    options={[
+                      { value: "Engineering", label: "Engineering" },
+                      { value: "Marketing", label: "Marketing" },
+                      { value: "Operations", label: "Operations" },
+                      { value: "Sales", label: "Sales" },
+                      { value: "Finance", label: "Finance" },
+                      { value: "Executive", label: "Executive" },
+                    ]}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Notes & Justification
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Justification for company expense..."
+                    value={claimForm.notes}
+                    onChange={(e) =>
+                      setClaimForm({ ...claimForm, notes: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-medium border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsClaimModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Submit Claim</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: DEFINE EXPENSE POLICY */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isPolicyModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsPolicyModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <Scale className="h-5 w-5 text-[#836EF9]" />
+                  Define Expense Policy
+                </h3>
+                <button
+                  onClick={() => setIsPolicyModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreatePolicy} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Policy Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Travel & Flight Policy"
+                    value={policyForm.name}
+                    onChange={(e) =>
+                      setPolicyForm({ ...policyForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                 </div>
 
@@ -2536,405 +2737,314 @@ export function BusinessDashboard({
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
                     Category
                   </label>
-                  <select
-                    value={claimForm.category}
-                    onChange={(e) =>
-                      setClaimForm({ ...claimForm, category: e.target.value })
+                  <NeoSelect
+                    value={policyForm.category}
+                    onChange={(val) =>
+                      setPolicyForm({ ...policyForm, category: val })
                     }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
+                    options={[
+                      { value: "Software", label: "Software & SaaS" },
+                      { value: "Travel", label: "Travel & Lodging" },
+                      { value: "Equipment", label: "Hardware & Gear" },
+                      { value: "Meals", label: "Client Entertainment" },
+                      { value: "Office", label: "Office Supplies" },
+                    ]}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Max Single Tx ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      value={policyForm.max_single_amount}
+                      onChange={(e) =>
+                        setPolicyForm({
+                          ...policyForm,
+                          max_single_amount: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Monthly Budget ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      value={policyForm.monthly_budget}
+                      onChange={(e) =>
+                        setPolicyForm({
+                          ...policyForm,
+                          monthly_budget: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Receipt Req Above ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      value={policyForm.requires_receipt_above}
+                      onChange={(e) =>
+                        setPolicyForm({
+                          ...policyForm,
+                          requires_receipt_above: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Approval Req Above ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      value={policyForm.requires_approval_above}
+                      onChange={(e) =>
+                        setPolicyForm({
+                          ...policyForm,
+                          requires_approval_above: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsPolicyModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
                   >
-                    <option value="Software">Software & SaaS</option>
-                    <option value="Travel">Travel & Lodging</option>
-                    <option value="Equipment">Hardware & Gear</option>
-                    <option value="Meals">Client Entertainment</option>
-                    <option value="Office">Office Supplies</option>
-                  </select>
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Save Policy</span>
+                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Department
-                </label>
-                <select
-                  value={claimForm.department}
-                  onChange={(e) =>
-                    setClaimForm({ ...claimForm, department: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="Engineering">Engineering</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Executive">Executive</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Notes & Justification
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Justification for company expense..."
-                  value={claimForm.notes}
-                  onChange={(e) =>
-                    setClaimForm({ ...claimForm, notes: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-medium border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsClaimModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Submit Claim</span>
-                </button>
-              </div>
-            </form>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: DEFINE EXPENSE POLICY */}
-      {/* ========================================================================= */}
-      {isPolicyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <Scale className="h-5 w-5 text-[#836EF9]" />
-                Define Expense Policy
-              </h3>
-              <button
-                onClick={() => setIsPolicyModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreatePolicy} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Policy Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Travel & Flight Policy"
-                  value={policyForm.name}
-                  onChange={(e) =>
-                    setPolicyForm({ ...policyForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Category
-                </label>
-                <select
-                  value={policyForm.category}
-                  onChange={(e) =>
-                    setPolicyForm({ ...policyForm, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="Software">Software & SaaS</option>
-                  <option value="Travel">Travel & Lodging</option>
-                  <option value="Equipment">Hardware & Gear</option>
-                  <option value="Meals">Client Entertainment</option>
-                  <option value="Office">Office Supplies</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Max Single Tx ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    value={policyForm.max_single_amount}
-                    onChange={(e) =>
-                      setPolicyForm({
-                        ...policyForm,
-                        max_single_amount: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Monthly Budget ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    value={policyForm.monthly_budget}
-                    onChange={(e) =>
-                      setPolicyForm({
-                        ...policyForm,
-                        monthly_budget: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Receipt Req Above ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    value={policyForm.requires_receipt_above}
-                    onChange={(e) =>
-                      setPolicyForm({
-                        ...policyForm,
-                        requires_receipt_above: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Approval Req Above ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    value={policyForm.requires_approval_above}
-                    onChange={(e) =>
-                      setPolicyForm({
-                        ...policyForm,
-                        requires_approval_above: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsPolicyModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Save Policy</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* ========================================================================= */}
       {/* MODAL: DETAILED CLAIM REVIEW & MONAD PAYOUT */}
       {/* ========================================================================= */}
-      {selectedClaimForReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <FileCheck className="h-5 w-5 text-[#836EF9]" />
-                Corporate Claim Review
-              </h3>
-              <button
-                onClick={() => setSelectedClaimForReview(null)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-lg font-black uppercase text-[#121212]">
-                    {selectedClaimForReview.title}
-                  </h4>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    Submitted by{" "}
-                    <strong>{selectedClaimForReview.employee_name}</strong> •{" "}
-                    {selectedClaimForReview.department}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-black font-mono text-[#121212]">
-                    {currencySymbol}
-                    {Number(selectedClaimForReview.amount).toFixed(2)}
-                  </div>
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] mt-1 ${
-                      selectedClaimForReview.status === "paid"
-                        ? "bg-[#dcfce7] text-[#15803d]"
-                        : selectedClaimForReview.status === "approved"
-                          ? "bg-[#f3f0ff] text-[#836EF9]"
-                          : selectedClaimForReview.status === "rejected"
-                            ? "bg-[#fee2e2] text-[#b91c1c]"
-                            : "bg-[#fef9c3] text-[#854d0e]"
-                    }`}
-                  >
-                    {selectedClaimForReview.status}
-                  </span>
-                </div>
-              </div>
-
-              {/* Policy Evaluation Engine Insight */}
-              <div className="p-3 rounded-lg border-2 border-[#121212] bg-[#f9fafb]">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                  Spend Policy Evaluation
-                </span>
-                {(() => {
-                  const matchedPolicy = policies.find(
-                    (p) =>
-                      p.category.toLowerCase() ===
-                      selectedClaimForReview.category.toLowerCase(),
-                  );
-                  if (!matchedPolicy) {
-                    return (
-                      <p className="text-xs text-slate-600 mt-1">
-                        No category policy defined for{" "}
-                        {selectedClaimForReview.category}. Standard corporate
-                        approval applies.
-                      </p>
-                    );
-                  }
-                  const exceedsCap =
-                    Number(selectedClaimForReview.amount) >
-                    matchedPolicy.max_single_amount;
-                  return (
-                    <div className="mt-1 space-y-1 text-xs">
-                      <div className="flex items-center gap-2">
-                        {exceedsCap ? (
-                          <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
-                        ) : (
-                          <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
-                        )}
-                        <span
-                          className={
-                            exceedsCap
-                              ? "text-rose-600 font-bold"
-                              : "text-emerald-700 font-semibold"
-                          }
-                        >
-                          {exceedsCap
-                            ? `Exceeds single transaction cap (${currencySymbol}${matchedPolicy.max_single_amount})`
-                            : `Within single transaction cap (${currencySymbol}${matchedPolicy.max_single_amount})`}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {selectedClaimForReview.notes && (
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                    Justification
-                  </span>
-                  <p className="text-xs text-slate-700 mt-0.5 bg-slate-50 p-2.5 rounded border border-slate-200">
-                    {selectedClaimForReview.notes}
-                  </p>
-                </div>
-              )}
-
-              {selectedClaimForReview.monad_tx_hash && (
-                <div className="p-2.5 rounded border-2 border-[#121212] bg-[#f3f0ff]">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#836EF9]">
-                    Monad Testnet Settlement Proof
-                  </span>
-                  <div className="font-mono text-xs text-slate-700 truncate mt-0.5">
-                    {selectedClaimForReview.monad_tx_hash}
-                  </div>
-                </div>
-              )}
-
-              {/* Reviewer Note Input */}
-              {selectedClaimForReview.status === "submitted" && (
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Review / Approval Note
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Approved per Engineering budget allocation"
-                    value={reviewNote}
-                    onChange={(e) => setReviewNote(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-medium border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="pt-4 border-t-2 border-[#121212] flex flex-wrap items-center justify-end gap-2">
+      <AnimatePresence>
+        {selectedClaimForReview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedClaimForReview(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <FileCheck className="h-5 w-5 text-[#836EF9]" />
+                  Corporate Claim Review
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setSelectedClaimForReview(null)}
-                  className="px-3 py-1.5 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
                 >
-                  Close
+                  <X className="h-4 w-4" />
                 </button>
+              </div>
 
-                {selectedClaimForReview.status === "submitted" && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleRejectClaim(selectedClaimForReview, reviewNote)
-                      }
-                      className="px-3 py-1.5 border-2 border-[#121212] bg-[#fee2e2] text-[#b91c1c] text-xs font-black uppercase tracking-wider rounded-lg shadow-[2px_2px_0_0_#121212] hover:bg-[#fca5a5]"
+              <div className="mt-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-lg font-black uppercase text-[#121212]">
+                      {selectedClaimForReview.title}
+                    </h4>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Submitted by{" "}
+                      <strong>{selectedClaimForReview.employee_name}</strong> •{" "}
+                      {selectedClaimForReview.department}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-black font-mono text-[#121212]">
+                      {currencySymbol}
+                      {Number(selectedClaimForReview.amount).toFixed(2)}
+                    </div>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] mt-1 ${
+                        selectedClaimForReview.status === "paid"
+                          ? "bg-[#dcfce7] text-[#15803d]"
+                          : selectedClaimForReview.status === "approved"
+                            ? "bg-[#f3f0ff] text-[#836EF9]"
+                            : selectedClaimForReview.status === "rejected"
+                              ? "bg-[#fee2e2] text-[#b91c1c]"
+                              : "bg-[#fef9c3] text-[#854d0e]"
+                      }`}
                     >
-                      Reject Claim
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleApproveClaim(selectedClaimForReview, reviewNote)
-                      }
-                      className="neo-btn neo-btn-primary text-xs"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                      <span>Approve Claim</span>
-                    </button>
-                  </>
+                      {selectedClaimForReview.status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Policy Evaluation Engine Insight */}
+                <div className="p-3 rounded-lg border-2 border-[#121212] bg-[#f9fafb]">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Spend Policy Evaluation
+                  </span>
+                  {(() => {
+                    const matchedPolicy = policies.find(
+                      (p) =>
+                        p.category.toLowerCase() ===
+                        selectedClaimForReview.category.toLowerCase(),
+                    );
+                    if (!matchedPolicy) {
+                      return (
+                        <p className="text-xs text-slate-600 mt-1">
+                          No category policy defined for{" "}
+                          {selectedClaimForReview.category}. Standard corporate
+                          approval applies.
+                        </p>
+                      );
+                    }
+                    const exceedsCap =
+                      Number(selectedClaimForReview.amount) >
+                      matchedPolicy.max_single_amount;
+                    return (
+                      <div className="mt-1 space-y-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          {exceedsCap ? (
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
+                          ) : (
+                            <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          )}
+                          <span
+                            className={
+                              exceedsCap
+                                ? "text-rose-600 font-bold"
+                                : "text-emerald-700 font-semibold"
+                            }
+                          >
+                            {exceedsCap
+                              ? `Exceeds single transaction cap (${currencySymbol}${matchedPolicy.max_single_amount})`
+                              : `Within single transaction cap (${currencySymbol}${matchedPolicy.max_single_amount})`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {selectedClaimForReview.notes && (
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Justification
+                    </span>
+                    <p className="text-xs text-slate-700 mt-0.5 bg-slate-50 p-2.5 rounded border border-slate-200">
+                      {selectedClaimForReview.notes}
+                    </p>
+                  </div>
                 )}
 
-                {selectedClaimForReview.status === "approved" && (
+                {selectedClaimForReview.monad_tx_hash && (
+                  <div className="p-2.5 rounded border-2 border-[#121212] bg-[#f3f0ff]">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#836EF9]">
+                      Monad Testnet Settlement Proof
+                    </span>
+                    <div className="font-mono text-xs text-slate-700 truncate mt-0.5">
+                      {selectedClaimForReview.monad_tx_hash}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reviewer Note Input */}
+                {selectedClaimForReview.status === "submitted" && (
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Review / Approval Note
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Approved per Engineering budget allocation"
+                      value={reviewNote}
+                      onChange={(e) => setReviewNote(e.target.value)}
+                      className="w-full px-3 py-2 text-xs font-medium border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="pt-4 border-t-2 border-[#121212] flex flex-wrap items-center justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() =>
-                      handlePayClaimOnMonad(selectedClaimForReview)
-                    }
-                    className="neo-btn neo-btn-primary text-xs bg-[#15803d] hover:bg-[#166534]"
+                    onClick={() => setSelectedClaimForReview(null)}
+                    className="px-3 py-1.5 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
                   >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span>Disburse on Monad</span>
+                    Close
                   </button>
-                )}
+
+                  {selectedClaimForReview.status === "submitted" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRejectClaim(selectedClaimForReview, reviewNote)
+                        }
+                        className="px-3 py-1.5 border-2 border-[#121212] bg-[#fee2e2] text-[#b91c1c] text-xs font-black uppercase tracking-wider rounded-lg shadow-[2px_2px_0_0_#121212] hover:bg-[#fca5a5]"
+                      >
+                        Reject Claim
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleApproveClaim(selectedClaimForReview, reviewNote)
+                        }
+                        className="neo-btn neo-btn-primary text-xs"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        <span>Approve Claim</span>
+                      </button>
+                    </>
+                  )}
+
+                  {selectedClaimForReview.status === "approved" && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handlePayClaimOnMonad(selectedClaimForReview)
+                      }
+                      className="neo-btn neo-btn-primary text-xs bg-[#15803d] hover:bg-[#166534]"
+                    >
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      <span>Disburse on Monad</span>
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

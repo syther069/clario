@@ -52,6 +52,11 @@ import {
 } from "@/lib/modes/mode-storage";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
+
+import { AnimatedBackground, Magnetic } from "@/components/ui/motion";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { motion, AnimatePresence } from "motion/react";
 
 interface FamilyDashboardProps {
   transactions: Transaction[];
@@ -875,11 +880,6 @@ export function FamilyDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[11px] font-mono font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2.5 py-1 rounded-md border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-block">
-                [FAMILY & HOUSEHOLD WORKSPACE]
-              </span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212] font-mono">
               Household Financial Hub
             </h1>
@@ -890,101 +890,115 @@ export function FamilyDashboard({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setIsMemberModalOpen(true)}
-              className="neo-btn neo-btn-secondary shadow-[3px_3px_0_0_#121212] hover:shadow-[1px_1px_0_0_#121212] hover:translate-x-[1px] hover:translate-y-[1px] font-mono font-black uppercase tracking-wider"
-            >
-              <UsersRound className="h-4 w-4 text-[#836EF9]" />
-              <span>Add Member</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsMemberModalOpen(true)}
+                variant="secondary"
+                icon={<UsersRound className="h-4 w-4 text-[#836EF9]" />}
+                morphText="Add Member"
+              />
+            </Magnetic>
 
-            <button
-              onClick={() => setIsBillModalOpen(true)}
-              className="neo-btn neo-btn-primary shadow-[3px_3px_0_0_#121212] hover:shadow-[1px_1px_0_0_#121212] hover:translate-x-[1px] hover:translate-y-[1px] font-mono font-black uppercase tracking-wider"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Schedule Bill</span>
-            </button>
+            <Magnetic range={70} intensity={0.4}>
+              <WatermelonButton
+                onClick={() => setIsBillModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Schedule Bill"
+              />
+            </Magnetic>
           </div>
         </div>
 
-        {/* Primary Mode Navigation Bar */}
+        {/* Primary Mode Navigation Bar with AnimatedBackground */}
         <nav
           aria-label="Family Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
         >
-          {[
-            { id: "overview", label: "Overview", icon: House },
-            {
-              id: "members",
-              label: "Household Members",
-              icon: UsersRound,
-              count: members.length,
-            },
-            {
-              id: "expenses",
-              label: "Shared Expenses",
-              icon: Receipt,
-              count: householdExpenses.length,
-            },
-            {
-              id: "budgets",
-              label: "Household Budgets",
-              icon: ChartNoAxesCombined,
-              count: budgetStatusList.length,
-            },
-            {
-              id: "bills",
-              label: "Bills & Utilities",
-              icon: CalendarDays,
-              count: bills.filter((b) => b.status === "unpaid").length,
-            },
-            {
-              id: "goals",
-              label: "Family Goals",
-              icon: Target,
-              count: localGoals.length,
-            },
-            {
-              id: "settlements",
-              label: "Settlements",
-              icon: ArrowLeftRight,
-              count: settlements.filter((s) => s.status === "pending").length,
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeView === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleViewChange(tab.id as FamilyView)}
-                className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#faf5ff] hover:shadow-[2px_2px_0_0_#121212]"
-                }`}
-              >
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+          <AnimatedBackground
+            defaultValue={activeView}
+            className="bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg"
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+            }}
+          >
+            {[
+              { id: "overview", label: "Overview", icon: House },
+              {
+                id: "members",
+                label: "Household Members",
+                icon: UsersRound,
+                count: members.length,
+              },
+              {
+                id: "expenses",
+                label: "Shared Expenses",
+                icon: Receipt,
+                count: householdExpenses.length,
+              },
+              {
+                id: "budgets",
+                label: "Household Budgets",
+                icon: ChartNoAxesCombined,
+                count: budgetStatusList.length,
+              },
+              {
+                id: "bills",
+                label: "Bills & Utilities",
+                icon: CalendarDays,
+                count: bills.filter((b) => b.status === "unpaid").length,
+              },
+              {
+                id: "goals",
+                label: "Family Goals",
+                icon: Target,
+                count: localGoals.length,
+              },
+              {
+                id: "settlements",
+                label: "Settlements",
+                icon: ArrowLeftRight,
+                count: settlements.filter((s) => s.status === "pending").length,
+              },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeView === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  data-id={tab.id}
+                  type="button"
+                  onClick={() => handleViewChange(tab.id as FamilyView)}
+                  className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#faf5ff]"
                   }`}
-                  aria-hidden="true"
-                />
-                <span className="shrink-0">{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
-                      isActive
-                        ? "bg-white text-[#121212]"
-                        : "bg-[#f3f0ff] text-[#836EF9]"
+                >
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
+                      isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
                     }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                    aria-hidden="true"
+                  />
+                  <span className="shrink-0">{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                        isActive
+                          ? "bg-white text-[#121212]"
+                          : "bg-[#f3f0ff] text-[#836EF9]"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
       </div>
 
@@ -1129,37 +1143,45 @@ export function FamilyDashboard({
             </span>
             <div className="flex flex-wrap items-center gap-2">
               {onAddTransaction && (
-                <button
-                  onClick={onAddTransaction}
-                  className="neo-btn neo-btn-primary py-1 px-3 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Log Expense</span>
-                </button>
+                <Magnetic range={50} intensity={0.3}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    size="sm"
+                    icon={<Plus className="h-3.5 w-3.5" />}
+                    morphText="Log Expense"
+                  />
+                </Magnetic>
               )}
               {onUploadReceipt && (
-                <button
-                  onClick={onUploadReceipt}
-                  className="neo-btn neo-btn-secondary py-1 px-3 text-xs"
-                >
-                  <Receipt className="h-3.5 w-3.5" />
-                  <span>Scan Receipt</span>
-                </button>
+                <Magnetic range={50} intensity={0.3}>
+                  <WatermelonButton
+                    onClick={onUploadReceipt}
+                    variant="secondary"
+                    size="sm"
+                    icon={<Receipt className="h-3.5 w-3.5 text-[#836EF9]" />}
+                    morphText="Scan Receipt"
+                  />
+                </Magnetic>
               )}
-              <button
-                onClick={() => setIsBillModalOpen(true)}
-                className="neo-btn neo-btn-secondary py-1 px-3 text-xs"
-              >
-                <CalendarDays className="h-3.5 w-3.5" />
-                <span>Schedule Bill</span>
-              </button>
-              <button
-                onClick={() => setIsManualSettlementModalOpen(true)}
-                className="neo-btn neo-btn-secondary py-1 px-3 text-xs"
-              >
-                <ArrowLeftRight className="h-3.5 w-3.5" />
-                <span>Record IOU</span>
-              </button>
+              <Magnetic range={50} intensity={0.3}>
+                <WatermelonButton
+                  onClick={() => setIsBillModalOpen(true)}
+                  variant="secondary"
+                  size="sm"
+                  icon={<CalendarDays className="h-3.5 w-3.5 text-[#836EF9]" />}
+                  morphText="Schedule Bill"
+                />
+              </Magnetic>
+              <Magnetic range={50} intensity={0.3}>
+                <WatermelonButton
+                  onClick={() => setIsManualSettlementModalOpen(true)}
+                  variant="secondary"
+                  size="sm"
+                  icon={<ArrowLeftRight className="h-3.5 w-3.5 text-[#836EF9]" />}
+                  morphText="Record IOU"
+                />
+              </Magnetic>
             </div>
           </div>
 
@@ -1307,13 +1329,14 @@ export function FamilyDashboard({
                 Manage roles (Owner, Member, Viewer) and split participants.
               </p>
             </div>
-            <button
-              onClick={() => setIsMemberModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Member</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsMemberModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Add Member"
+              />
+            </Magnetic>
           </div>
 
           {isLoading ? (
@@ -1436,13 +1459,14 @@ export function FamilyDashboard({
                 <span>Export CSV</span>
               </button>
               {onAddTransaction && (
-                <button
-                  onClick={onAddTransaction}
-                  className="neo-btn neo-btn-primary"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Log Shared Expense</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Log Shared Expense"
+                  />
+                </Magnetic>
               )}
             </div>
           </div>
@@ -1567,13 +1591,14 @@ export function FamilyDashboard({
                 childcare.
               </p>
             </div>
-            <button
-              onClick={() => setIsBudgetModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create Category Budget</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsBudgetModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Create Budget"
+              />
+            </Magnetic>
           </div>
 
           {budgetStatusList.length === 0 ? (
@@ -1593,13 +1618,16 @@ export function FamilyDashboard({
                 Set monthly spending targets for household categories like
                 Groceries, Energy, Rent, or Dining.
               </p>
-              <button
-                onClick={() => setIsBudgetModalOpen(true)}
-                className="mt-6 neo-btn neo-btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-xs font-mono font-black uppercase tracking-wider shadow-[4px_4px_0_0_#121212] hover:shadow-[2px_2px_0_0_#121212] hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Establish First Budget</span>
-              </button>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsBudgetModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Establish First Budget"
+                  />
+                </Magnetic>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1753,13 +1781,16 @@ export function FamilyDashboard({
                 payments on track. Track household payment status and settle
                 splits non-custodially on Monad.
               </p>
-              <button
-                onClick={() => setIsBillModalOpen(true)}
-                className="mt-6 neo-btn neo-btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-xs font-mono font-black uppercase tracking-wider shadow-[4px_4px_0_0_#121212] hover:shadow-[2px_2px_0_0_#121212] hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Schedule First Bill</span>
-              </button>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsBillModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Schedule First Bill"
+                  />
+                </Magnetic>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -1849,13 +1880,14 @@ export function FamilyDashboard({
                 household purchases.
               </p>
             </div>
-            <button
-              onClick={() => setIsGoalModalOpen(true)}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create Family Goal</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsGoalModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Create Goal"
+              />
+            </Magnetic>
           </div>
 
           {localGoals.length === 0 ? (
@@ -1875,13 +1907,16 @@ export function FamilyDashboard({
                 Set a collective target for vacation funds, emergency reserves,
                 or major household milestones.
               </p>
-              <button
-                onClick={() => setIsGoalModalOpen(true)}
-                className="mt-6 neo-btn neo-btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-xs font-mono font-black uppercase tracking-wider shadow-[4px_4px_0_0_#121212] hover:shadow-[2px_2px_0_0_#121212] hover:translate-x-[2px] hover:translate-y-[2px]"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Create First Goal</span>
-              </button>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsGoalModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Create First Goal"
+                  />
+                </Magnetic>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -2122,132 +2157,837 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: ADD MEMBER */}
       {/* ========================================================================= */}
-      {isMemberModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <UsersRound className="h-5 w-5 text-[#836EF9]" />
-                Add Household Member
-              </h3>
-              <button
-                onClick={() => setIsMemberModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateMember} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Maya"
-                  value={memberForm.name}
-                  onChange={(e) =>
-                    setMemberForm({ ...memberForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Email (Optional)
-                </label>
-                <input
-                  type="email"
-                  placeholder="maya@family.internal"
-                  value={memberForm.email}
-                  onChange={(e) =>
-                    setMemberForm({ ...memberForm, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={memberForm.role}
-                  onChange={(e) =>
-                    setMemberForm({
-                      ...memberForm,
-                      role: e.target.value as "owner" | "member" | "viewer",
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="member">
-                    Member (Can log expenses & view balances)
-                  </option>
-                  <option value="owner">
-                    Owner (Full budget control & adjustments)
-                  </option>
-                  <option value="viewer">Viewer (Read-only)</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+      <AnimatePresence>
+        {isMemberModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <UsersRound className="h-5 w-5 text-[#836EF9]" />
+                  Add Household Member
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setIsMemberModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Add Member</span>
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleCreateMember} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Maya"
+                    value={memberForm.name}
+                    onChange={(e) =>
+                      setMemberForm({ ...memberForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Email (Optional)
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="maya@family.internal"
+                    value={memberForm.email}
+                    onChange={(e) =>
+                      setMemberForm({ ...memberForm, email: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Role
+                  </label>
+                  <NeoSelect
+                    fullWidth
+                    value={memberForm.role}
+                    onChange={(val) =>
+                      setMemberForm({
+                        ...memberForm,
+                        role: val as "owner" | "member" | "viewer",
+                      })
+                    }
+                    options={[
+                      {
+                        value: "member",
+                        label: "Member (Can log expenses & view balances)",
+                      },
+                      {
+                        value: "owner",
+                        label: "Owner (Full budget control & adjustments)",
+                      },
+                      { value: "viewer", label: "Viewer (Read-only)" },
+                    ]}
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsMemberModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Add Member</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ========================================================================= */}
       {/* MODAL: SCHEDULE BILL */}
       {/* ========================================================================= */}
-      {isBillModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 text-[#836EF9]" />
-                Schedule Household Bill
-              </h3>
-              <button
-                onClick={() => setIsBillModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateBill} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Bill Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Electric & Gas"
-                  value={billForm.name}
-                  onChange={(e) =>
-                    setBillForm({ ...billForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
+      <AnimatePresence>
+        {isBillModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-[#836EF9]" />
+                  Schedule Household Bill
+                </h3>
+                <button
+                  onClick={() => setIsBillModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleCreateBill} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Bill Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Electric & Gas"
+                    value={billForm.name}
+                    onChange={(e) =>
+                      setBillForm({ ...billForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Amount ({currencySymbol}) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      placeholder="150"
+                      value={billForm.amount}
+                      onChange={(e) =>
+                        setBillForm({ ...billForm, amount: e.target.value })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Due Date *
+                    </label>
+                    <NeoDatePicker
+                      fullWidth
+                      value={billForm.due_date}
+                      onChange={(val) =>
+                        setBillForm({ ...billForm, due_date: val })
+                      }
+                      placeholder="Select Date"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Category
+                    </label>
+                    <NeoSelect
+                      fullWidth
+                      value={billForm.category}
+                      onChange={(val) =>
+                        setBillForm({ ...billForm, category: val })
+                      }
+                      options={[
+                        { value: "utilities", label: "Utilities" },
+                        { value: "rent", label: "Rent / Housing" },
+                        { value: "internet", label: "Internet" },
+                        { value: "streaming", label: "Streaming" },
+                        { value: "insurance", label: "Insurance" },
+                      ]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Frequency
+                    </label>
+                    <NeoSelect
+                      fullWidth
+                      value={billForm.frequency}
+                      onChange={(val) =>
+                        setBillForm({
+                          ...billForm,
+                          frequency: val as "monthly" | "quarterly" | "yearly",
+                        })
+                      }
+                      options={[
+                        { value: "monthly", label: "Monthly" },
+                        { value: "quarterly", label: "Quarterly" },
+                        { value: "yearly", label: "Yearly" },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBillModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Save Bill</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: INTERACTIVE SPLIT CALCULATOR */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isSplitModalOpen && selectedTxForSplit && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212] max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
+                  Split Shared Expense
+                </h3>
+                <button
+                  onClick={() => setIsSplitModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Selected Transaction Summary */}
+              <div className="mt-4 p-3 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Transaction
+                  </span>
+                  <div className="text-sm font-black text-[#121212]">
+                    {selectedTxForSplit.merchant}
+                  </div>
+                  <div className="text-[10px] text-slate-600">
+                    {selectedTxForSplit.date ||
+                      selectedTxForSplit.timestamp?.split("T")[0]}
+                  </div>
+                </div>
+                <div className="text-xl font-mono font-black text-[#121212]">
+                  {currencySymbol}
+                  {Number(selectedTxForSplit.amount).toFixed(2)}
+                </div>
+              </div>
+
+              <form onSubmit={handleConfirmSplit} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Who Paid the Bill?
+                  </label>
+                  <NeoSelect
+                    value={splitPayerId}
+                    onChange={setSplitPayerId}
+                    options={members.map((m) => ({
+                      value: m.id,
+                      label: `${m.name} (${m.role})`,
+                    }))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Split Methodology
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "equal", label: "Equal Split" },
+                      { id: "custom_percentage", label: "Percentage %" },
+                      { id: "exact", label: "Exact Amounts" },
+                    ].map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() =>
+                          setSplitType(
+                            method.id as "equal" | "custom_percentage" | "exact",
+                          )
+                        }
+                        className={`py-1.5 px-2 rounded-lg text-[10px] font-black uppercase tracking-wider border-2 border-[#121212] transition ${
+                          splitType === method.id
+                            ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                            : "bg-white text-[#121212] hover:bg-slate-100"
+                        }`}
+                      >
+                        {method.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Included Members & Shares
+                  </label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto p-1">
+                    {members.map((m) => {
+                      const isChecked = splitSelectedMemberIds.includes(m.id);
+                      const isPayer = m.id === splitPayerId;
+                      const totalAmt = Number(selectedTxForSplit.amount);
+                      const equalShare =
+                        splitSelectedMemberIds.length > 0
+                          ? (totalAmt / splitSelectedMemberIds.length).toFixed(2)
+                          : "0.00";
+
+                      return (
+                        <div
+                          key={m.id}
+                          className="p-2.5 rounded-lg border border-[#121212] bg-[#f9fafb] flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSplitSelectedMemberIds([
+                                    ...splitSelectedMemberIds,
+                                    m.id,
+                                  ]);
+                                } else {
+                                  setSplitSelectedMemberIds(
+                                    splitSelectedMemberIds.filter(
+                                      (id) => id !== m.id,
+                                    ),
+                                  );
+                                }
+                              }}
+                              className="h-4 w-4 rounded border-2 border-[#121212] text-[#836EF9] focus:ring-[#836EF9]"
+                            />
+                            <span className="text-xs font-bold text-[#121212]">
+                              {m.name} {isPayer ? "(Payer)" : ""}
+                            </span>
+                          </div>
+
+                          {isChecked && (
+                            <div>
+                              {splitType === "equal" && (
+                                <span className="font-mono text-xs font-black text-[#121212]">
+                                  {currencySymbol}
+                                  {equalShare}
+                                </span>
+                              )}
+                              {splitType === "custom_percentage" && (
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    placeholder="50"
+                                    value={splitPercentages[m.id] ?? ""}
+                                    onChange={(e) =>
+                                      setSplitPercentages({
+                                        ...splitPercentages,
+                                        [m.id]: Number(e.target.value),
+                                      })
+                                    }
+                                    className="w-16 px-1.5 py-0.5 border border-[#121212] rounded text-xs font-mono font-bold text-right"
+                                  />
+                                  <span className="text-xs font-black">%</span>
+                                </div>
+                              )}
+                              {splitType === "exact" && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs font-black">
+                                    {currencySymbol}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="25.00"
+                                    value={splitAmounts[m.id] ?? ""}
+                                    onChange={(e) =>
+                                      setSplitAmounts({
+                                        ...splitAmounts,
+                                        [m.id]: Number(e.target.value),
+                                      })
+                                    }
+                                    className="w-20 px-1.5 py-0.5 border border-[#121212] rounded text-xs font-mono font-bold text-right"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsSplitModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Confirm & Record Settlements</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: CREATE CATEGORY BUDGET */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isBudgetModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <ChartNoAxesCombined className="h-5 w-5 text-[#836EF9]" />
+                  Create Category Budget
+                </h3>
+                <button
+                  onClick={() => setIsBudgetModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateBudget} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Budget Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Groceries & Household"
+                    value={budgetForm.name}
+                    onChange={(e) =>
+                      setBudgetForm({ ...budgetForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Monthly Limit ({currencySymbol}) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="800"
+                    value={budgetForm.limit}
+                    onChange={(e) =>
+                      setBudgetForm({ ...budgetForm, limit: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Category Tag
+                  </label>
+                  <NeoSelect
+                    value={budgetForm.category}
+                    onChange={(val) =>
+                      setBudgetForm({ ...budgetForm, category: val })
+                    }
+                    options={[
+                      { value: "Groceries", label: "Groceries & Food" },
+                      { value: "Utilities", label: "Utilities & Energy" },
+                      { value: "Housing", label: "Housing / Rent" },
+                      { value: "Dining", label: "Dining Out" },
+                      { value: "Childcare", label: "Childcare & Education" },
+                      { value: "Entertainment", label: "Entertainment" },
+                    ]}
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBudgetModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Save Budget</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: CREATE SAVINGS GOAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isGoalModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <Target className="h-5 w-5 text-[#836EF9]" />
+                  Create Family Goal
+                </h3>
+                <button
+                  onClick={() => setIsGoalModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateGoal} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Goal Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Summer Family Trip"
+                    value={goalForm.title}
+                    onChange={(e) =>
+                      setGoalForm({ ...goalForm, title: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Target Amount ({currencySymbol}) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      placeholder="5000"
+                      value={goalForm.target_amount}
+                      onChange={(e) =>
+                        setGoalForm({
+                          ...goalForm,
+                          target_amount: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Current Saved ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="1000"
+                      value={goalForm.current_amount}
+                      onChange={(e) =>
+                        setGoalForm({
+                          ...goalForm,
+                          current_amount: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Target Deadline
+                  </label>
+                  <NeoDatePicker
+                    value={goalForm.deadline}
+                    onChange={(date) =>
+                      setGoalForm({ ...goalForm, deadline: date })
+                    }
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsGoalModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Save Goal</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: CONTRIBUTE TO GOAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isContributeModalOpen && selectedGoalForContribute && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-sm p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <Target className="h-5 w-5 text-[#836EF9]" />
+                  Contribute Funds
+                </h3>
+                <button
+                  onClick={() => setIsContributeModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleContributeToGoal} className="mt-4 space-y-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-slate-500">
+                    Goal Target
+                  </span>
+                  <div className="text-sm font-black text-[#121212]">
+                    {selectedGoalForContribute.title ||
+                      selectedGoalForContribute.name}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Deposit Amount ({currencySymbol}) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="250"
+                    value={contributeAmount}
+                    onChange={(e) => setContributeAmount(e.target.value)}
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsContributeModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Deposit</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: MANUAL IOU / SETTLEMENT */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isManualSettlementModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
+                  Record Household IOU
+                </h3>
+                <button
+                  onClick={() => setIsManualSettlementModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={handleCreateManualSettlement}
+                className="mt-4 space-y-4"
+              >
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Who Owes? (Debtor) *
+                  </label>
+                  <NeoSelect
+                    fullWidth
+                    value={settlementForm.from_member_id}
+                    onChange={(val) =>
+                      setSettlementForm({
+                        ...settlementForm,
+                        from_member_id: val,
+                      })
+                    }
+                    placeholder="Select Member"
+                    options={members.map((m) => ({
+                      value: m.id,
+                      label: m.name,
+                    }))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Owed To? (Creditor) *
+                  </label>
+                  <NeoSelect
+                    fullWidth
+                    value={settlementForm.to_member_id}
+                    onChange={(val) =>
+                      setSettlementForm({
+                        ...settlementForm,
+                        to_member_id: val,
+                      })
+                    }
+                    placeholder="Select Member"
+                    options={members.map((m) => ({
+                      value: m.id,
+                      label: m.name,
+                    }))}
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
                     Amount ({currencySymbol}) *
@@ -2256,658 +2996,35 @@ export function FamilyDashboard({
                     type="number"
                     step="0.01"
                     required
-                    placeholder="150"
-                    value={billForm.amount}
+                    placeholder="35.00"
+                    value={settlementForm.amount}
                     onChange={(e) =>
-                      setBillForm({ ...billForm, amount: e.target.value })
+                      setSettlementForm({
+                        ...settlementForm,
+                        amount: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Due Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={billForm.due_date}
-                    onChange={(e) =>
-                      setBillForm({ ...billForm, due_date: e.target.value })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={billForm.category}
-                    onChange={(e) =>
-                      setBillForm({ ...billForm, category: e.target.value })
-                    }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsManualSettlementModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
                   >
-                    <option value="utilities">Utilities</option>
-                    <option value="rent">Rent / Housing</option>
-                    <option value="internet">Internet</option>
-                    <option value="streaming">Streaming</option>
-                    <option value="insurance">Insurance</option>
-                  </select>
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Record IOU</span>
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Frequency
-                  </label>
-                  <select
-                    value={billForm.frequency}
-                    onChange={(e) =>
-                      setBillForm({
-                        ...billForm,
-                        frequency: e.target.value as
-                          "monthly" | "quarterly" | "yearly",
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="quarterly">Quarterly</option>
-                    <option value="yearly">Yearly</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsBillModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Save Bill</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: INTERACTIVE SPLIT CALCULATOR */}
-      {/* ========================================================================= */}
-      {isSplitModalOpen && selectedTxForSplit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
-                Split Shared Expense
-              </h3>
-              <button
-                onClick={() => setIsSplitModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Selected Transaction Summary */}
-            <div className="mt-4 p-3 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                  Transaction
-                </span>
-                <div className="text-sm font-black text-[#121212]">
-                  {selectedTxForSplit.merchant}
-                </div>
-                <div className="text-[10px] text-slate-600">
-                  {selectedTxForSplit.date ||
-                    selectedTxForSplit.timestamp?.split("T")[0]}
-                </div>
-              </div>
-              <div className="text-xl font-mono font-black text-[#121212]">
-                {currencySymbol}
-                {Number(selectedTxForSplit.amount).toFixed(2)}
-              </div>
-            </div>
-
-            <form onSubmit={handleConfirmSplit} className="mt-5 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Who Paid the Bill?
-                </label>
-                <select
-                  value={splitPayerId}
-                  onChange={(e) => setSplitPayerId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Split Methodology
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: "equal", label: "Equal Split" },
-                    { id: "custom_percentage", label: "Percentage %" },
-                    { id: "exact", label: "Exact Amounts" },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() =>
-                        setSplitType(
-                          method.id as "equal" | "custom_percentage" | "exact",
-                        )
-                      }
-                      className={`py-1.5 px-2 rounded-lg text-[10px] font-black uppercase tracking-wider border-2 border-[#121212] transition ${
-                        splitType === method.id
-                          ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
-                          : "bg-white text-[#121212] hover:bg-slate-100"
-                      }`}
-                    >
-                      {method.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Included Members & Shares
-                </label>
-                <div className="space-y-2 max-h-48 overflow-y-auto p-1">
-                  {members.map((m) => {
-                    const isChecked = splitSelectedMemberIds.includes(m.id);
-                    const isPayer = m.id === splitPayerId;
-                    const totalAmt = Number(selectedTxForSplit.amount);
-                    const equalShare =
-                      splitSelectedMemberIds.length > 0
-                        ? (totalAmt / splitSelectedMemberIds.length).toFixed(2)
-                        : "0.00";
-
-                    return (
-                      <div
-                        key={m.id}
-                        className="p-2.5 rounded-lg border border-[#121212] bg-[#f9fafb] flex items-center justify-between gap-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSplitSelectedMemberIds([
-                                  ...splitSelectedMemberIds,
-                                  m.id,
-                                ]);
-                              } else {
-                                setSplitSelectedMemberIds(
-                                  splitSelectedMemberIds.filter(
-                                    (id) => id !== m.id,
-                                  ),
-                                );
-                              }
-                            }}
-                            className="h-4 w-4 rounded border-2 border-[#121212] text-[#836EF9] focus:ring-[#836EF9]"
-                          />
-                          <span className="text-xs font-bold text-[#121212]">
-                            {m.name} {isPayer ? "(Payer)" : ""}
-                          </span>
-                        </div>
-
-                        {isChecked && (
-                          <div>
-                            {splitType === "equal" && (
-                              <span className="font-mono text-xs font-black text-[#121212]">
-                                {currencySymbol}
-                                {equalShare}
-                              </span>
-                            )}
-                            {splitType === "custom_percentage" && (
-                              <div className="flex items-center gap-1">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  placeholder="50"
-                                  value={splitPercentages[m.id] ?? ""}
-                                  onChange={(e) =>
-                                    setSplitPercentages({
-                                      ...splitPercentages,
-                                      [m.id]: Number(e.target.value),
-                                    })
-                                  }
-                                  className="w-16 px-1.5 py-0.5 border border-[#121212] rounded text-xs font-mono font-bold text-right"
-                                />
-                                <span className="text-xs font-black">%</span>
-                              </div>
-                            )}
-                            {splitType === "exact" && (
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-black">
-                                  {currencySymbol}
-                                </span>
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="25.00"
-                                  value={splitAmounts[m.id] ?? ""}
-                                  onChange={(e) =>
-                                    setSplitAmounts({
-                                      ...splitAmounts,
-                                      [m.id]: Number(e.target.value),
-                                    })
-                                  }
-                                  className="w-20 px-1.5 py-0.5 border border-[#121212] rounded text-xs font-mono font-bold text-right"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsSplitModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Confirm & Record Settlements</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: CREATE CATEGORY BUDGET */}
-      {/* ========================================================================= */}
-      {isBudgetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <ChartNoAxesCombined className="h-5 w-5 text-[#836EF9]" />
-                Create Category Budget
-              </h3>
-              <button
-                onClick={() => setIsBudgetModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateBudget} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Budget Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Groceries & Household"
-                  value={budgetForm.name}
-                  onChange={(e) =>
-                    setBudgetForm({ ...budgetForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Monthly Limit ({currencySymbol}) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="800"
-                  value={budgetForm.limit}
-                  onChange={(e) =>
-                    setBudgetForm({ ...budgetForm, limit: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Category Tag
-                </label>
-                <select
-                  value={budgetForm.category}
-                  onChange={(e) =>
-                    setBudgetForm({ ...budgetForm, category: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="Groceries">Groceries & Food</option>
-                  <option value="Utilities">Utilities & Energy</option>
-                  <option value="Housing">Housing / Rent</option>
-                  <option value="Dining">Dining Out</option>
-                  <option value="Childcare">Childcare & Education</option>
-                  <option value="Entertainment">Entertainment</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsBudgetModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Save Budget</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: CREATE SAVINGS GOAL */}
-      {/* ========================================================================= */}
-      {isGoalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <Target className="h-5 w-5 text-[#836EF9]" />
-                Create Family Goal
-              </h3>
-              <button
-                onClick={() => setIsGoalModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateGoal} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Goal Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Summer Family Trip"
-                  value={goalForm.title}
-                  onChange={(e) =>
-                    setGoalForm({ ...goalForm, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Target Amount ({currencySymbol}) *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="5000"
-                    value={goalForm.target_amount}
-                    onChange={(e) =>
-                      setGoalForm({
-                        ...goalForm,
-                        target_amount: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Current Saved ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="1000"
-                    value={goalForm.current_amount}
-                    onChange={(e) =>
-                      setGoalForm({
-                        ...goalForm,
-                        current_amount: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Target Deadline
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={goalForm.deadline}
-                  onChange={(e) =>
-                    setGoalForm({ ...goalForm, deadline: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsGoalModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Save Goal</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: CONTRIBUTE TO GOAL */}
-      {/* ========================================================================= */}
-      {isContributeModalOpen && selectedGoalForContribute && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-sm p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <Target className="h-5 w-5 text-[#836EF9]" />
-                Contribute Funds
-              </h3>
-              <button
-                onClick={() => setIsContributeModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleContributeToGoal} className="mt-4 space-y-4">
-              <div>
-                <span className="text-[10px] font-black uppercase text-slate-500">
-                  Goal Target
-                </span>
-                <div className="text-sm font-black text-[#121212]">
-                  {selectedGoalForContribute.title ||
-                    selectedGoalForContribute.name}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Deposit Amount ({currencySymbol}) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="250"
-                  value={contributeAmount}
-                  onChange={(e) => setContributeAmount(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsContributeModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Deposit</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: MANUAL IOU / SETTLEMENT */}
-      {/* ========================================================================= */}
-      {isManualSettlementModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
-                Record Household IOU
-              </h3>
-              <button
-                onClick={() => setIsManualSettlementModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleCreateManualSettlement}
-              className="mt-4 space-y-4"
-            >
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Who Owes? (Debtor) *
-                </label>
-                <select
-                  required
-                  value={settlementForm.from_member_id}
-                  onChange={(e) =>
-                    setSettlementForm({
-                      ...settlementForm,
-                      from_member_id: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="">Select Member</option>
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Owed To? (Creditor) *
-                </label>
-                <select
-                  required
-                  value={settlementForm.to_member_id}
-                  onChange={(e) =>
-                    setSettlementForm({
-                      ...settlementForm,
-                      to_member_id: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                >
-                  <option value="">Select Member</option>
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Amount ({currencySymbol}) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  placeholder="35.00"
-                  value={settlementForm.amount}
-                  onChange={(e) =>
-                    setSettlementForm({
-                      ...settlementForm,
-                      amount: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsManualSettlementModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Record IOU</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -8,6 +8,13 @@ import { Repeat, Plus, Calendar, X, Trash2, Layers } from "lucide-react";
 import type { PlatformMode, Subscription } from "@/lib/supabase/types";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useClarioAuth } from "@/lib/auth/use-clario-auth";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
+import { Magnetic } from "@/components/ui/motion/magnetic";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function SubscriptionsPage() {
   const router = useRouter();
@@ -148,11 +155,6 @@ export default function SubscriptionsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-black uppercase text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
-                [RECURRING SERVICES]
-              </span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212] flex items-center gap-2.5">
               <Repeat className="h-7 w-7 text-[#836EF9]" />
               Subscriptions & Recurring Outflows
@@ -163,13 +165,16 @@ export default function SubscriptionsPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => setModalOpen(true)}
-            className="neo-btn neo-btn-primary"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Subscription</span>
-          </button>
+          <Magnetic range={60} intensity={0.35}>
+            <WatermelonButton
+              onClick={() => setModalOpen(true)}
+              variant="primary"
+              textMorph
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              Add Subscription
+            </WatermelonButton>
+          </Magnetic>
         </div>
 
         {/* Primary Mode Navigation Bar */}
@@ -177,41 +182,52 @@ export default function SubscriptionsPage() {
           aria-label="Subscriptions Primary Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto"
         >
-          {[
-            {
-              id: "overview",
-              label: "Overview",
-              href: "/?mode=personal&view=overview",
-            },
-            {
-              id: "expenses",
-              label: "Expenses",
-              href: "/?mode=personal&view=expenses",
-            },
-            {
-              id: "income",
-              label: "Income",
-              href: "/?mode=personal&view=income",
-            },
-            { id: "budgets", label: "Budgets", href: "/budgets" },
-            { id: "recurring", label: "Recurring", href: "/subscriptions" },
-            { id: "receipts", label: "Saved Receipts", href: "/receipts" },
-          ].map((tab) => {
-            const isActive = tab.id === "recurring";
-            return (
-              <Link
-                key={tab.id}
-                href={tab.href}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shrink-0 ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
-                }`}
-              >
-                <span>{tab.label}</span>
-              </Link>
-            );
-          })}
+          <AnimatedBackground
+            defaultValue="recurring"
+            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            transition={{
+              type: "spring",
+              bounce: 0.15,
+              duration: 0.4,
+            }}
+          >
+            {[
+              {
+                id: "overview",
+                label: "Overview",
+                href: "/?mode=personal&view=overview",
+              },
+              {
+                id: "expenses",
+                label: "Expenses",
+                href: "/?mode=personal&view=expenses",
+              },
+              {
+                id: "income",
+                label: "Income",
+                href: "/?mode=personal&view=income",
+              },
+              { id: "budgets", label: "Budgets", href: "/budgets" },
+              { id: "recurring", label: "Recurring", href: "/subscriptions" },
+              { id: "receipts", label: "Saved Receipts", href: "/receipts" },
+            ].map((tab) => {
+              const isActive = tab.id === "recurring";
+              return (
+                <Link
+                  key={tab.id}
+                  data-id={tab.id}
+                  href={tab.href}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </Link>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
 
         {/* Burn Rate Stat Cards */}
@@ -350,118 +366,134 @@ export default function SubscriptionsPage() {
                 Add recurring services like GitHub, Vercel, Netflix, or cloud
                 hosting to track burn rate and receive renewal notices.
               </p>
-              <button
-                onClick={() => setModalOpen(true)}
-                className="neo-btn neo-btn-primary"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Track First Subscription</span>
-              </button>
+              <div className="pt-2 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setModalOpen(true)}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                  >
+                    Track First Subscription
+                  </WatermelonButton>
+                </Magnetic>
+              </div>
             </div>
           )}
         </div>
       </main>
 
       {/* Add Subscription Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setModalOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          />
+      <AnimatePresence>
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
 
-          <div className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]">
-            <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                Track Subscription
-              </h3>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddSub} className="mt-4 space-y-4">
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Service Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={subName}
-                  onChange={(e) => setSubName(e.target.value)}
-                  placeholder="e.g. GitHub Copilot, Vercel Pro, Figma"
-                  className="mt-1 w-full neo-input font-semibold"
-                />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+            >
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                  Track Subscription
+                </h3>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleAddSub} className="mt-4 space-y-4">
                 <div>
                   <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Amount ($)
+                    Service Name
                   </label>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     required
-                    value={subAmount}
-                    onChange={(e) => setSubAmount(e.target.value)}
-                    placeholder="20.00"
-                    className="mt-1 w-full neo-input font-mono font-bold"
+                    value={subName}
+                    onChange={(e) => setSubName(e.target.value)}
+                    placeholder="e.g. GitHub Copilot, Vercel Pro, Figma"
+                    className="mt-1 w-full neo-input font-semibold"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Frequency
-                  </label>
-                  <select
-                    value={subFrequency}
-                    onChange={(e) =>
-                      setSubFrequency(
-                        e.target.value as "monthly" | "yearly" | "weekly",
-                      )
-                    }
-                    className="mt-1 w-full neo-input font-semibold"
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="weekly">Weekly</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                      Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={subAmount}
+                      onChange={(e) => setSubAmount(e.target.value)}
+                      placeholder="20.00"
+                      className="mt-1 w-full neo-input font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                      Frequency
+                    </label>
+                    <NeoSelect
+                      fullWidth
+                      value={subFrequency}
+                      onChange={(val) =>
+                        setSubFrequency(val as "monthly" | "yearly" | "weekly")
+                      }
+                      options={[
+                        { value: "monthly", label: "Monthly" },
+                        { value: "yearly", label: "Yearly" },
+                        { value: "weekly", label: "Weekly" },
+                      ]}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Next Renewal Date
-                </label>
-                <input
-                  type="date"
-                  value={subNextBilling}
-                  onChange={(e) => setSubNextBilling(e.target.value)}
-                  className="mt-1 w-full neo-input font-mono"
-                />
-              </div>
+                <div>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                    Next Renewal Date
+                  </label>
+                  <NeoDatePicker
+                    fullWidth
+                    value={subNextBilling}
+                    onChange={setSubNextBilling}
+                    placeholder="Select Date"
+                  />
+                </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="neo-btn neo-btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  Save Subscription
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="neo-btn neo-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    Save Subscription
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

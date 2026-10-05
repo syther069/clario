@@ -6,8 +6,13 @@ import { ClarioPrivyProvider } from "@/providers/privy-provider";
 import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
-  title: "Clario",
-  description: "Verifiable expense workflows for crypto-native teams.",
+  title: "Clario | Verifiable Expense Ledger on Monad",
+  description: "Verifiable expense workflows and cryptographic receipts on Monad.",
+  icons: {
+    icon: "/clario-logo.svg",
+    shortcut: "/clario-logo.svg",
+    apple: "/clario-logo.svg",
+  },
 };
 
 export default function RootLayout({

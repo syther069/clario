@@ -50,6 +50,13 @@ import {
 } from "recharts";
 import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
 import { ReceiptBundleModal } from "./receipt-bundle-modal";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
+import { Magnetic } from "@/components/ui/motion/magnetic";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { motion, AnimatePresence } from "motion/react";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 
 interface FreelancerDashboardProps {
   transactions: Transaction[];
@@ -702,16 +709,13 @@ export function FreelancerDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
-                [FREELANCER PLATFORM WORKSPACE]
-              </span>
-              {userAddress && (
+            {userAddress && (
+              <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-mono font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
                   ANCHOR: {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212]">
               Freelance & Consulting Operations
             </h1>
@@ -722,21 +726,27 @@ export function FreelancerDashboard({
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleOpenCreateClient}
-              className="neo-btn neo-btn-secondary"
-            >
-              <UsersRound className="h-4 w-4 text-[#836EF9]" />
-              <span>Add Client</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                variant="secondary"
+                textMorph
+                onClick={handleOpenCreateClient}
+                leftIcon={<UsersRound className="h-4 w-4 text-[#836EF9]" />}
+              >
+                Add Client
+              </WatermelonButton>
+            </Magnetic>
 
-            <button
-              onClick={() => handleOpenCreateInvoice()}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create Invoice</span>
-            </button>
+            <Magnetic range={70} intensity={0.4}>
+              <WatermelonButton
+                variant="primary"
+                textMorph
+                onClick={() => handleOpenCreateInvoice()}
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Create Invoice
+              </WatermelonButton>
+            </Magnetic>
           </div>
         </div>
 
@@ -745,67 +755,83 @@ export function FreelancerDashboard({
           aria-label="Freelancer Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
         >
-          {[
-            { id: "overview", label: "Overview", icon: TrendingUp },
-            {
-              id: "clients",
-              label: "Clients CRM",
-              icon: UsersRound,
-              count: clients.length,
-            },
-            {
-              id: "invoices",
-              label: "Invoices",
-              icon: FileText,
-              count: invoices.length,
-            },
-            {
-              id: "expenses",
-              label: "Business Expenses",
-              icon: DollarSign,
-              count: deductibleExpenses.length,
-            },
-            {
-              id: "receipts",
-              label: "Receipts & Proofs",
-              icon: Receipt,
-              count: businessReceipts.length,
-            },
-            { id: "tax", label: "Tax Organizer", icon: ShieldCheck },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeView === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleViewChange(tab.id as FreelancerView)}
-                className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
-                }`}
-              >
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+          <AnimatedBackground
+            defaultValue={activeView}
+            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            transition={{
+              type: "spring",
+              bounce: 0.15,
+              duration: 0.4,
+            }}
+            onValueChange={(id) => {
+              if (id) handleViewChange(id as FreelancerView);
+            }}
+          >
+            {[
+              { id: "overview", label: "Overview", icon: TrendingUp },
+              {
+                id: "clients",
+                label: "Clients CRM",
+                icon: UsersRound,
+                count: clients.length,
+              },
+              {
+                id: "invoices",
+                label: "Invoices",
+                icon: FileText,
+                count: invoices.length,
+              },
+              {
+                id: "expenses",
+                label: "Business Expenses",
+                icon: DollarSign,
+                count: deductibleExpenses.length,
+              },
+              {
+                id: "receipts",
+                label: "Receipts & Proofs",
+                icon: Receipt,
+                count: businessReceipts.length,
+              },
+              { id: "tax", label: "Tax Organizer", icon: ShieldCheck },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeView === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  data-id={tab.id}
+                  type="button"
+                  className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
                   }`}
-                  aria-hidden="true"
-                />
-                <span className="shrink-0">{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                >
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
                       isActive
-                        ? "bg-white text-[#121212]"
-                        : "bg-[#f3f0ff] text-[#836EF9]"
+                        ? "text-white"
+                        : "text-[#836EF9] group-hover:text-[#7257f8]"
                     }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                    aria-hidden="true"
+                  />
+                  <span className="shrink-0">{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                        isActive
+                          ? "bg-white text-[#121212]"
+                          : "bg-[#f3f0ff] text-[#836EF9]"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
       </div>
 
@@ -1100,13 +1126,17 @@ export function FreelancerDashboard({
                     Generate professional invoices with custom line items, due
                     dates, and tax calculations.
                   </p>
-                  <button
-                    onClick={() => handleOpenCreateInvoice()}
-                    className="mt-4 neo-btn neo-btn-primary inline-flex"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Create First Invoice</span>
-                  </button>
+                  <Magnetic range={60} intensity={0.35}>
+                    <WatermelonButton
+                      onClick={() => handleOpenCreateInvoice()}
+                      variant="primary"
+                      textMorph
+                      leftIcon={<Plus className="h-3.5 w-3.5" />}
+                      className="mt-4"
+                    >
+                      Create First Invoice
+                    </WatermelonButton>
+                  </Magnetic>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1289,13 +1319,16 @@ export function FreelancerDashboard({
                 history.
               </p>
             </div>
-            <button
-              onClick={handleOpenCreateClient}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add New Client</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={handleOpenCreateClient}
+                variant="primary"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Add New Client
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {/* Search & Filter Bar */}
@@ -1349,13 +1382,17 @@ export function FreelancerDashboard({
                   : "Try clearing your search query or status filter."}
               </p>
               {clients.length === 0 && (
-                <button
-                  onClick={handleOpenCreateClient}
-                  className="mt-4 neo-btn neo-btn-primary inline-flex"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Your First Client</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={handleOpenCreateClient}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    className="mt-4"
+                  >
+                    Add Your First Client
+                  </WatermelonButton>
+                </Magnetic>
               )}
             </div>
           ) : (
@@ -1502,13 +1539,16 @@ export function FreelancerDashboard({
                 invoices.
               </p>
             </div>
-            <button
-              onClick={() => handleOpenCreateInvoice()}
-              className="neo-btn neo-btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create New Invoice</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => handleOpenCreateInvoice()}
+                variant="primary"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Create New Invoice
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {/* Search & Status Filters */}
@@ -1571,13 +1611,17 @@ export function FreelancerDashboard({
                   : "Try adjusting your search query or status filter."}
               </p>
               {invoices.length === 0 && (
-                <button
-                  onClick={() => handleOpenCreateInvoice()}
-                  className="mt-4 neo-btn neo-btn-primary inline-flex"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Create First Invoice</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => handleOpenCreateInvoice()}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                    className="mt-4"
+                  >
+                    Create First Invoice
+                  </WatermelonButton>
+                </Magnetic>
               )}
             </div>
           ) : (
@@ -1797,19 +1841,17 @@ export function FreelancerDashboard({
             </div>
 
             <div className="flex items-center gap-2">
-              <select
+              <NeoSelect
                 value={expenseCategoryFilter}
-                onChange={(e) => setExpenseCategoryFilter(e.target.value)}
-                className="px-3 py-1.5 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-              >
-                <option value="all">All Categories</option>
-                <option value="software_tools">Software & Cloud Tools</option>
-                <option value="office_expenses">Office & Hardware</option>
-                <option value="travel_meals">Travel & Client Meals</option>
-                <option value="professional_services">
-                  Professional & Legal
-                </option>
-              </select>
+                onChange={setExpenseCategoryFilter}
+                options={[
+                  { value: "all", label: "All Categories" },
+                  { value: "software_tools", label: "Software & Cloud Tools" },
+                  { value: "office_expenses", label: "Office & Hardware" },
+                  { value: "travel_meals", label: "Travel & Client Meals" },
+                  { value: "professional_services", label: "Professional & Legal" },
+                ]}
+              />
             </div>
           </div>
 
@@ -2347,593 +2389,630 @@ export function FreelancerDashboard({
       {/* ========================================================================= */}
       {/* MODAL: ADD / EDIT CLIENT */}
       {/* ========================================================================= */}
-      {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <UsersRound className="h-5 w-5 text-[#836EF9]" />
-                {editingClient ? "Edit Client" : "Add New Client"}
-              </h3>
-              <button
-                onClick={() => setIsClientModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveClient} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Client / Contact Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Sarah Jenkins"
-                  value={clientForm.name}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Company / Organization
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Acme Corp / Monad Ecosystem"
-                  value={clientForm.company}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, company: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="client@acme.com"
-                    value={clientForm.email}
-                    onChange={(e) =>
-                      setClientForm({ ...clientForm, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Hourly Rate ({currencySymbol})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="120"
-                    value={clientForm.hourly_rate}
-                    onChange={(e) =>
-                      setClientForm({
-                        ...clientForm,
-                        hourly_rate: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Client Status
-                </label>
-                <select
-                  value={clientForm.status}
-                  onChange={(e) =>
-                    setClientForm({
-                      ...clientForm,
-                      status: e.target.value as "active" | "lead" | "inactive",
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none bg-white"
-                >
-                  <option value="active">Active Client</option>
-                  <option value="lead">Prospect / Lead</option>
-                  <option value="inactive">Inactive / Past</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  placeholder="Terms, project scope, or contract reference..."
-                  rows={2}
-                  value={clientForm.notes}
-                  onChange={(e) =>
-                    setClientForm({ ...clientForm, notes: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
-                />
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+      <AnimatePresence>
+        {isClientModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsClientModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <UsersRound className="h-5 w-5 text-[#836EF9]" />
+                  {editingClient ? "Edit Client" : "Add New Client"}
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setIsClientModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>{editingClient ? "Update Client" : "Save Client"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: CREATE INVOICE */}
-      {/* ========================================================================= */}
-      {isInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-2xl p-6 bg-white shadow-[6px_6px_0_0_#121212] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[#836EF9]" />
-                Create New Invoice
-              </h3>
-              <button
-                onClick={() => setIsInvoiceModalOpen(false)}
-                className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateInvoice} className="mt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Select Client *
-                  </label>
-                  {clients.length > 0 ? (
-                    <select
-                      value={invoiceForm.client_name}
-                      onChange={(e) => {
-                        const sel = clients.find(
-                          (c) => c.name === e.target.value,
-                        );
-                        setInvoiceForm({
-                          ...invoiceForm,
-                          client_name: e.target.value,
-                          client_id: sel?.id || "",
-                        });
-                      }}
-                      className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
-                    >
-                      <option value="">-- Choose client --</option>
-                      {clients.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} {c.company ? `(${c.company})` : ""}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Acme Corp"
-                      value={invoiceForm.client_name}
-                      onChange={(e) =>
-                        setInvoiceForm({
-                          ...invoiceForm,
-                          client_name: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Invoice #
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={invoiceForm.invoice_number}
-                    onChange={(e) =>
-                      setInvoiceForm({
-                        ...invoiceForm,
-                        invoice_number: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Issue Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={invoiceForm.issue_date}
-                    onChange={(e) =>
-                      setInvoiceForm({
-                        ...invoiceForm,
-                        issue_date: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={invoiceForm.due_date}
-                    onChange={(e) =>
-                      setInvoiceForm({
-                        ...invoiceForm,
-                        due_date: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                </div>
-              </div>
-
-              {/* Line Items */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-700">
-                    Line Items
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleAddInvoiceLineItem}
-                    className="text-xs font-black uppercase tracking-wider text-[#836EF9] hover:underline flex items-center gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Add Item</span>
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  {invoiceForm.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Description of service / task"
-                        value={item.description}
-                        onChange={(e) =>
-                          handleUpdateInvoiceItem(
-                            item.id,
-                            "description",
-                            e.target.value,
-                          )
-                        }
-                        className="flex-1 px-3 py-1.5 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleUpdateInvoiceItem(
-                            item.id,
-                            "quantity",
-                            Number(e.target.value),
-                          )
-                        }
-                        className="w-16 px-2 py-1.5 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Rate"
-                        value={item.rate}
-                        onChange={(e) =>
-                          handleUpdateInvoiceItem(
-                            item.id,
-                            "rate",
-                            Number(e.target.value),
-                          )
-                        }
-                        className="w-24 px-2 py-1.5 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
-                      />
-                      <span className="w-20 text-right font-mono font-black text-xs">
-                        {currencySymbol}
-                        {item.amount.toFixed(2)}
-                      </span>
-                      {invoiceForm.items.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveInvoiceItem(item.id)}
-                          className="p-1 text-slate-400 hover:text-red-500"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Payment Instructions & Notes */}
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                  Payment Instructions & Wallet / Wire Details
-                </label>
-                <textarea
-                  rows={3}
-                  value={invoiceForm.notes}
-                  onChange={(e) =>
-                    setInvoiceForm({ ...invoiceForm, notes: e.target.value })
-                  }
-                  className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none"
-                />
-              </div>
-
-              {/* Subtotal & Total Preview */}
-              <div className="pt-3 border-t-2 border-[#121212] flex justify-end">
-                <div className="w-56 space-y-1 text-xs">
-                  <div className="flex justify-between text-slate-600 font-bold">
-                    <span>Subtotal:</span>
-                    <span className="font-mono">
-                      {currencySymbol}
-                      {invoiceForm.items
-                        .reduce((s, i) => s + Number(i.amount || 0), 0)
-                        .toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[#121212] font-black text-sm pt-1 border-t border-[#121212]">
-                    <span>Total:</span>
-                    <span className="font-mono text-[#836EF9]">
-                      {currencySymbol}
-                      {invoiceForm.items
-                        .reduce((s, i) => s + Number(i.amount || 0), 0)
-                        .toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsInvoiceModalOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <span>Generate & Send Invoice</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: INSPECT / PRINT INVOICE */}
-      {/* ========================================================================= */}
-      {selectedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="neo-card w-full max-w-2xl p-6 sm:p-8 bg-white shadow-[8px_8px_0_0_#121212] max-h-[90vh] overflow-y-auto">
-            {/* Action Bar */}
-            <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212] mb-6 print:hidden">
-              <span className="text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2.5 py-1 rounded border border-[#121212]">
-                Official Neo-Brutalist Invoice
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="neo-btn neo-btn-secondary py-1 px-3 text-xs"
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span>Print / PDF</span>
-                </button>
-                {selectedInvoice.status !== "paid" && (
-                  <button
-                    onClick={() => {
-                      handleMarkInvoicePaid(selectedInvoice);
-                      setSelectedInvoice({
-                        ...selectedInvoice,
-                        status: "paid",
-                      });
-                    }}
-                    className="neo-btn neo-btn-primary py-1 px-3 text-xs"
-                  >
-                    <BadgeCheck className="h-3.5 w-3.5" />
-                    <span>Mark as Paid</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => setSelectedInvoice(null)}
-                  className="p-1.5 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-            </div>
 
-            {/* Printable Invoice Document */}
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="flex items-start justify-between">
+              <form onSubmit={handleSaveClient} className="mt-4 space-y-4">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#836EF9] border-2 border-[#121212] flex items-center justify-center text-white font-black">
-                      C
-                    </div>
-                    <span className="text-xl font-black uppercase tracking-wider text-[#121212]">
-                      CLARIO INVOICE
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Verifiable Freelance Billing & Settlement
-                  </p>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Client / Contact Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sarah Jenkins"
+                    value={clientForm.name}
+                    onChange={(e) =>
+                      setClientForm({ ...clientForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
                 </div>
 
-                <div className="text-right">
-                  <div className="text-lg font-mono font-black text-[#121212]">
-                    {selectedInvoice.invoice_number}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Company / Organization
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Corp / Monad Ecosystem"
+                    value={clientForm.company}
+                    onChange={(e) =>
+                      setClientForm({ ...clientForm, company: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="client@acme.com"
+                      value={clientForm.email}
+                      onChange={(e) =>
+                        setClientForm({ ...clientForm, email: e.target.value })
+                      }
+                      className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
                   </div>
-                  <span
-                    className={`inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] ${
-                      selectedInvoice.status === "paid"
-                        ? "bg-[#dcfce7] text-[#15803d]"
-                        : selectedInvoice.status === "overdue"
-                          ? "bg-[#fee2e2] text-[#b91c1c]"
-                          : "bg-[#fef9c3] text-[#854d0e]"
-                    }`}
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Hourly Rate ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="120"
+                      value={clientForm.hourly_rate}
+                      onChange={(e) =>
+                        setClientForm({
+                          ...clientForm,
+                          hourly_rate: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Client Status
+                  </label>
+                  <NeoSelect
+                    value={clientForm.status}
+                    onChange={(val) =>
+                      setClientForm({
+                        ...clientForm,
+                        status: val as "active" | "lead" | "inactive",
+                      })
+                    }
+                    options={[
+                      { value: "active", label: "Active Client" },
+                      { value: "lead", label: "Prospect / Lead" },
+                      { value: "inactive", label: "Inactive / Past" },
+                    ]}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    placeholder="Terms, project scope, or contract reference..."
+                    rows={2}
+                    value={clientForm.notes}
+                    onChange={(e) =>
+                      setClientForm({ ...clientForm, notes: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
+                  />
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsClientModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
                   >
-                    {selectedInvoice.status}
-                  </span>
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>{editingClient ? "Update Client" : "Save Client"}</span>
+                  </button>
                 </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: CREATE INVOICE */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isInvoiceModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsInvoiceModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-2xl p-6 bg-white shadow-[6px_6px_0_0_#121212] max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-[#836EF9]" />
+                  Create New Invoice
+                </h3>
+                <button
+                  onClick={() => setIsInvoiceModalOpen(false)}
+                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* Billed To / Dates */}
-              <div className="grid grid-cols-2 gap-6 p-4 rounded-xl border-2 border-[#121212] bg-[#f9fafb]">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1">
-                    Billed To:
-                  </span>
-                  <div className="text-sm font-black text-[#121212]">
-                    {selectedInvoice.client_name}
+              <form onSubmit={handleCreateInvoice} className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Select Client *
+                    </label>
+                    {clients.length > 0 ? (
+                      <NeoSelect
+                        value={invoiceForm.client_name}
+                        onChange={(val) => {
+                          const sel = clients.find((c) => c.name === val);
+                          setInvoiceForm({
+                            ...invoiceForm,
+                            client_name: val,
+                            client_id: sel?.id || "",
+                          });
+                        }}
+                        placeholder="-- Choose client --"
+                        options={clients.map((c) => ({
+                          value: c.name,
+                          label: `${c.name}${c.company ? ` (${c.company})` : ""}`,
+                        }))}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Acme Corp"
+                        value={invoiceForm.client_name}
+                        onChange={(e) =>
+                          setInvoiceForm({
+                            ...invoiceForm,
+                            client_name: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                      />
+                    )}
                   </div>
-                  <div className="text-xs text-slate-600 mt-0.5">
-                    Freelance Client / Partner
+
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Invoice #
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={invoiceForm.invoice_number}
+                      onChange={(e) =>
+                        setInvoiceForm({
+                          ...invoiceForm,
+                          invoice_number: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
                   </div>
                 </div>
 
-                <div className="text-right space-y-1">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      Issue Date:{" "}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-[#121212]">
-                      {selectedInvoice.issue_date}
-                    </span>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Issue Date
+                    </label>
+                    <NeoDatePicker
+                      value={invoiceForm.issue_date}
+                      onChange={(date) =>
+                        setInvoiceForm({
+                          ...invoiceForm,
+                          issue_date: date,
+                        })
+                      }
+                    />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      Due Date:{" "}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-[#121212]">
-                      {selectedInvoice.due_date}
-                    </span>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                      Due Date
+                    </label>
+                    <NeoDatePicker
+                      value={invoiceForm.due_date}
+                      onChange={(date) =>
+                        setInvoiceForm({
+                          ...invoiceForm,
+                          due_date: date,
+                        })
+                      }
+                    />
                   </div>
                 </div>
-              </div>
 
-              {/* Line Items Table */}
-              <div className="border-2 border-[#121212] rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="bg-[#f3f4f6] border-b-2 border-[#121212]">
-                      <th className="py-2.5 px-3 font-black uppercase text-slate-700">
-                        Description
-                      </th>
-                      <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-center">
-                        Qty / Hrs
-                      </th>
-                      <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-right">
-                        Rate
-                      </th>
-                      <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-right">
-                        Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y border-[#121212]">
-                    {(selectedInvoice.items || []).map((item) => (
-                      <tr key={item.id}>
-                        <td className="py-3 px-3 font-bold text-[#121212]">
-                          {item.description}
-                        </td>
-                        <td className="py-3 px-3 text-center font-mono">
-                          {item.quantity}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono">
+                {/* Line Items */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-700">
+                      Line Items
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddInvoiceLineItem}
+                      className="text-xs font-black uppercase tracking-wider text-[#836EF9] hover:underline flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add Item</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {invoiceForm.items.map((item) => (
+                      <div key={item.id} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Description of service / task"
+                          value={item.description}
+                          onChange={(e) =>
+                            handleUpdateInvoiceItem(
+                              item.id,
+                              "description",
+                              e.target.value,
+                            )
+                          }
+                          className="flex-1 px-3 py-1.5 text-xs font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Qty"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleUpdateInvoiceItem(
+                              item.id,
+                              "quantity",
+                              Number(e.target.value),
+                            )
+                          }
+                          className="w-16 px-2 py-1.5 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Rate"
+                          value={item.rate}
+                          onChange={(e) =>
+                            handleUpdateInvoiceItem(
+                              item.id,
+                              "rate",
+                              Number(e.target.value),
+                            )
+                          }
+                          className="w-24 px-2 py-1.5 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none"
+                        />
+                        <span className="w-20 text-right font-mono font-black text-xs">
                           {currencySymbol}
-                          {Number(item.rate).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono font-black text-[#121212]">
-                          {currencySymbol}
-                          {Number(item.amount).toFixed(2)}
-                        </td>
-                      </tr>
+                          {item.amount.toFixed(2)}
+                        </span>
+                        {invoiceForm.items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveInvoiceItem(item.id)}
+                            className="p-1 text-slate-400 hover:text-red-500"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Totals */}
-              <div className="flex justify-end">
-                <div className="w-64 space-y-1.5 text-xs">
-                  <div className="flex justify-between text-slate-600 font-bold">
-                    <span>Subtotal:</span>
-                    <span className="font-mono">
-                      {currencySymbol}
-                      {Number(selectedInvoice.subtotal).toFixed(2)}
-                    </span>
                   </div>
-                  {Number(selectedInvoice.tax_rate || 0) > 0 && (
+                </div>
+
+                {/* Payment Instructions & Notes */}
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                    Payment Instructions & Wallet / Wire Details
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={invoiceForm.notes}
+                    onChange={(e) =>
+                      setInvoiceForm({ ...invoiceForm, notes: e.target.value })
+                    }
+                    className="w-full px-3 py-2 text-xs font-mono border-2 border-[#121212] rounded-lg focus:outline-none"
+                  />
+                </div>
+
+                {/* Subtotal & Total Preview */}
+                <div className="pt-3 border-t-2 border-[#121212] flex justify-end">
+                  <div className="w-56 space-y-1 text-xs">
                     <div className="flex justify-between text-slate-600 font-bold">
-                      <span>Tax ({selectedInvoice.tax_rate}%):</span>
+                      <span>Subtotal:</span>
                       <span className="font-mono">
-                        +{currencySymbol}
-                        {Number(selectedInvoice.tax_amount).toFixed(2)}
+                        {currencySymbol}
+                        {invoiceForm.items
+                          .reduce((s, i) => s + Number(i.amount || 0), 0)
+                          .toFixed(2)}
                       </span>
                     </div>
-                  )}
-                  <div className="flex justify-between text-[#121212] font-black text-base pt-2 border-t-2 border-[#121212]">
-                    <span>Total Due:</span>
-                    <span className="font-mono text-[#836EF9]">
-                      {currencySymbol}
-                      {Number(selectedInvoice.total_amount).toFixed(2)}
-                    </span>
+                    <div className="flex justify-between text-[#121212] font-black text-sm pt-1 border-t border-[#121212]">
+                      <span>Total:</span>
+                      <span className="font-mono text-[#836EF9]">
+                        {currencySymbol}
+                        {invoiceForm.items
+                          .reduce((s, i) => s + Number(i.amount || 0), 0)
+                          .toFixed(2)}
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                <div className="pt-4 border-t-2 border-[#121212] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsInvoiceModalOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase tracking-wider hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <span>Generate & Send Invoice</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL: INSPECT / PRINT INVOICE */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {selectedInvoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedInvoice(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 neo-card w-full max-w-2xl p-6 sm:p-8 bg-white shadow-[8px_8px_0_0_#121212] max-h-[90vh] overflow-y-auto"
+            >
+              {/* Action Bar */}
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212] mb-6 print:hidden">
+                <span className="text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2.5 py-1 rounded border border-[#121212]">
+                  Official Neo-Brutalist Invoice
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="neo-btn neo-btn-secondary py-1 px-3 text-xs"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    <span>Print / PDF</span>
+                  </button>
+                  {selectedInvoice.status !== "paid" && (
+                    <button
+                      onClick={() => {
+                        handleMarkInvoicePaid(selectedInvoice);
+                        setSelectedInvoice({
+                          ...selectedInvoice,
+                          status: "paid",
+                        });
+                      }}
+                      className="neo-btn neo-btn-primary py-1 px-3 text-xs"
+                    >
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      <span>Mark as Paid</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedInvoice(null)}
+                    className="p-1.5 rounded hover:bg-slate-100 border border-[#121212]"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Payment Instructions */}
-              {selectedInvoice.notes && (
-                <div className="p-4 rounded-xl border-2 border-[#121212] bg-[#f3f0ff]">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#836EF9] block mb-1">
-                    Payment Instructions & Terms:
-                  </span>
-                  <p className="text-xs font-mono text-slate-700 whitespace-pre-line">
-                    {selectedInvoice.notes}
-                  </p>
+              {/* Printable Invoice Document */}
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#836EF9] border-2 border-[#121212] flex items-center justify-center text-white font-black">
+                        C
+                      </div>
+                      <span className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                        CLARIO INVOICE
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Verifiable Freelance Billing & Settlement
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-lg font-mono font-black text-[#121212]">
+                      {selectedInvoice.invoice_number}
+                    </div>
+                    <span
+                      className={`inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] ${
+                        selectedInvoice.status === "paid"
+                          ? "bg-[#dcfce7] text-[#15803d]"
+                          : selectedInvoice.status === "overdue"
+                            ? "bg-[#fee2e2] text-[#b91c1c]"
+                            : "bg-[#fef9c3] text-[#854d0e]"
+                      }`}
+                    >
+                      {selectedInvoice.status}
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Billed To / Dates */}
+                <div className="grid grid-cols-2 gap-6 p-4 rounded-xl border-2 border-[#121212] bg-[#f9fafb]">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1">
+                      Billed To:
+                    </span>
+                    <div className="text-sm font-black text-[#121212]">
+                      {selectedInvoice.client_name}
+                    </div>
+                    <div className="text-xs text-slate-600 mt-0.5">
+                      Freelance Client / Partner
+                    </div>
+                  </div>
+
+                  <div className="text-right space-y-1">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        Issue Date:{" "}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#121212]">
+                        {selectedInvoice.issue_date}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                        Due Date:{" "}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#121212]">
+                        {selectedInvoice.due_date}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Line Items Table */}
+                <div className="border-2 border-[#121212] rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="bg-[#f3f4f6] border-b-2 border-[#121212]">
+                        <th className="py-2.5 px-3 font-black uppercase text-slate-700">
+                          Description
+                        </th>
+                        <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-center">
+                          Qty / Hrs
+                        </th>
+                        <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-right">
+                          Rate
+                        </th>
+                        <th className="py-2.5 px-3 font-black uppercase text-slate-700 text-right">
+                          Amount
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y border-[#121212]">
+                      {(selectedInvoice.items || []).map((item) => (
+                        <tr key={item.id}>
+                          <td className="py-3 px-3 font-bold text-[#121212]">
+                            {item.description}
+                          </td>
+                          <td className="py-3 px-3 text-center font-mono">
+                            {item.quantity}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono">
+                            {currencySymbol}
+                            {Number(item.rate).toFixed(2)}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono font-black text-[#121212]">
+                            {currencySymbol}
+                            {Number(item.amount).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Totals */}
+                <div className="flex justify-end">
+                  <div className="w-64 space-y-1.5 text-xs">
+                    <div className="flex justify-between text-slate-600 font-bold">
+                      <span>Subtotal:</span>
+                      <span className="font-mono">
+                        {currencySymbol}
+                        {Number(selectedInvoice.subtotal).toFixed(2)}
+                      </span>
+                    </div>
+                    {Number(selectedInvoice.tax_rate || 0) > 0 && (
+                      <div className="flex justify-between text-slate-600 font-bold">
+                        <span>Tax ({selectedInvoice.tax_rate}%):</span>
+                        <span className="font-mono">
+                          +{currencySymbol}
+                          {Number(selectedInvoice.tax_amount).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-[#121212] font-black text-base pt-2 border-t-2 border-[#121212]">
+                      <span>Total Due:</span>
+                      <span className="font-mono text-[#836EF9]">
+                        {currencySymbol}
+                        {Number(selectedInvoice.total_amount).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Instructions */}
+                {selectedInvoice.notes && (
+                  <div className="p-4 rounded-xl border-2 border-[#121212] bg-[#f3f0ff]">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#836EF9] block mb-1">
+                      Payment Instructions & Terms:
+                    </span>
+                    <p className="text-xs font-mono text-slate-700 whitespace-pre-line">
+                      {selectedInvoice.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Inspect Bundle Modal */}
       {inspectingBundle && (

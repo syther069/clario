@@ -21,6 +21,12 @@ import type {
 } from "@/lib/supabase/types";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useClarioAuth } from "@/lib/auth/use-clario-auth";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
+import { Magnetic } from "@/components/ui/motion/magnetic";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function BudgetsPage() {
   const router = useRouter();
@@ -201,11 +207,6 @@ export default function BudgetsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-black uppercase text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
-                [SPEND CONTROLS]
-              </span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212] flex items-center gap-2.5">
               <PieChart className="h-7 w-7 text-[#836EF9]" />
               Category Budgets
@@ -215,13 +216,16 @@ export default function BudgetsPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => setBudgetModalOpen(true)}
-            className="neo-btn neo-btn-primary"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Create Budget</span>
-          </button>
+          <Magnetic range={60} intensity={0.35}>
+            <WatermelonButton
+              onClick={() => setBudgetModalOpen(true)}
+              variant="primary"
+              textMorph
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              Create Budget
+            </WatermelonButton>
+          </Magnetic>
         </div>
 
         {/* Primary Mode Navigation Bar */}
@@ -229,41 +233,52 @@ export default function BudgetsPage() {
           aria-label="Budgets Primary Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto"
         >
-          {[
-            {
-              id: "overview",
-              label: "Overview",
-              href: "/?mode=personal&view=overview",
-            },
-            {
-              id: "expenses",
-              label: "Expenses",
-              href: "/?mode=personal&view=expenses",
-            },
-            {
-              id: "income",
-              label: "Income",
-              href: "/?mode=personal&view=income",
-            },
-            { id: "budgets", label: "Budgets", href: "/budgets" },
-            { id: "recurring", label: "Recurring", href: "/subscriptions" },
-            { id: "receipts", label: "Saved Receipts", href: "/receipts" },
-          ].map((tab) => {
-            const isActive = tab.id === "budgets";
-            return (
-              <Link
-                key={tab.id}
-                href={tab.href}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shrink-0 ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
-                }`}
-              >
-                <span>{tab.label}</span>
-              </Link>
-            );
-          })}
+          <AnimatedBackground
+            defaultValue="budgets"
+            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            transition={{
+              type: "spring",
+              bounce: 0.15,
+              duration: 0.4,
+            }}
+          >
+            {[
+              {
+                id: "overview",
+                label: "Overview",
+                href: "/?mode=personal&view=overview",
+              },
+              {
+                id: "expenses",
+                label: "Expenses",
+                href: "/?mode=personal&view=expenses",
+              },
+              {
+                id: "income",
+                label: "Income",
+                href: "/?mode=personal&view=income",
+              },
+              { id: "budgets", label: "Budgets", href: "/budgets" },
+              { id: "recurring", label: "Recurring", href: "/subscriptions" },
+              { id: "receipts", label: "Saved Receipts", href: "/receipts" },
+            ].map((tab) => {
+              const isActive = tab.id === "budgets";
+              return (
+                <Link
+                  key={tab.id}
+                  data-id={tab.id}
+                  href={tab.href}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </Link>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
 
         {/* Section 1: Category Budgets */}
@@ -358,13 +373,18 @@ export default function BudgetsPage() {
                 Set category spending limits to proactively manage your monthly
                 outlays and prevent budget variance.
               </p>
-              <button
-                onClick={() => setBudgetModalOpen(true)}
-                className="neo-btn neo-btn-primary"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Create First Budget</span>
-              </button>
+              <div className="pt-2 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setBudgetModalOpen(true)}
+                    variant="primary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                  >
+                    Create First Budget
+                  </WatermelonButton>
+                </Magnetic>
+              </div>
             </div>
           )}
         </div>
@@ -373,11 +393,7 @@ export default function BudgetsPage() {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
-                  [CAPITAL MILESTONES]
-                </span>
-              </div>
+
               <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-[#121212] flex items-center gap-2.5">
                 <Target className="h-6 w-6 text-[#15803d]" />
                 Financial Goals & Runway Milestones
@@ -387,13 +403,16 @@ export default function BudgetsPage() {
               </p>
             </div>
 
-            <button
-              onClick={() => setGoalModalOpen(true)}
-              className="neo-btn neo-btn-secondary"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create Goal</span>
-            </button>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setGoalModalOpen(true)}
+                variant="secondary"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Create Goal
+              </WatermelonButton>
+            </Magnetic>
           </div>
 
           {goals.length > 0 ? (
@@ -471,176 +490,206 @@ export default function BudgetsPage() {
                 Define capital targets like Emergency Runway, Hardware Budget,
                 or Savings Milestones to monitor progress.
               </p>
-              <button
-                onClick={() => setGoalModalOpen(true)}
-                className="neo-btn neo-btn-secondary"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Create First Goal</span>
-              </button>
+              <div className="pt-2 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setGoalModalOpen(true)}
+                    variant="secondary"
+                    textMorph
+                    leftIcon={<Plus className="h-4 w-4" />}
+                  >
+                    Create First Goal
+                  </WatermelonButton>
+                </Magnetic>
+              </div>
             </div>
           )}
         </div>
       </main>
 
       {/* Create Budget Modal */}
-      {budgetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setBudgetModalOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          />
+      <AnimatePresence>
+        {budgetModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setBudgetModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
 
-          <div className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]">
-            <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                Create Category Budget
-              </h3>
-              <button
-                onClick={() => setBudgetModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateBudget} className="mt-4 space-y-4">
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Category
-                </label>
-                <select
-                  value={catName}
-                  onChange={(e) => setCatName(e.target.value)}
-                  className="mt-1 w-full neo-input font-semibold"
-                >
-                  <option value="software_tools">Software & Tools</option>
-                  <option value="food_dining">Food & Dining</option>
-                  <option value="transportation">Transportation</option>
-                  <option value="housing">Housing & Rent</option>
-                  <option value="utilities">Utilities</option>
-                  <option value="shopping">Shopping & Retail</option>
-                  <option value="health">Health & Medical</option>
-                  <option value="crypto_ops">Crypto Operations</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Monthly Limit ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={catLimit}
-                  onChange={(e) => setCatLimit(e.target.value)}
-                  placeholder="500"
-                  className="mt-1 w-full neo-input font-mono font-bold"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+            >
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                  Create Category Budget
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setBudgetModalOpen(false)}
-                  className="neo-btn neo-btn-secondary"
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  Save Budget
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Create Goal Modal */}
-      {goalModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setGoalModalOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          />
+              <form onSubmit={handleCreateBudget} className="mt-4 space-y-4">
+                <div>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                    Category
+                  </label>
+                  <NeoSelect
+                    fullWidth
+                    value={catName}
+                    onChange={setCatName}
+                    options={[
+                      { value: "software_tools", label: "Software & Tools" },
+                      { value: "food_dining", label: "Food & Dining" },
+                      { value: "transportation", label: "Transportation" },
+                      { value: "housing", label: "Housing & Rent" },
+                      { value: "utilities", label: "Utilities" },
+                      { value: "shopping", label: "Shopping & Retail" },
+                      { value: "health", label: "Health & Medical" },
+                      { value: "crypto_ops", label: "Crypto Operations" },
+                      { value: "other", label: "Other" },
+                    ]}
+                  />
+                </div>
 
-          <div className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]">
-            <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
-              <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                Create Financial Goal
-              </h3>
-              <button
-                onClick={() => setGoalModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateGoal} className="mt-4 space-y-4">
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Goal Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={goalName}
-                  onChange={(e) => setGoalName(e.target.value)}
-                  placeholder="e.g. 6-Month Emergency Runway"
-                  className="mt-1 w-full neo-input"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Target Amount ($)
+                    Monthly Limit ($)
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     required
-                    value={goalTarget}
-                    onChange={(e) => setGoalTarget(e.target.value)}
-                    placeholder="10000"
+                    value={catLimit}
+                    onChange={(e) => setCatLimit(e.target.value)}
+                    placeholder="500"
                     className="mt-1 w-full neo-input font-mono font-bold"
                   />
                 </div>
 
+                <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
+                  <button
+                    type="button"
+                    onClick={() => setBudgetModalOpen(false)}
+                    className="neo-btn neo-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    Save Budget
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Goal Modal */}
+      <AnimatePresence>
+        {goalModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setGoalModalOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+            >
+              <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                  Create Financial Goal
+                </h3>
+                <button
+                  onClick={() => setGoalModalOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateGoal} className="mt-4 space-y-4">
                 <div>
                   <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Current Saved ($)
+                    Goal Name
                   </label>
                   <input
-                    type="number"
-                    step="0.01"
-                    value={goalCurrent}
-                    onChange={(e) => setGoalCurrent(e.target.value)}
-                    placeholder="0"
-                    className="mt-1 w-full neo-input font-mono font-bold"
+                    type="text"
+                    required
+                    value={goalName}
+                    onChange={(e) => setGoalName(e.target.value)}
+                    placeholder="e.g. 6-Month Emergency Runway"
+                    className="mt-1 w-full neo-input"
                   />
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
-                <button
-                  type="button"
-                  onClick={() => setGoalModalOpen(false)}
-                  className="neo-btn neo-btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  Save Goal
-                </button>
-              </div>
-            </form>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                      Target Amount ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={goalTarget}
+                      onChange={(e) => setGoalTarget(e.target.value)}
+                      placeholder="10000"
+                      className="mt-1 w-full neo-input font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                      Current Saved ($)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={goalCurrent}
+                      onChange={(e) => setGoalCurrent(e.target.value)}
+                      placeholder="0"
+                      className="mt-1 w-full neo-input font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t-2 border-[#121212]">
+                  <button
+                    type="button"
+                    onClick={() => setGoalModalOpen(false)}
+                    className="neo-btn neo-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    Save Goal
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

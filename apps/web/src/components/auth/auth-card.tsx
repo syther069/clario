@@ -98,7 +98,7 @@ export function AuthCard({
             <div className="flex items-center gap-2">
               <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <h3 className="font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
-                Session Active • Monad Testnet (10143)
+                Session Active • Monad Testnet
               </h3>
             </div>
             <p className="text-lg font-black tracking-tight text-[#121212] mt-1">

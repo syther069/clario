@@ -30,6 +30,11 @@ import {
   getMonadExplorerTxUrl,
 } from "@/lib/blockchain/registry";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
+import { Magnetic } from "@/components/ui/motion/magnetic";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function ReceiptsPage() {
   const router = useRouter();
@@ -246,13 +251,17 @@ export default function ReceiptsPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => setUploadOpen(true)}
-            className="neo-btn neo-btn-primary self-start sm:self-auto"
-          >
-            <UploadCloud className="h-4 w-4" />
-            <span>Scan & Upload Receipt</span>
-          </button>
+          <Magnetic range={60} intensity={0.35}>
+            <WatermelonButton
+              onClick={() => setUploadOpen(true)}
+              variant="primary"
+              textMorph
+              leftIcon={<UploadCloud className="h-4 w-4" />}
+              className="self-start sm:self-auto"
+            >
+              Scan & Upload Receipt
+            </WatermelonButton>
+          </Magnetic>
         </div>
 
         {/* Primary Mode Navigation Bar */}
@@ -260,41 +269,52 @@ export default function ReceiptsPage() {
           aria-label="Receipts Primary Navigation"
           className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto"
         >
-          {[
-            {
-              id: "overview",
-              label: "Overview",
-              href: "/?mode=personal&view=overview",
-            },
-            {
-              id: "expenses",
-              label: "Expenses",
-              href: "/?mode=personal&view=expenses",
-            },
-            {
-              id: "income",
-              label: "Income",
-              href: "/?mode=personal&view=income",
-            },
-            { id: "budgets", label: "Budgets", href: "/budgets" },
-            { id: "recurring", label: "Recurring", href: "/subscriptions" },
-            { id: "receipts", label: "Saved Receipts", href: "/receipts" },
-          ].map((tab) => {
-            const isActive = tab.id === "receipts";
-            return (
-              <Link
-                key={tab.id}
-                href={tab.href}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all shrink-0 ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "bg-white text-[#121212] border-2 border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
-                }`}
-              >
-                <span>{tab.label}</span>
-              </Link>
-            );
-          })}
+          <AnimatedBackground
+            defaultValue="receipts"
+            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            transition={{
+              type: "spring",
+              bounce: 0.15,
+              duration: 0.4,
+            }}
+          >
+            {[
+              {
+                id: "overview",
+                label: "Overview",
+                href: "/?mode=personal&view=overview",
+              },
+              {
+                id: "expenses",
+                label: "Expenses",
+                href: "/?mode=personal&view=expenses",
+              },
+              {
+                id: "income",
+                label: "Income",
+                href: "/?mode=personal&view=income",
+              },
+              { id: "budgets", label: "Budgets", href: "/budgets" },
+              { id: "recurring", label: "Recurring", href: "/subscriptions" },
+              { id: "receipts", label: "Saved Receipts", href: "/receipts" },
+            ].map((tab) => {
+              const isActive = tab.id === "receipts";
+              return (
+                <Link
+                  key={tab.id}
+                  data-id={tab.id}
+                  href={tab.href}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 ${
+                    isActive
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </Link>
+              );
+            })}
+          </AnimatedBackground>
         </nav>
 
         {/* Filter bar */}
@@ -420,12 +440,18 @@ export default function ReceiptsPage() {
               Only receipts and transactions anchored and confirmed on Monad
               Testnet are displayed in this vault.
             </p>
-            <button
-              onClick={() => setUploadOpen(true)}
-              className="neo-btn neo-btn-primary mt-2"
-            >
-              Scan & Anchor Receipt
-            </button>
+            <div className="mt-2">
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={() => setUploadOpen(true)}
+                  variant="primary"
+                  textMorph
+                  leftIcon={<UploadCloud className="h-4 w-4" />}
+                >
+                  Scan & Anchor Receipt
+                </WatermelonButton>
+              </Magnetic>
+            </div>
           </div>
         )}
       </main>

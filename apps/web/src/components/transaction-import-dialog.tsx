@@ -6,7 +6,7 @@
  *
  * Implements strict rules:
  * 1. Only transactions from or to the connected wallet.
- * 2. Mainnets only.
+ * 2. Multi-chain and single-chain auto-discovery via Alchemy Asset Transfers API.
  * 3. Chain order: Monad, Ethereum, Base, Hyperliquid, then other EVM chains.
  * 4. Token order: USDC, USDT, native tokens, then others.
  * 5. Real USD value at the time of transaction (never $0 or guessed).
@@ -14,7 +14,7 @@
  * 7. Deduplication, decimal accuracy, failed txn protection, and spam rejection.
  * 8. Hackathon bounty attribution: "Fetched via Alchemy".
  * 9. Real vector logos for all tokens and chains.
- * 10. Pixel-perfect alignment across cards and labels.
+ * 10. Distinct UI states: Loading, API Error, Disconnected, Invalid Address, Empty State, Pagination, and Loaded List.
  */
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -31,13 +31,15 @@ import {
 } from "../lib/import/chains";
 import {
   ArrowUpRight,
+  ArrowDownLeft,
   CheckCircle2,
   RefreshCw,
   X,
   AlertTriangle,
   Search,
   Wallet,
-  ArrowDownLeft,
+  Globe,
+  Layers,
 } from "lucide-react";
 import {
   CryptoChainIcon,
@@ -45,6 +47,7 @@ import {
   AlchemyAttributionBadge,
   AlchemyLogo,
 } from "@/components/ui/crypto-icon";
+import { NeoSelect } from "./ui/neo-select";
 
 function isValidEvmAddress(address?: string | null): boolean {
   if (!address) return false;
@@ -72,13 +75,15 @@ export function TransactionImportDialog({
   onConnectWallet,
 }: TransactionImportDialogProps) {
   const [activeTab, setActiveTab] = useState<"wallet" | "hash">("wallet");
-  // Default to Monad Testnet (10143) or Monad Mainnet (143)
-  const [selectedChainId, setSelectedChainId] = useState<number>(10143);
+  // 0 = All Supported Chains (Auto-Discover), or specific chain ID
+  const [selectedChainId, setSelectedChainId] = useState<number>(0);
   const [queryAddress, setQueryAddress] = useState<string>(userAddress || "");
   const [transactions, setTransactions] = useState<
     readonly TransactionImportCandidate[]
   >([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Sync with prop when wallet connects or changes
@@ -91,56 +96,78 @@ export function TransactionImportDialog({
   }
 
   // Hash lookup states
+  const [lookupChainId, setLookupChainId] = useState<number>(10143);
   const [lookupHash, setLookupHash] = useState<string>("");
   const [lookupLoading, setLookupLoading] = useState<boolean>(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupCandidate, setLookupCandidate] =
     useState<TransactionImportCandidate | null>(null);
 
-  const fetchTransactions = useCallback(async () => {
-    if (!isValidEvmAddress(queryAddress) || !workspaceId) {
-      setTransactions([]);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const url = new URL(
-        `/api/workspaces/${workspaceId}/import/transactions`,
-        window.location.origin,
-      );
-      url.searchParams.set("address", queryAddress.trim());
-      if (selectedChainId) {
-        url.searchParams.set("chainId", selectedChainId.toString());
+  const fetchTransactions = useCallback(
+    async (isLoadMore = false) => {
+      if (!isValidEvmAddress(queryAddress) || !workspaceId) {
+        setTransactions([]);
+        setNextCursor(null);
+        return;
+      }
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
       }
 
-      const res = await fetch(url.toString(), {
-        headers: {
-          "Content-Type": "application/json",
-          "x-wallet-address": queryAddress.trim(),
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to fetch transactions.");
+      try {
+        const url = new URL(
+          `/api/workspaces/${workspaceId}/import/transactions`,
+          window.location.origin,
+        );
+        url.searchParams.set("address", queryAddress.trim());
+        if (selectedChainId > 0) {
+          url.searchParams.set("chainId", selectedChainId.toString());
+        }
+        if (isLoadMore && nextCursor) {
+          url.searchParams.set("cursor", nextCursor);
+        }
+
+        const res = await fetch(url.toString(), {
+          headers: {
+            "Content-Type": "application/json",
+            "x-wallet-address": queryAddress.trim(),
+          },
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error?.message || "Failed to fetch transactions from Alchemy.");
+        }
+
+        const newItems: TransactionImportCandidate[] = data.items || [];
+        if (isLoadMore) {
+          setTransactions((prev) => [...prev, ...newItems]);
+        } else {
+          setTransactions(newItems);
+        }
+        setNextCursor(data.nextCursor || null);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Error loading transactions from Alchemy API.",
+        );
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      setTransactions(data.items || []);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error loading transactions.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [queryAddress, selectedChainId, workspaceId]);
+    },
+    [queryAddress, selectedChainId, workspaceId, nextCursor],
+  );
 
   useEffect(() => {
     if (!isOpen || activeTab !== "wallet") return;
     const timer = setTimeout(() => {
       if (isValidEvmAddress(queryAddress) && workspaceId) {
-        void fetchTransactions();
+        void fetchTransactions(false);
       } else {
         setTransactions([]);
+        setNextCursor(null);
       }
     }, 0);
     return () => clearTimeout(timer);
@@ -150,7 +177,6 @@ export function TransactionImportDialog({
     queryAddress,
     selectedChainId,
     workspaceId,
-    fetchTransactions,
   ]);
 
   const handleLookup = async () => {
@@ -163,7 +189,7 @@ export function TransactionImportDialog({
         `/api/workspaces/${workspaceId}/import/lookup`,
         window.location.origin,
       );
-      url.searchParams.set("chainId", selectedChainId.toString());
+      url.searchParams.set("chainId", lookupChainId.toString());
       url.searchParams.set("hash", lookupHash.trim());
 
       const res = await fetch(url.toString(), {
@@ -191,6 +217,10 @@ export function TransactionImportDialog({
 
   if (!isOpen) return null;
 
+  const currentChainObj = SUPPORTED_IMPORT_CHAINS.find(
+    (c) => c.chainId === selectedChainId,
+  );
+
   return (
     <div
       role="dialog"
@@ -207,9 +237,6 @@ export function TransactionImportDialog({
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
-                  [ONCHAIN ACTIVITY]
-                </span>
                 <AlchemyAttributionBadge />
               </div>
               <h3
@@ -224,7 +251,7 @@ export function TransactionImportDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-all"
+            className="rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-all active:translate-x-0.5 active:translate-y-0.5"
           >
             <X className="h-4 w-4" />
           </button>
@@ -271,26 +298,41 @@ export function TransactionImportDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
-                Source Chain (Rule 3 Order: Monad First)
+                {activeTab === "wallet" ? "Source Chain Filter" : "Source Chain"}
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212]">
-                  <CryptoChainIcon
-                    chain={selectedChainId}
-                    className="h-5 w-5"
-                  />
+                  {activeTab === "wallet" && selectedChainId === 0 ? (
+                    <Globe className="h-5 w-5 text-[#836EF9]" />
+                  ) : (
+                    <CryptoChainIcon
+                      chain={activeTab === "wallet" ? selectedChainId : lookupChainId}
+                      className="h-5 w-5"
+                    />
+                  )}
                 </div>
-                <select
-                  value={selectedChainId}
-                  onChange={(e) => setSelectedChainId(Number(e.target.value))}
-                  className="w-full border-2 border-[#121212] rounded-xl px-3 py-2 text-xs font-mono font-bold bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                >
-                  {SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => (
-                    <option key={c.chainId} value={c.chainId}>
-                      {c.name} ({c.shortName})
-                    </option>
-                  ))}
-                </select>
+                {activeTab === "wallet" ? (
+                  <NeoSelect
+                    value={String(selectedChainId)}
+                    onChange={(val) => setSelectedChainId(Number(val))}
+                    options={[
+                      { value: "0", label: "✨ All Supported Chains (Auto-Discover)" },
+                      ...SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
+                        value: String(c.chainId),
+                        label: `${c.name} (${c.shortName})`,
+                      })),
+                    ]}
+                  />
+                ) : (
+                  <NeoSelect
+                    value={String(lookupChainId)}
+                    onChange={(val) => setLookupChainId(Number(val))}
+                    options={SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
+                      value: String(c.chainId),
+                      label: `${c.name} (${c.shortName})`,
+                    }))}
+                  />
+                )}
               </div>
             </div>
 
@@ -310,10 +352,10 @@ export function TransactionImportDialog({
                   />
                   <button
                     type="button"
-                    onClick={fetchTransactions}
+                    onClick={() => fetchTransactions(false)}
                     disabled={loading || !isValidEvmAddress(queryAddress)}
                     title="Refresh transactions via Alchemy"
-                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-all"
+                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-all active:translate-x-0.5 active:translate-y-0.5"
                   >
                     <RefreshCw
                       className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
@@ -329,16 +371,14 @@ export function TransactionImportDialog({
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3 bg-white">
           {activeTab === "wallet" ? (
             <>
+              {/* State 1: Wallet Disconnected / Invalid Address */}
               {!isValidEvmAddress(queryAddress) ? (
                 <div className="text-center py-12 border-2 border-dashed border-[#121212] rounded-xl bg-[#fbf9fe] p-6 flex flex-col items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
                     <Wallet className="h-6 w-6" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212]">
-                      [WALLET REQUIRED]
-                    </span>
-                    <p className="font-mono text-sm font-bold uppercase text-[#121212] mt-2 mb-1">
+                    <p className="font-mono text-sm font-bold uppercase text-[#121212] mb-1">
                       Connect your EVM wallet to fetch blockchain transactions.
                     </p>
                     <p className="text-xs text-slate-500 max-w-sm">
@@ -358,196 +398,281 @@ export function TransactionImportDialog({
                   )}
                 </div>
               ) : error ? (
-                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-3 rounded-xl text-xs font-mono font-bold flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              ) : loading ? (
-                <div className="text-center py-12 text-slate-500 font-mono text-xs flex flex-col items-center gap-2">
-                  <RefreshCw className="h-6 w-6 animate-spin text-[#836EF9]" />
-                  <div className="flex items-center gap-2 mt-1">
-                    <AlchemyLogo className="h-4 w-4" />
-                    <span className="font-bold">
-                      Fetching verified transfers via Alchemy Asset API...
-                    </span>
+                /* State 2: Alchemy / API Error State */
+                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-4 rounded-xl flex flex-col gap-3 shadow-[2px_2px_0_0_#ef4444]">
+                  <div className="flex items-center gap-2 font-mono text-xs font-bold">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>Alchemy API Error: {error}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fetchTransactions(false)}
+                      className="border-2 border-[#ef4444] bg-white hover:bg-[#fef2f2] text-[#ef4444] font-black uppercase text-xs px-3.5 py-1.5 rounded-lg shadow-[2px_2px_0_0_#ef4444] flex items-center gap-1.5 transition-all"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Retry Alchemy Request</span>
+                    </button>
                   </div>
                 </div>
+              ) : loading ? (
+                /* State 3: Loading State */
+                <div className="text-center py-12 text-slate-500 font-mono text-xs flex flex-col items-center gap-3">
+                  <RefreshCw className="h-8 w-8 animate-spin text-[#836EF9]" />
+                  <div className="flex items-center gap-2 mt-1">
+                    <AlchemyLogo className="h-4 w-4" />
+                    <span className="font-bold text-[#121212]">
+                      Fetching verified transfers via Alchemy Asset Transfers API...
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400">
+                    Querying external, erc20, erc721, and internal transfers
+                  </span>
+                </div>
               ) : transactions.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-mono text-xs p-6">
-                  No attributable transactions found for this wallet on{" "}
-                  {SUPPORTED_IMPORT_CHAINS.find(
-                    (c) => c.chainId === selectedChainId,
-                  )?.name || "selected chain"}
-                  .
+                /* State 4: Honest Empty State with Discovery CTA */
+                <div className="text-center py-10 border-2 border-dashed border-[#121212] rounded-xl bg-[#fafafa] p-6 flex flex-col items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div className="font-mono text-xs text-slate-600 max-w-md">
+                    {selectedChainId === 0 ? (
+                      <p>
+                        No on-chain activity found for{" "}
+                        <span className="font-bold text-[#121212]">
+                          {queryAddress.slice(0, 6)}...{queryAddress.slice(-4)}
+                        </span>{" "}
+                        across any supported EVM chains.
+                      </p>
+                    ) : (
+                      <p>
+                        No attributable transactions found for this wallet on{" "}
+                        <span className="font-bold text-[#121212]">
+                          {currentChainObj?.name || `Chain ID ${selectedChainId}`}
+                        </span>
+                        .
+                      </p>
+                    )}
+                  </div>
+                  {selectedChainId !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedChainId(0)}
+                      className="mt-1 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2 px-4 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                    >
+                      <Globe className="h-3.5 w-3.5" />
+                      <span>Scan All Supported Chains</span>
+                    </button>
+                  )}
                 </div>
               ) : (
-                transactions.map((tx) => {
-                  const explorerUrl = getExplorerTxUrl(
-                    tx.sourceChainId,
-                    tx.sourceTransactionHash,
-                  );
-                  const isSender =
-                    queryAddress.toLowerCase() === tx.sender.toLowerCase();
+                /* State 5: Loaded Transaction Candidates */
+                <>
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1">
+                    <span>
+                      Found <strong className="text-[#121212]">{transactions.length}</strong> attributable transactions
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-[#836EF9] flex items-center gap-1">
+                      <AlchemyLogo className="h-3 w-3" /> Live Ingestion
+                    </span>
+                  </div>
 
-                  return (
-                    <div
-                      key={`${tx.sourceChainId}-${tx.sourceTransactionHash}-${tx.claimSlot}`}
-                      className={`border-2 border-[#121212] rounded-xl p-4 shadow-[3px_3px_0_0_#121212] flex flex-col gap-3 transition-all ${
-                        tx.isClaimed
-                          ? "bg-slate-50 opacity-75"
-                          : "bg-white hover:bg-[#faf8fe]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        {/* Left: Direction + Token + Amounts */}
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] p-1 ${
-                              isSender
-                                ? "bg-[#fee2e2] text-[#dc2626]"
-                                : "bg-[#dcfce7] text-[#16a34a]"
+                  {transactions.map((tx) => {
+                    const explorerUrl = getExplorerTxUrl(
+                      tx.sourceChainId,
+                      tx.sourceTransactionHash,
+                    );
+                    const isSender =
+                      queryAddress.toLowerCase() === tx.sender.toLowerCase();
+
+                    return (
+                      <div
+                        key={`${tx.sourceChainId}-${tx.sourceTransactionHash}-${tx.claimSlot}`}
+                        className={`border-2 border-[#121212] rounded-xl p-4 shadow-[3px_3px_0_0_#121212] flex flex-col gap-3 transition-all ${
+                          tx.isClaimed
+                            ? "bg-slate-50 opacity-75"
+                            : "bg-white hover:bg-[#faf8fe]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          {/* Left: Direction + Token + Amounts */}
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] p-1 ${
+                                isSender
+                                  ? "bg-[#fee2e2] text-[#dc2626]"
+                                  : "bg-[#dcfce7] text-[#16a34a]"
+                              }`}
+                              title={
+                                isSender ? "Outgoing / Sent" : "Incoming / Received"
+                              }
+                            >
+                              {isSender ? (
+                                <ArrowUpRight className="h-5 w-5" />
+                              ) : (
+                                <ArrowDownLeft className="h-5 w-5" />
+                              )}
+                            </div>
+
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] p-1.5">
+                              <CryptoCoinIcon
+                                symbol={tx.assetSymbol}
+                                className="h-6 w-6"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex items-baseline gap-2">
+                                <span className="font-mono text-base font-black text-[#121212]">
+                                  {tx.formattedAmount} {tx.assetSymbol}
+                                </span>
+                                {tx.usdValueFormatted && (
+                                  <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
+                                    {tx.usdValueFormatted} USD
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span
+                                  className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
+                                    isSender
+                                      ? "bg-[#fee2e2] text-[#dc2626]"
+                                      : "bg-[#dcfce7] text-[#16a34a]"
+                                  }`}
+                                >
+                                  {isSender ? "SENT" : "RECEIVED"}
+                                </span>
+                                <span
+                                  className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
+                                    tx.status === "confirmed"
+                                      ? "bg-[#dcfce7] text-[#16a34a]"
+                                      : tx.status === "failed"
+                                        ? "bg-[#fee2e2] text-[#dc2626]"
+                                        : "bg-[#fef9c3] text-[#ca8a04]"
+                                  }`}
+                                >
+                                  {tx.status}
+                                </span>
+                                <span className="text-[9px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-300 flex items-center gap-1">
+                                  <CryptoChainIcon
+                                    chain={tx.sourceChainId}
+                                    className="h-3 w-3"
+                                  />
+                                  {SUPPORTED_IMPORT_CHAINS.find(
+                                    (c) => c.chainId === tx.sourceChainId,
+                                  )?.shortName || `Chain ${tx.sourceChainId}`}
+                                </span>
+                                <span className="text-[9px] font-mono text-[#0052FF] bg-[#f0f4ff] px-1.5 py-0.2 rounded border border-[#0052FF]/30 flex items-center gap-1">
+                                  <AlchemyLogo className="h-2.5 w-2.5" />
+                                  Alchemy
+                                </span>
+                                {tx.isClaimed && (
+                                  <span className="text-[9px] font-black uppercase bg-[#fee2e2] text-[#dc2626] px-1.5 py-0.2 rounded border border-[#121212]">
+                                    CLAIMED
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: Autofill button */}
+                          <button
+                            type="button"
+                            disabled={tx.isClaimed || tx.status === "failed"}
+                            onClick={() => {
+                              onSelectTransaction(tx, "imported_transaction");
+                              onClose();
+                            }}
+                            className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
+                              tx.isClaimed || tx.status === "failed"
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                                : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
                             }`}
-                            title={
-                              isSender ? "Outgoing Outflow" : "Incoming Inflow"
-                            }
                           >
-                            {isSender ? (
-                              <ArrowUpRight className="h-5 w-5" />
+                            {tx.isClaimed ? (
+                              "Claimed"
+                            ) : tx.status === "failed" ? (
+                              "Failed"
                             ) : (
-                              <ArrowDownLeft className="h-5 w-5" />
+                              <>
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Autofill →
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Detail row */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2 border-t border-slate-100">
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-400">Tx:</span>
+                            <span className="font-bold">
+                              {tx.sourceTransactionHash.slice(0, 8)}...
+                              {tx.sourceTransactionHash.slice(-6)}
+                            </span>
+                            {explorerUrl && (
+                              <a
+                                href={explorerUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[#836EF9] hover:underline inline-flex items-center"
+                                title="View on block explorer"
+                              >
+                                <ArrowUpRight className="h-3.5 w-3.5" />
+                              </a>
                             )}
                           </div>
 
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] p-1.5">
-                            <CryptoCoinIcon
-                              symbol={tx.assetSymbol}
-                              className="h-6 w-6"
-                            />
+                          <div className="truncate">
+                            <span className="text-slate-400">
+                              {isSender ? "To:" : "From:"}
+                            </span>{" "}
+                            <span className="font-bold">
+                              {isSender
+                                ? tx.recipient
+                                  ? `${tx.recipient.slice(0, 6)}...${tx.recipient.slice(-4)}`
+                                  : "Contract"
+                                : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
+                            </span>
                           </div>
 
-                          <div>
-                            <div className="flex items-baseline gap-2">
-                              <span className="font-mono text-base font-black text-[#121212]">
-                                {tx.formattedAmount} {tx.assetSymbol}
-                              </span>
-                              {tx.usdValueFormatted && (
-                                <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
-                                  {tx.usdValueFormatted} USD
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span
-                                className={`text-[10px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
-                                  tx.status === "confirmed"
-                                    ? "bg-[#dcfce7] text-[#16a34a]"
-                                    : tx.status === "failed"
-                                      ? "bg-[#fee2e2] text-[#dc2626]"
-                                      : "bg-[#fef9c3] text-[#ca8a04]"
-                                }`}
-                              >
-                                {tx.status}
-                              </span>
-                              <span className="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-300 flex items-center gap-1">
-                                <CryptoChainIcon
-                                  chain={tx.sourceChainId}
-                                  className="h-3 w-3"
-                                />
-                                {SUPPORTED_IMPORT_CHAINS.find(
-                                  (c) => c.chainId === tx.sourceChainId,
-                                )?.shortName || `Chain ${tx.sourceChainId}`}
-                              </span>
-                              <span className="text-[10px] font-mono text-[#0052FF] bg-[#f0f4ff] px-1.5 py-0.2 rounded border border-[#0052FF]/30 flex items-center gap-1">
-                                <AlchemyLogo className="h-2.5 w-2.5" />
-                                Alchemy
-                              </span>
-                              {tx.isClaimed && (
-                                <span className="text-[10px] font-black uppercase bg-[#fee2e2] text-[#dc2626] px-1.5 py-0.2 rounded border border-[#121212]">
-                                  CLAIMED
-                                </span>
-                              )}
-                            </div>
+                          <div className="sm:text-right">
+                            <span className="text-slate-400">Time:</span>{" "}
+                            <span className="font-bold text-[#121212]">
+                              {formatTransactionDateTime(tx.blockTimestamp)}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Right: Autofill button */}
-                        <button
-                          type="button"
-                          disabled={tx.isClaimed || tx.status === "failed"}
-                          onClick={() => {
-                            onSelectTransaction(tx, "imported_transaction");
-                            onClose();
-                          }}
-                          className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
-                            tx.isClaimed || tx.status === "failed"
-                              ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                              : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
-                          }`}
-                        >
-                          {tx.isClaimed ? (
-                            "Claimed"
-                          ) : tx.status === "failed" ? (
-                            "Failed"
-                          ) : (
-                            <>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              Autofill →
-                            </>
-                          )}
-                        </button>
+                        {tx.warning && (
+                          <div className="border border-[#ca8a04] bg-[#fefce8] text-[#854d0e] p-2 rounded-lg text-xs font-mono flex items-center gap-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                            <span>{tx.warning}</span>
+                          </div>
+                        )}
                       </div>
+                    );
+                  })}
 
-                      {/* Detail row */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2 border-t border-slate-100">
-                        <div className="flex items-center gap-1">
-                          <span className="text-slate-400">Tx:</span>
-                          <span className="font-bold">
-                            {tx.sourceTransactionHash.slice(0, 8)}...
-                            {tx.sourceTransactionHash.slice(-6)}
-                          </span>
-                          {explorerUrl && (
-                            <a
-                              href={explorerUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-[#836EF9] hover:underline inline-flex items-center"
-                              title="View on block explorer"
-                            >
-                              <ArrowUpRight className="h-3.5 w-3.5" />
-                            </a>
-                          )}
-                        </div>
-
-                        <div className="truncate">
-                          <span className="text-slate-400">
-                            {isSender ? "To:" : "From:"}
-                          </span>{" "}
-                          <span className="font-bold">
-                            {isSender
-                              ? tx.recipient
-                                ? `${tx.recipient.slice(0, 6)}...${tx.recipient.slice(-4)}`
-                                : "Contract"
-                              : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
-                          </span>
-                        </div>
-
-                        <div className="sm:text-right">
-                          <span className="text-slate-400">Time:</span>{" "}
-                          <span className="font-bold text-[#121212]">
-                            {formatTransactionDateTime(tx.blockTimestamp)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {tx.warning && (
-                        <div className="border border-[#ca8a04] bg-[#fefce8] text-[#854d0e] p-2 rounded-lg text-xs font-mono flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                          <span>{tx.warning}</span>
-                        </div>
-                      )}
+                  {/* Pagination / Load More */}
+                  {nextCursor && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => fetchTransactions(true)}
+                        disabled={loadingMore}
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs tracking-wider px-5 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+                      >
+                        {loadingMore ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Layers className="h-3.5 w-3.5" />
+                        )}
+                        <span>Load More Transactions</span>
+                      </button>
                     </div>
-                  );
-                })
+                  )}
+                </>
               )}
             </>
           ) : (
@@ -569,7 +694,7 @@ export function TransactionImportDialog({
                     type="button"
                     onClick={handleLookup}
                     disabled={lookupLoading || !lookupHash.trim()}
-                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all"
+                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5"
                   >
                     {lookupLoading ? (
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -657,7 +782,7 @@ export function TransactionImportDialog({
                         lookupCandidate.isClaimed ||
                         lookupCandidate.status === "failed"
                           ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                          : "bg-[#836EF9] hover:bg-[#725aeb] text-white"
+                          : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
                       }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -701,13 +826,13 @@ export function TransactionImportDialog({
           <div className="flex items-center gap-2">
             <AlchemyLogo className="h-4 w-4" />
             <span className="text-[11px] font-mono font-bold text-slate-600">
-              Powered by Alchemy Asset Transfers & Price APIs
+              Powered by Alchemy Asset Transfers &amp; Price APIs
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all"
+            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all active:translate-x-0.5 active:translate-y-0.5"
           >
             Close
           </button>

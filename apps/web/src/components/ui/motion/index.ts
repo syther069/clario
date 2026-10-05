@@ -15,3 +15,5 @@ export * from "./scroll-progress";
 export * from "./text-loop";
 export * from "./animated-button";
 export * from "./interactive-card";
+export * from "./text-morph";
+export * from "./dialog";

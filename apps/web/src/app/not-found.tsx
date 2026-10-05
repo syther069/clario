@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck, Home, FileSearch } from "lucide-react";
+import { ClarioLogo } from "@/components/ui/clario-logo";
 
 export default function NotFound() {
   return (
@@ -7,9 +8,7 @@ export default function NotFound() {
       {/* Mini top bar */}
       <header className="border-b-2 border-[#121212] bg-white px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#836EF9] text-white font-black text-base border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            C
-          </div>
+          <ClarioLogo size={32} />
           <span className="text-sm font-black uppercase tracking-wider text-[#121212]">
             Clario <span className="text-[#836EF9]">Monad</span>
           </span>

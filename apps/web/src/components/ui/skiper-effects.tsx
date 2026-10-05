@@ -104,7 +104,7 @@ export const Skiper64 = ({
             "absolute cursor-grab active:cursor-grabbing border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] flex items-center justify-center text-white font-mono text-[10px] font-black uppercase tracking-wider",
           )}
         >
-          <span>Copilot Core</span>
+          <span>Clario Core</span>
         </motion.li>
         <motion.li
           drag

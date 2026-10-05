@@ -61,7 +61,13 @@ import {
   TextScramble,
   AnimatedBackground,
   SlidingNumber,
+  TextMorph,
 } from "@/components/ui/motion";
+import { WatermelonButton } from "@/components/ui/watermelon-button";
+import { WatermelonAlert } from "@/components/ui/watermelon-alert";
+import { NeoSelect } from "@/components/ui/neo-select";
+import { NeoDatePicker } from "@/components/ui/neo-date-picker";
+import { motion, AnimatePresence } from "motion/react";
 import {
   AreaChart,
   Area,
@@ -1272,23 +1278,21 @@ export function PersonalDashboard({
 
         <div className="flex items-center gap-3">
           <Magnetic range={60} intensity={0.35}>
-            <button
+            <WatermelonButton
               onClick={onUploadReceipt}
-              className="neo-btn neo-btn-secondary text-xs px-3.5 py-2.5 rounded-lg border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-            >
-              <Receipt className="h-4 w-4 text-[#836EF9]" />
-              <span>Scan Receipt</span>
-            </button>
+              variant="secondary"
+              icon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
+              morphText="Scan Receipt"
+            />
           </Magnetic>
 
           <Magnetic range={70} intensity={0.4}>
-            <button
+            <WatermelonButton
               onClick={onAddTransaction}
-              className="neo-btn neo-btn-primary text-xs px-4 py-2.5 rounded-lg border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] bg-[#836EF9] hover:bg-[#7257f8]"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Transaction</span>
-            </button>
+              variant="primary"
+              icon={<Plus className="h-4 w-4" />}
+              morphText="Add Transaction"
+            />
           </Magnetic>
         </div>
       </div>
@@ -1569,11 +1573,6 @@ export function PersonalDashboard({
             <div className="lg:col-span-2 neo-card p-6 flex flex-col justify-between">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                      [CASH FLOW DYNAMICS]
-                    </span>
-                  </div>
                   <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
                     Income vs Expenses
                   </h2>
@@ -1714,11 +1713,6 @@ export function PersonalDashboard({
             <div className="neo-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                      [UPCOMING]
-                    </span>
-                  </div>
                   <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
                     Upcoming Bills
                   </h2>
@@ -1792,11 +1786,6 @@ export function PersonalDashboard({
             <div className="neo-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                      [CATEGORY BREAKDOWN]
-                    </span>
-                  </div>
                   <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
                     Spending by Category
                   </h2>
@@ -1844,11 +1833,6 @@ export function PersonalDashboard({
             <div className="neo-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                      [BUDGET STATUS]
-                    </span>
-                  </div>
                   <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
                     Category Budgets
                   </h2>
@@ -1924,11 +1908,6 @@ export function PersonalDashboard({
           <div className="neo-card p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.5 rounded border border-[#121212]">
-                    [RECENT ACTIVITY]
-                  </span>
-                </div>
                 <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
                   Latest Transactions & Verification
                 </h2>
@@ -2038,11 +2017,6 @@ export function PersonalDashboard({
           {/* Header & Primary Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [OUTFLOW ENGINE]
-                </span>
-              </div>
               <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
                 Personal Expenses
               </h2>
@@ -2163,52 +2137,46 @@ export function PersonalDashboard({
               </div>
 
               {/* Category Filter */}
-              <select
+              <NeoSelect
                 value={expenseCategoryFilter}
-                onChange={(e) => setExpenseCategoryFilter(e.target.value)}
-                className="px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold uppercase bg-white focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-              >
-                <option value="all">All Categories</option>
-                <option value="food">Food & Dining</option>
-                <option value="transport">Transportation</option>
-                <option value="shopping">Shopping</option>
-                <option value="utilities">Bills & Utilities</option>
-                <option value="software">Software & Tools</option>
-                <option value="health">Health & Medical</option>
-                <option value="housing">Housing</option>
-                <option value="other">General / Other</option>
-              </select>
+                onChange={setExpenseCategoryFilter}
+                options={[
+                  { value: "all", label: "All Categories" },
+                  { value: "food", label: "Food & Dining" },
+                  { value: "transport", label: "Transportation" },
+                  { value: "shopping", label: "Shopping" },
+                  { value: "utilities", label: "Bills & Utilities" },
+                  { value: "software", label: "Software & Tools" },
+                  { value: "health", label: "Health & Medical" },
+                  { value: "housing", label: "Housing" },
+                  { value: "other", label: "General / Other" },
+                ]}
+              />
 
               {/* Date Filter */}
-              <select
+              <NeoSelect
                 value={expenseDateFilter}
-                onChange={(e) =>
-                  setExpenseDateFilter(e.target.value as ExpenseDateFilter)
-                }
-                className="px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold uppercase bg-white focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-              >
-                <option value="all">All Time</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-              </select>
+                onChange={(val) => setExpenseDateFilter(val as ExpenseDateFilter)}
+                options={[
+                  { value: "all", label: "All Time" },
+                  { value: "7d", label: "Last 7 Days" },
+                  { value: "30d", label: "Last 30 Days" },
+                  { value: "month", label: "This Month" },
+                  { value: "year", label: "This Year" },
+                ]}
+              />
 
               {/* Amount Filter */}
-              <select
+              <NeoSelect
                 value={expenseAmountFilter}
-                onChange={(e) =>
-                  setExpenseAmountFilter(e.target.value as ExpenseAmountFilter)
-                }
-                className="px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold uppercase bg-white focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-              >
-                <option value="all">Any Amount</option>
-                <option value="under50">Under {currencySymbol}50</option>
-                <option value="50to200">
-                  {currencySymbol}50 - {currencySymbol}200
-                </option>
-                <option value="over200">Over {currencySymbol}200</option>
-              </select>
+                onChange={(val) => setExpenseAmountFilter(val as ExpenseAmountFilter)}
+                options={[
+                  { value: "all", label: "Any Amount" },
+                  { value: "under50", label: `Under ${currencySymbol}50` },
+                  { value: "50to200", label: `${currencySymbol}50 - ${currencySymbol}200` },
+                  { value: "over200", label: `Over ${currencySymbol}200` },
+                ]}
+              />
             </div>
 
             {/* Sub-filters row: Payment Method, Receipt Status, Monad Verification */}
@@ -2218,47 +2186,42 @@ export function PersonalDashboard({
               </span>
 
               {/* Payment Method */}
-              <select
+              <NeoSelect
+                size="sm"
                 value={expensePaymentFilter}
-                onChange={(e) => setExpensePaymentFilter(e.target.value)}
-                className="px-2 py-1 border border-[#121212] rounded text-[11px] font-semibold bg-white"
-              >
-                <option value="all">All Payment Methods</option>
-                <option value="card">Card</option>
-                <option value="bank">Bank Transfer</option>
-                <option value="cash">Cash</option>
-                <option value="crypto">Crypto / Web3</option>
-              </select>
+                onChange={setExpensePaymentFilter}
+                options={[
+                  { value: "all", label: "All Payment Methods" },
+                  { value: "card", label: "Card" },
+                  { value: "bank", label: "Bank Transfer" },
+                  { value: "cash", label: "Cash" },
+                  { value: "crypto", label: "Crypto / Web3" },
+                ]}
+              />
 
               {/* Receipt Status */}
-              <select
+              <NeoSelect
+                size="sm"
                 value={expenseReceiptFilter}
-                onChange={(e) =>
-                  setExpenseReceiptFilter(
-                    e.target.value as ExpenseReceiptFilter,
-                  )
-                }
-                className="px-2 py-1 border border-[#121212] rounded text-[11px] font-semibold bg-white"
-              >
-                <option value="all">All Receipt Statuses</option>
-                <option value="has_receipt">Has Receipt / Hash</option>
-                <option value="no_receipt">Missing Receipt</option>
-              </select>
+                onChange={(val) => setExpenseReceiptFilter(val as ExpenseReceiptFilter)}
+                options={[
+                  { value: "all", label: "All Receipt Statuses" },
+                  { value: "has_receipt", label: "Has Receipt / Hash" },
+                  { value: "no_receipt", label: "Missing Receipt" },
+                ]}
+              />
 
               {/* Monad Verification Status */}
-              <select
+              <NeoSelect
+                size="sm"
                 value={expenseVerificationFilter}
-                onChange={(e) =>
-                  setExpenseVerificationFilter(
-                    e.target.value as ExpenseVerificationFilter,
-                  )
-                }
-                className="px-2 py-1 border border-[#121212] rounded text-[11px] font-semibold bg-white"
-              >
-                <option value="all">All Monad States</option>
-                <option value="verified">Monad Verified (On-Chain)</option>
-                <option value="unverified">Unanchored (Off-Chain)</option>
-              </select>
+                onChange={(val) => setExpenseVerificationFilter(val as ExpenseVerificationFilter)}
+                options={[
+                  { value: "all", label: "All Monad States" },
+                  { value: "verified", label: "Monad Verified (On-Chain)" },
+                  { value: "unverified", label: "Unanchored (Off-Chain)" },
+                ]}
+              />
 
               {(expenseSearch ||
                 expenseCategoryFilter !== "all" ||
@@ -2428,11 +2391,6 @@ export function PersonalDashboard({
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [INFLOW CHANNELS]
-                </span>
-              </div>
               <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
                 Personal Income & Earnings
               </h2>
@@ -2518,10 +2476,7 @@ export function PersonalDashboard({
           <div className="neo-card p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [STREAM DISTRIBUTION]
-                </span>
-                <h3 className="text-base font-black uppercase tracking-wider text-[#121212] mt-1">
+                <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
                   Income by Stream
                 </h3>
               </div>
@@ -2661,11 +2616,6 @@ export function PersonalDashboard({
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [FINANCIAL CONTROLS]
-                </span>
-              </div>
               <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
                 Personal Budgets & Spending Limits
               </h2>
@@ -2842,11 +2792,6 @@ export function PersonalDashboard({
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [RECURRING ENGINE]
-                </span>
-              </div>
               <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
                 Active Subscriptions & Recurring Bills
               </h2>
@@ -3017,9 +2962,6 @@ export function PersonalDashboard({
           <div className="p-5 border-b-2 border-[#121212] bg-[#f9fafb] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-white px-1.5 py-0.2 rounded border border-[#121212]">
-                  [UNIVERSAL LEDGER]
-                </span>
                 <span className="neo-badge neo-badge-purple">
                   • MONAD TESTNET (10143)
                 </span>
@@ -3032,61 +2974,76 @@ export function PersonalDashboard({
               </p>
             </div>
 
-            {/* Ledger Navigation Tabs */}
+            {/* Ledger Navigation Tabs with AnimatedBackground */}
             <div className="flex items-center gap-1.5 bg-[#f3f4f6] p-1 rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-              <button
-                type="button"
-                onClick={() => setActiveLedgerTab("transactions")}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider font-mono transition ${
-                  activeLedgerTab === "transactions"
-                    ? "bg-white text-[#121212] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "text-slate-600 border-2 border-transparent hover:text-[#121212] hover:bg-white/60"
-                }`}
+              <AnimatedBackground
+                defaultValue={activeLedgerTab}
+                className="bg-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg"
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                }}
               >
-                <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Transactions</span>
-                <span className="ml-1 text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 border border-slate-400 font-bold">
-                  {transactions.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveLedgerTab("receipts")}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider font-mono transition ${
-                  activeLedgerTab === "receipts"
-                    ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "text-slate-600 border-2 border-transparent hover:text-[#121212] hover:bg-white/60"
-                }`}
-              >
-                <Receipt className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Saved Receipts</span>
-                <span
-                  className={`ml-1 text-[10px] font-mono px-1.5 py-0.2 rounded border font-bold ${
-                    activeLedgerTab === "receipts"
-                      ? "bg-[#7257f8] border-white/40 text-white"
-                      : "bg-slate-200 border-slate-400 text-slate-700"
-                  }`}
-                >
-                  {verifiedReceipts.length}
-                </span>
-              </button>
+                {[
+                  {
+                    id: "transactions",
+                    label: "Transactions",
+                    icon: ArrowLeftRight,
+                    count: transactions.length,
+                  },
+                  {
+                    id: "receipts",
+                    label: "Saved Receipts",
+                    icon: Receipt,
+                    count: verifiedReceipts.length,
+                  },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeLedgerTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      data-id={tab.id}
+                      type="button"
+                      onClick={() => setActiveLedgerTab(tab.id as "transactions" | "receipts")}
+                      className={`group inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-colors shrink-0 cursor-pointer ${
+                        isActive
+                          ? "text-[#121212]"
+                          : "text-slate-600 hover:text-[#121212]"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-4 w-4 shrink-0 transition-colors ${
+                          isActive ? "text-[#836EF9]" : "text-slate-500 group-hover:text-[#121212]"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="shrink-0">{tab.label}</span>
+                      <span
+                        className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                          isActive
+                            ? "bg-[#f3f0ff] text-[#836EF9]"
+                            : "bg-slate-200 text-slate-700"
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </AnimatedBackground>
             </div>
           </div>
 
           {saveError && (
-            <div className="mx-5 mt-4 p-3 bg-red-50 border-2 border-red-500 rounded-xl flex items-center justify-between gap-2 text-xs font-mono text-red-800 shadow-[2px_2px_0_0_#121212]">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-                <span>{saveError}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSaveError(null)}
-                className="p-1 hover:bg-red-100 rounded text-red-700"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+            <div className="mx-5 mt-4">
+              <WatermelonAlert
+                variant="error"
+                title="Save Error"
+                description={saveError}
+                onClose={() => setSaveError(null)}
+              />
             </div>
           )}
 
@@ -3697,72 +3654,81 @@ export function PersonalDashboard({
       )}
 
       {/* Wallet Guard Popup */}
-      {isNoWalletPopupOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => setIsNoWalletPopupOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          />
-          <div className="relative z-10 w-full max-w-sm rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212] animate-in fade-in zoom-in-95">
-            <div className="flex items-start justify-between pb-3 border-b-2 border-[#121212]">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                  <Wallet className="h-5 w-5" />
+      <AnimatePresence>
+        {isNoWalletPopupOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsNoWalletPopupOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-sm rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+            >
+              <div className="flex items-start justify-between pb-3 border-b-2 border-[#121212]">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
+                      EVM Wallet Needed
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#121212]">
-                    [WALLET REQUIRED]
-                  </span>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                    EVM Wallet Needed
-                  </h3>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNoWalletPopupOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsNoWalletPopupOpen(false)}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
 
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-bold text-[#121212]">
-                To save this receipt on Monad, connect a wallet to your Clario
-                account.
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Your Clario account remains the permanent owner of all your data
-                and receipts. Connecting an EVM wallet allows you to anchor the
-                cryptographic receipt commitment directly to Monad Testnet
-                (Chain ID 10143).
-              </p>
-            </div>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-bold text-[#121212]">
+                  To save this receipt on Monad, connect a wallet to your Clario
+                  account.
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Your Clario account remains the permanent owner of all your data
+                  and receipts. Connecting an EVM wallet allows you to anchor the
+                  cryptographic receipt commitment directly to Monad Testnet
+                  (Chain ID 10143).
+                </p>
+              </div>
 
-            <div className="mt-6 space-y-2.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsNoWalletPopupOpen(false);
-                  handleConnectWallet();
-                }}
-                className="w-full border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-3 px-4 rounded-xl shadow-[3px_3px_0_0_#121212] flex items-center justify-center gap-2 transition-all active:translate-x-[1px] active:translate-y-[1px]"
-              >
-                <Wallet className="h-4 w-4" />
-                <span>CONNECT WALLET</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsNoWalletPopupOpen(false)}
-                className="w-full border-2 border-[#121212] bg-white hover:bg-[#f9fafb] text-[#121212] font-black uppercase text-xs tracking-wider py-2.5 px-4 rounded-xl shadow-[3px_3px_0_0_#121212] flex items-center justify-center transition-all active:translate-x-[1px] active:translate-y-[1px]"
-              >
-                <span>CANCEL</span>
-              </button>
-            </div>
+              <div className="mt-6 space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNoWalletPopupOpen(false);
+                    handleConnectWallet();
+                  }}
+                  className="w-full border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-3 px-4 rounded-xl shadow-[3px_3px_0_0_#121212] flex items-center justify-center gap-2 transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                >
+                  <Wallet className="h-4 w-4" />
+                  <span>CONNECT WALLET</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNoWalletPopupOpen(false)}
+                  className="w-full border-2 border-[#121212] bg-white hover:bg-[#f9fafb] text-[#121212] font-black uppercase text-xs tracking-wider py-2.5 px-4 rounded-xl shadow-[3px_3px_0_0_#121212] flex items-center justify-center transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                >
+                  <span>CANCEL</span>
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <TransactionShareModal
         isOpen={!!selectedProofTx}
@@ -3807,182 +3773,208 @@ export function PersonalDashboard({
       />
 
       {/* Add Category Budget Modal */}
-      {isAddBudgetOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white border-2 border-[#121212] rounded-xl shadow-[4px_4px_0_0_#121212] overflow-hidden">
-            <div className="p-4 border-b-2 border-[#121212] bg-[#f9fafb] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-white px-1.5 py-0.2 rounded border border-[#121212]">
-                  [NEW BUDGET]
-                </span>
-                <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                  Create Category Budget
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddBudgetOpen(false)}
-                className="p-1 rounded text-slate-400 hover:text-[#121212] transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateBudget} className="p-5 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                  Budget Category
-                </label>
-                <select
-                  value={budgetCategoryInput}
-                  onChange={(e) => setBudgetCategoryInput(e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold uppercase bg-white focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                >
-                  <option value="food_dining">Food & Dining</option>
-                  <option value="software_tools">Software & Tools</option>
-                  <option value="transportation">Transportation</option>
-                  <option value="utilities">Bills & Utilities</option>
-                  <option value="housing">Housing & Rent</option>
-                  <option value="health">Health & Medical</option>
-                  <option value="shopping">Shopping & Retail</option>
-                  <option value="education">Education</option>
-                  <option value="other">General / Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                  Monthly Limit ({currencySymbol})
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  placeholder="e.g. 500"
-                  value={budgetLimitInput}
-                  onChange={(e) => setBudgetLimitInput(e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+      <AnimatePresence>
+        {isAddBudgetOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsAddBudgetOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-md bg-white border-2 border-[#121212] rounded-2xl shadow-[6px_6px_0_0_#121212] overflow-hidden"
+            >
+              <div className="p-4 border-b-2 border-[#121212] bg-[#f9fafb] flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
+                    Create Category Budget
+                  </h3>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsAddBudgetOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase bg-white hover:bg-[#f3f4f6] transition"
+                  className="p-1 rounded text-slate-400 hover:text-[#121212] transition"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <Plus className="h-4 w-4" />
-                  <span>Save Budget</span>
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Add Subscription / Recurring Bill Modal */}
-      {isAddSubOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white border-2 border-[#121212] rounded-xl shadow-[4px_4px_0_0_#121212] overflow-hidden">
-            <div className="p-4 border-b-2 border-[#121212] bg-[#f9fafb] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                  [NEW RECURRING]
-                </span>
-                <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                  Add Subscription / Bill
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddSubOpen(false)}
-                className="p-1 rounded text-slate-400 hover:text-[#121212] transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateSubscription} className="p-5 space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                  Service / Provider Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. GitHub Copilot, Electricity"
-                  value={subNameInput}
-                  onChange={(e) => setSubNameInput(e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleCreateBudget} className="p-5 space-y-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                    Amount ({currencySymbol})
+                    Budget Category
                   </label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    placeholder="20.00"
-                    value={subAmountInput}
-                    onChange={(e) => setSubAmountInput(e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  <NeoSelect
+                    fullWidth
+                    value={budgetCategoryInput}
+                    onChange={setBudgetCategoryInput}
+                    options={[
+                      { value: "food_dining", label: "Food & Dining" },
+                      { value: "software_tools", label: "Software & Tools" },
+                      { value: "transportation", label: "Transportation" },
+                      { value: "utilities", label: "Bills & Utilities" },
+                      { value: "housing", label: "Housing & Rent" },
+                      { value: "health", label: "Health & Medical" },
+                      { value: "shopping", label: "Shopping & Retail" },
+                      { value: "education", label: "Education" },
+                      { value: "other", label: "General / Other" },
+                    ]}
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                    Frequency
+                    Monthly Limit ({currencySymbol})
                   </label>
-                  <select
-                    value={subFrequencyInput}
-                    onChange={(e) =>
-                      setSubFrequencyInput(e.target.value as SubFrequency)
-                    }
-                    className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold uppercase bg-white focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="weekly">Weekly</option>
-                  </select>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    placeholder="e.g. 500"
+                    value={budgetLimitInput}
+                    onChange={(e) => setBudgetLimitInput(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
-                  Next Billing Date
-                </label>
-                <input
-                  type="date"
-                  value={subNextBillingInput}
-                  onChange={(e) => setSubNextBillingInput(e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                />
-              </div>
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddBudgetOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase bg-white hover:bg-[#f3f4f6] transition"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <Plus className="h-4 w-4" />
+                    <span>Save Budget</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+      {/* Add Subscription / Recurring Bill Modal */}
+      <AnimatePresence>
+        {isAddSubOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsAddSubOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 w-full max-w-md bg-white border-2 border-[#121212] rounded-2xl shadow-[6px_6px_0_0_#121212] overflow-hidden"
+            >
+              <div className="p-4 border-b-2 border-[#121212] bg-[#f9fafb] flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
+                    Add Subscription / Bill
+                  </h3>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsAddSubOpen(false)}
-                  className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase bg-white hover:bg-[#f3f4f6] transition"
+                  className="p-1 rounded text-slate-400 hover:text-[#121212] transition"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="neo-btn neo-btn-primary">
-                  <Plus className="h-4 w-4" />
-                  <span>Save Subscription</span>
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleCreateSubscription} className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
+                    Service / Provider Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. GitHub Copilot, Electricity"
+                    value={subNameInput}
+                    onChange={(e) => setSubNameInput(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
+                      Amount ({currencySymbol})
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      placeholder="20.00"
+                      value={subAmountInput}
+                      onChange={(e) => setSubAmountInput(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-[#121212] rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
+                      Frequency
+                    </label>
+                    <NeoSelect
+                      fullWidth
+                      value={subFrequencyInput}
+                      onChange={(val) => setSubFrequencyInput(val as SubFrequency)}
+                      options={[
+                        { value: "monthly", label: "Monthly" },
+                        { value: "yearly", label: "Yearly" },
+                        { value: "weekly", label: "Weekly" },
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-[#121212] mb-1">
+                    Next Billing Date
+                  </label>
+                  <NeoDatePicker
+                    fullWidth
+                    value={subNextBillingInput}
+                    onChange={setSubNextBillingInput}
+                    placeholder="Select Date"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddSubOpen(false)}
+                    className="px-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-black uppercase bg-white hover:bg-[#f3f4f6] transition"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="neo-btn neo-btn-primary">
+                    <Plus className="h-4 w-4" />
+                    <span>Save Subscription</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { DataSafetyModal } from "@/components/layout/data-safety-modal";
+import { ClarioLogo } from "@/components/ui/clario-logo";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -31,9 +32,7 @@ export default function ErrorBoundary({ error, reset }: ErrorProps) {
       {/* Mini top bar */}
       <header className="border-b-2 border-[#121212] bg-white px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#836EF9] text-white font-black text-base border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            C
-          </div>
+          <ClarioLogo size={32} />
           <span className="text-sm font-black uppercase tracking-wider text-[#121212]">
             Clario <span className="text-[#836EF9]">Monad</span>
           </span>

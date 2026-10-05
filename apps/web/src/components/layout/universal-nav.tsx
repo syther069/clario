@@ -4,6 +4,7 @@ import type { PlatformMode } from "@/lib/supabase/types";
 import { ModeSwitcher } from "./mode-switcher";
 import { UserButton } from "../auth/user-button";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import { ClarioLogo } from "@/components/ui/clario-logo";
 import {
   LayoutDashboard,
   Receipt,
@@ -298,9 +299,10 @@ export function UniversalNav({
         {/* Left: Brand + Mode Switcher */}
         <div className="flex items-center gap-4 sm:gap-5">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#836EF9] text-white font-black text-lg border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] transition group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0_0_#121212]">
-              C
-            </div>
+            <ClarioLogo
+              size={36}
+              className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
+            />
             <div className="flex flex-col">
               <span className="text-base font-black tracking-wider text-[#121212] uppercase flex items-center gap-1.5">
                 Clario
@@ -370,7 +372,7 @@ export function UniversalNav({
               className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#836EF9] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#ebe5ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
             >
               <Bot className="h-3.5 w-3.5 text-[#836EF9]" aria-hidden="true" />
-              <span>AI Copilot</span>
+              <span>Clario</span>
             </button>
           </Magnetic>
 

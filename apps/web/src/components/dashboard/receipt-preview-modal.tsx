@@ -19,6 +19,7 @@ import {
 } from "@/lib/blockchain/save-receipt-bundle";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { motion, AnimatePresence } from "motion/react";
 
 interface ReceiptPreviewModalProps {
   isOpen: boolean;
@@ -50,8 +51,6 @@ export function ReceiptPreviewModal({
   const [currentStep, setCurrentStep] = useState<ReceiptBundleStep>("idle");
   const [stepLabel, setStepLabel] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const trimmedName = receiptName.trim();
   const isNameValid = trimmedName.length > 0 && trimmedName.length <= 80;
@@ -117,8 +116,24 @@ export function ReceiptPreviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="neo-card bg-white w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={!isSubmitting ? onClose : undefined}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="relative z-10 neo-card bg-white w-full max-w-lg overflow-hidden shadow-[6px_6px_0_0_#121212]"
+          >
         {/* Header */}
         <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -126,10 +141,7 @@ export function ReceiptPreviewModal({
               <Receipt className="h-4 w-4" />
             </div>
             <div>
-              <ClarioBadge variant="purple" size="sm">
-                [RECEIPT NAMING & MONAD COMMITMENT]
-              </ClarioBadge>
-              <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] mt-0.5">
+              <h2 className="text-sm font-black uppercase tracking-wide text-[#121212]">
                 Create Receipt
               </h2>
             </div>
@@ -355,7 +367,9 @@ export function ReceiptPreviewModal({
             Create & Save Receipt
           </ClarioButton>
         </div>
-      </div>
+      </motion.div>
     </div>
+  )}
+</AnimatePresence>
   );
 }
