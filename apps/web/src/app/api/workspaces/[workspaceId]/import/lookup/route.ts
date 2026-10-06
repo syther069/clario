@@ -6,6 +6,9 @@ import { getDatabaseClient } from "@/lib/db";
 import { TransactionImportService } from "@/lib/import/service";
 import { IMPORTED_FACTS_DISCLAIMER } from "@/lib/import/types";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ workspaceId: string }> },

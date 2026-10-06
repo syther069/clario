@@ -278,6 +278,24 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
       targetChainIds = [10143, 143, 8453, 1, 11155111, 999, 42161, 10, 137, 84532];
     }
 
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs = 4500,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
     const maxCountHex = `0x${Math.min(filter.limit ?? 50, 100).toString(16)}`;
 
     try {
@@ -300,7 +318,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
           ...(filter.cursor ? { pageKey: filter.cursor } : {}),
         });
 
-        const fetchFrom = fetch(endpoint, {
+        const fetchFrom = fetchWithTimeout(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -309,7 +327,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
             method: "alchemy_getAssetTransfers",
             params: [fetchParams("fromAddress")],
           }),
-        })
+        }, 4000)
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
@@ -322,11 +340,11 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
             };
           })
           .catch((err) => {
-            console.warn(`[Alchemy] fetch error for chain ${chainId}:`, err);
+            console.warn(`[Alchemy] fetch error for chain ${chainId} (fromAddress):`, err?.name === "AbortError" ? "timed out" : err);
             return { transfers: [], pageKey: null, chainId };
           });
 
-        const fetchTo = fetch(endpoint, {
+        const fetchTo = fetchWithTimeout(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -335,7 +353,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
             method: "alchemy_getAssetTransfers",
             params: [fetchParams("toAddress")],
           }),
-        })
+        }, 4000)
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
@@ -348,14 +366,20 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
             };
           })
           .catch((err) => {
-            console.warn(`[Alchemy] fetch error for chain ${chainId}:`, err);
+            console.warn(`[Alchemy] fetch error for chain ${chainId} (toAddress):`, err?.name === "AbortError" ? "timed out" : err);
             return { transfers: [], pageKey: null, chainId };
           });
 
         return [fetchFrom, fetchTo];
       });
 
-      const responses = await Promise.all(queryPromises);
+      const settled = await Promise.allSettled(queryPromises);
+      const responses = settled
+        .filter(
+          (r): r is PromiseFulfilledResult<{ transfers: readonly AlchemyTransferItem[]; pageKey: string | null; chainId: number }> =>
+            r.status === "fulfilled",
+        )
+        .map((r) => r.value);
 
       // Raw items collection with deduplication
       const seenKeys = new Set<string>();
@@ -379,12 +403,25 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
         }
       }
 
-      // Normalize all transfers in parallel with historical price resolution
-      const normalizedResults = await Promise.all(
-        rawItemsToNormalize.map(({ item, chainId }) =>
-          this.normalizeTransfer(item, chainId, targetAddress),
-        ),
-      );
+      // Limit to 50 items to normalize to keep execution fast and prevent rate limiting
+      const itemsToProcess = rawItemsToNormalize.slice(0, 50);
+
+      // Normalize transfers in controlled batches of 8 to prevent pricing rate limits
+      const normalizedResults: Array<NormalizedTransaction | null> = [];
+      const batchSize = 8;
+      for (let i = 0; i < itemsToProcess.length; i += batchSize) {
+        const batch = itemsToProcess.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(
+          batch.map(({ item, chainId }) =>
+            this.normalizeTransfer(item, chainId, targetAddress),
+          ),
+        );
+        for (const res of batchResults) {
+          if (res.status === "fulfilled") {
+            normalizedResults.push(res.value);
+          }
+        }
+      }
 
       let validTransactions: NormalizedTransaction[] = normalizedResults.filter(
         (tx): tx is NormalizedTransaction => tx !== null,

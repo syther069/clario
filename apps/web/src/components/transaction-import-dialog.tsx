@@ -143,9 +143,14 @@ export function TransactionImportDialog({
         if (contentType.includes("application/json")) {
           data = await res.json();
         } else {
-          // If server returned non-JSON (e.g. HTML 404/500), extract status cleanly without crashing
+          // If server returned non-JSON (e.g. HTML 404/500/504), extract status cleanly without crashing
           if (!res.ok) {
-            throw new Error(`Server returned HTTP ${res.status} (${res.statusText || "Unable to reach transaction indexer"}).`);
+            const isTimeout = res.status === 504 || res.status === 408;
+            throw new Error(
+              isTimeout
+                ? "The indexer request timed out while scanning multiple networks."
+                : `Indexer service error (HTTP ${res.status}). RPC indexer temporarily unreachable.`,
+            );
           }
           throw new Error("Unexpected response format from transaction service.");
         }
@@ -424,20 +429,80 @@ export function TransactionImportDialog({
                   )}
                 </div>
               ) : error ? (
-                /* State 2: Alchemy / API Error State */
-                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-4 rounded-xl flex flex-col gap-3 shadow-[2px_2px_0_0_#ef4444]">
-                  <div className="flex items-center gap-2 font-mono text-xs font-bold">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <span>Alchemy API Error: {error}</span>
+                /* State 2: Alchemy / API Error State (with Neo-Brutalist Actionable Fallbacks) */
+                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#121212] p-5 rounded-xl flex flex-col gap-3 shadow-[4px_4px_0_0_#ef4444]">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="h-5 w-5 text-[#ef4444] shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-mono text-xs font-black uppercase text-[#ef4444] tracking-wider">
+                        Alchemy Indexer Notice
+                      </p>
+                      <p className="font-mono text-xs text-slate-700">
+                        {error}
+                      </p>
+                      {selectedChainId === 0 && (
+                        <p className="text-[11px] text-slate-500 font-mono mt-1">
+                          Tip: Scanning 10 EVM chains simultaneously can take longer under heavy RPC load. Selecting a specific chain or using Direct Hash Lookup is instant.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#ef4444]/20 flex-wrap">
                     <button
                       type="button"
                       onClick={() => fetchTransactions(false)}
-                      className="border-2 border-[#ef4444] bg-white hover:bg-[#fef2f2] text-[#ef4444] font-black uppercase text-xs px-3.5 py-1.5 rounded-lg shadow-[2px_2px_0_0_#ef4444] flex items-center gap-1.5 transition-all"
+                      className="border-2 border-[#121212] bg-[#ef4444] hover:bg-[#dc2626] text-white font-black uppercase text-xs px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
                     >
-                      <RefreshCw className="h-3 w-3" />
+                      <RefreshCw className="h-3.5 w-3.5" />
                       <span>Retry Alchemy Request</span>
+                    </button>
+
+                    {selectedChainId === 0 ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedChainId(10143)}
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                        >
+                          <CryptoChainIcon chain={10143} className="h-3.5 w-3.5" />
+                          <span>Monad Testnet</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedChainId(8453)}
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                        >
+                          <CryptoChainIcon chain={8453} className="h-3.5 w-3.5" />
+                          <span>Base</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedChainId(11155111)}
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                        >
+                          <CryptoChainIcon chain={11155111} className="h-3.5 w-3.5" />
+                          <span>Sepolia</span>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedChainId(0)}
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                      >
+                        <Globe className="h-3.5 w-3.5 text-[#836EF9]" />
+                        <span>Try All Chains</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("hash")}
+                      className="border-2 border-[#121212] bg-[#f3f0ff] hover:bg-[#e9e3ff] text-[#836EF9] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5 sm:ml-auto"
+                    >
+                      <Search className="h-3.5 w-3.5" />
+                      <span>Direct Hash Lookup →</span>
                     </button>
                   </div>
                 </div>

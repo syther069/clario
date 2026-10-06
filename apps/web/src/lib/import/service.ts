@@ -36,14 +36,22 @@ function makeClaimKey(
 }
 
 export class TransactionImportService {
-  private db: DatabaseClient;
+  private db: DatabaseClient | undefined;
   private adapter: TransactionImportAdapter;
 
   constructor(
-    db: DatabaseClient = getDatabaseClient(),
+    db?: DatabaseClient | undefined,
     adapter: TransactionImportAdapter = getDefaultImportAdapter(),
   ) {
-    this.db = db;
+    if (db) {
+      this.db = db;
+    } else {
+      try {
+        this.db = getDatabaseClient();
+      } catch {
+        this.db = undefined;
+      }
+    }
     this.adapter = adapter;
   }
 
@@ -66,23 +74,25 @@ export class TransactionImportService {
 
     // 2. Query workspace claimed source transactions for duplicate detection
     const claimMap = new Map<string, SourceTransactionRow>();
-    try {
-      const existingClaimsRes = await this.db.query<SourceTransactionRow>(
-        `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
-         FROM source_transactions
-         WHERE workspace_id = $1`,
-        [workspaceId],
-      );
-      for (const claim of existingClaimsRes.rows) {
-        const key = makeClaimKey(
-          claim.source_chain_id,
-          claim.source_transaction_hash,
-          claim.claim_slot,
+    if (this.db) {
+      try {
+        const existingClaimsRes = await this.db.query<SourceTransactionRow>(
+          `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
+           FROM source_transactions
+           WHERE workspace_id = $1`,
+          [workspaceId],
         );
-        claimMap.set(key, claim);
+        for (const claim of existingClaimsRes.rows) {
+          const key = makeClaimKey(
+            claim.source_chain_id,
+            claim.source_transaction_hash,
+            claim.claim_slot,
+          );
+          claimMap.set(key, claim);
+        }
+      } catch {
+        // In dev or before migrations run, allow transaction listing to proceed without claims
       }
-    } catch {
-      // In dev or before migrations run, allow transaction listing to proceed without claims
     }
 
     // 3. Annotate candidates with claim and status warnings
@@ -169,16 +179,18 @@ export class TransactionImportService {
 
     // 2. Check if already claimed in this workspace
     let existing: SourceTransactionRow | undefined;
-    try {
-      const claimRes = await this.db.query<SourceTransactionRow>(
-        `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
-         FROM source_transactions
-         WHERE workspace_id = $1 AND source_chain_id = $2 AND source_transaction_hash = $3 AND claim_slot = $4`,
-        [workspaceId, chainId, normalizedHash, tx.claimSlot],
-      );
-      existing = claimRes.rows[0];
-    } catch {
-      existing = undefined;
+    if (this.db) {
+      try {
+        const claimRes = await this.db.query<SourceTransactionRow>(
+          `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
+           FROM source_transactions
+           WHERE workspace_id = $1 AND source_chain_id = $2 AND source_transaction_hash = $3 AND claim_slot = $4`,
+          [workspaceId, chainId, normalizedHash, tx.claimSlot],
+        );
+        existing = claimRes.rows[0];
+      } catch {
+        existing = undefined;
+      }
     }
     if (existing) {
       return {
@@ -233,6 +245,12 @@ export class TransactionImportService {
     if (transaction.status === "failed") {
       throw new ProtocolError("INVALID_TYPED_DATA", {
         message: "Cannot claim a failed transaction as payment proof.",
+      });
+    }
+
+    if (!this.db) {
+      throw new ProtocolError("INTERNAL_ERROR", {
+        message: "Database connection is required to record transaction claims.",
       });
     }
 
@@ -292,6 +310,9 @@ export class TransactionImportService {
    * Releases an existing transaction claim when an expense draft unlinks it or is deleted.
    */
   async releaseClaim(workspaceId: string, expenseId: string): Promise<number> {
+    if (!this.db) {
+      return 0;
+    }
     const res = await this.db.query(
       `DELETE FROM source_transactions WHERE workspace_id = $1 AND expense_id = $2`,
       [workspaceId, expenseId],
