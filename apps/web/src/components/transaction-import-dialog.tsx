@@ -136,18 +136,31 @@ export function TransactionImportDialog({
             "x-wallet-address": queryAddress.trim(),
           },
         });
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error?.message || "Failed to fetch transactions from Alchemy.");
+
+        const contentType = res.headers.get("content-type") || "";
+        let data: { items?: TransactionImportCandidate[]; nextCursor?: string | null; error?: { message?: string } } | null = null;
+
+        if (contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          // If server returned non-JSON (e.g. HTML 404/500), extract status cleanly without crashing
+          if (!res.ok) {
+            throw new Error(`Server returned HTTP ${res.status} (${res.statusText || "Unable to reach transaction indexer"}).`);
+          }
+          throw new Error("Unexpected response format from transaction service.");
         }
 
-        const newItems: TransactionImportCandidate[] = data.items || [];
+        if (!res.ok) {
+          throw new Error(data?.error?.message || `Failed to fetch transactions (HTTP ${res.status}).`);
+        }
+
+        const newItems: TransactionImportCandidate[] = data?.items || [];
         if (isLoadMore) {
           setTransactions((prev) => [...prev, ...newItems]);
         } else {
           setTransactions(newItems);
         }
-        setNextCursor(data.nextCursor || null);
+        setNextCursor(data?.nextCursor || null);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Error loading transactions from Alchemy API.",
@@ -177,6 +190,7 @@ export function TransactionImportDialog({
     queryAddress,
     selectedChainId,
     workspaceId,
+    fetchTransactions,
   ]);
 
   const handleLookup = async () => {
@@ -199,13 +213,25 @@ export function TransactionImportDialog({
             queryAddress || "0x0000000000000000000000000000000000000000",
         },
       });
-      const data = await res.json();
+
+      const contentType = res.headers.get("content-type") || "";
+      let data: { transaction?: TransactionImportCandidate; error?: { message?: string } } | null = null;
+
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status} (${res.statusText || "Lookup failed"}).`);
+        }
+        throw new Error("Unexpected response format from transaction lookup service.");
+      }
+
       if (!res.ok) {
         throw new Error(
-          data.error?.message || "Transaction not found on this chain.",
+          data?.error?.message || "Transaction not found on this chain.",
         );
       }
-      setLookupCandidate(data.transaction);
+      setLookupCandidate(data?.transaction || null);
     } catch (err) {
       setLookupError(
         err instanceof Error ? err.message : "Failed to lookup transaction.",

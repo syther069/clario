@@ -1,6 +1,36 @@
 {
   "version": 1,
   "skills": {
+    "agentic-gateway": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/agentic-gateway/SKILL.md",
+      "computedHash": "3dc63c09e9dba4977c7f9a03c4fc0ede2f2ccc308578fc6b7cc65d69907027b4"
+    },
+    "alchemy-api": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alchemy-api/SKILL.md",
+      "computedHash": "e092ce46467466a7ca2f8cdd18ec1605c9b323b00495f8374d3f0f12a6cfbad7"
+    },
+    "alchemy-cli": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alchemy-cli/SKILL.md",
+      "computedHash": "6e2096a92069a1213f26351078cb6ecd31cf07870904687dd7a5e9b2bc2df7c5"
+    },
+    "alchemy-mcp": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/alchemy-mcp/SKILL.md",
+      "computedHash": "c159c3f9954093ff09c82283979dc440cb91ca504ea394f4959562359bac29c5"
+    },
+    "allium": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/ecosystem/allium/SKILL.md",
+      "computedHash": "07885301d1fc518cdc2e636e1b86f3b7422dcda83fa20551663ab53a140a22d6"
+    },
     "antislop-ui": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
@@ -72,6 +102,12 @@
       "sourceType": "github",
       "skillPath": "skills/minimalist-skill/SKILL.md",
       "computedHash": "7e88897e0371184e97a82b8d9ef080323c13f21eb067b58ef71eb05173a08ac2"
+    },
+    "opensea": {
+      "source": "alchemyplatform/skills",
+      "sourceType": "github",
+      "skillPath": "skills/ecosystem/opensea/SKILL.md",
+      "computedHash": "0adf58e9d931c6e8688f11db4bb0d075a10d593a5678c1bb557d6715012f3e2d"
     },
     "redesign-existing-projects": {
       "source": "Leonxlnx/taste-skill",
