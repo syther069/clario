@@ -9,9 +9,12 @@ export const metadata: Metadata = {
   title: "Clario | Verifiable Expense Ledger on Monad",
   description: "Verifiable expense workflows and cryptographic receipts on Monad.",
   icons: {
-    icon: "/clario-logo.svg",
-    shortcut: "/clario-logo.svg",
-    apple: "/clario-logo.svg",
+    icon: [
+      { url: "/clario-logo.png", type: "image/png" },
+      { url: "/clario-logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/clario-logo.png",
+    apple: "/clario-logo.png",
   },
 };
 

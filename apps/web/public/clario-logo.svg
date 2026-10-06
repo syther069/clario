@@ -1,8 +1,23 @@
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Neo-Brutalist Hard 2D Offset Shadow -->
-  <rect x="12" y="12" width="80" height="80" rx="24" fill="#121212" />
-  <!-- Main Squircle Container in Monad Purple -->
-  <rect x="8" y="8" width="80" height="80" rx="24" fill="#836EF9" stroke="#121212" stroke-width="5" />
-  <!-- Geometric Clario 'C' Monogram -->
-  <path d="M 68 38 L 52 38 A 14 14 0 1 0 52 62 L 68 62 A 28 28 0 1 1 68 38 Z" fill="#FFFFFF" />
+  <defs>
+    <linearGradient id="clario-sheen" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="45%" stop-color="#FFFFFF" />
+      <stop offset="65%" stop-color="#E8E2FE" />
+      <stop offset="100%" stop-color="#D5CAFD" />
+    </linearGradient>
+    <filter id="purple-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#836EF9" flood-opacity="0.4" />
+    </filter>
+  </defs>
+  <!-- Outer Squircle with purple glow and crisp black border -->
+  <rect x="12" y="12" width="76" height="76" rx="22" fill="#836EF9" stroke="#121212" stroke-width="4.5" filter="url(#purple-glow)" />
+  <!-- Glossy 'C' Monogram with rounded capsule terminals and crisp outline -->
+  <path
+    d="M 68 38 C 68 31 62 26 55 26 L 46 26 C 32.7 26 22 36.7 22 50 C 22 63.3 32.7 74 46 74 L 55 74 C 62 74 68 69 68 62 C 68 55 62 50 55 50 L 46 50 C 44 50 42 49 42 50 C 42 51 44 50 46 50 L 55 50 C 62 50 68 45 68 38 Z"
+    fill="url(#clario-sheen)"
+    stroke="#121212"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
 </svg>

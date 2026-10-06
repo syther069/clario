@@ -13,6 +13,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { ClarioLogo } from "@/components/ui/clario-logo";
 
 export interface NavRailProps {
   currentRoute: string;
@@ -108,13 +109,11 @@ export function NavRail({
     <aside className="nav-rail" aria-label="Clario workspace">
       <div className="nav-rail-top">
         <a
-          className="brand-lockup"
+          className="brand-lockup flex items-center gap-2.5"
           href="#main-content"
           aria-label="Clario home"
         >
-          <span className="brand-mark" aria-hidden="true">
-            C
-          </span>
+          <ClarioLogo size={28} />
           <span className="brand-copy">
             <span className="brand-name">Clario</span>
             <span className="brand-caption">Evidence Ledger</span>

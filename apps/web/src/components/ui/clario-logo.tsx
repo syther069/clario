@@ -1,73 +1,49 @@
 import React from "react";
+import Image from "next/image";
 
-interface ClarioLogoProps extends React.SVGProps<SVGSVGElement> {
-  size?: "sm" | "md" | "lg" | "xl" | number;
+export interface ClarioLogoProps extends React.HTMLAttributes<HTMLDivElement> {
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
   className?: string;
-  withShadow?: boolean;
+  alt?: string;
+  priority?: boolean;
 }
 
-const SIZE_MAP = {
+const SIZE_MAP: Record<string, number> = {
+  xs: 20,
   sm: 24,
-  md: 36,
+  md: 32,
   lg: 40,
   xl: 48,
 };
 
 /**
  * Clario Official Brand Logo
- * Neo-Brutalist Monad Purple (#836EF9) squircle badge with crisp #121212 border,
- * hard 2D offset box shadow, and geometric white 'C' monogram.
+ * High-definition glossy Monad purple squircle with bold geometric white 'C' monogram.
  */
 export function ClarioLogo({
   size = "md",
   className = "",
-  withShadow = true,
+  alt = "Clario Logo",
+  priority = false,
   ...props
 }: ClarioLogoProps) {
-  const pixelSize = typeof size === "number" ? size : SIZE_MAP[size] || 36;
+  const pixelSize = typeof size === "number" ? size : SIZE_MAP[size] || 32;
 
   return (
-    <svg
-      width={pixelSize}
-      height={pixelSize}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 select-none ${className}`}
-      aria-label="Clario Logo"
-      role="img"
+    <div
+      style={{ width: pixelSize, height: pixelSize }}
+      className={`relative inline-flex items-center justify-center shrink-0 select-none overflow-visible ${className}`}
       {...props}
     >
-      {/* Neo-Brutalist Hard 2D Offset Shadow */}
-      {withShadow && (
-        <rect
-          x="12"
-          y="12"
-          width="80"
-          height="80"
-          rx="24"
-          fill="#121212"
-        />
-      )}
-
-      {/* Main Squircle Container */}
-      <rect
-        x="8"
-        y="8"
-        width="80"
-        height="80"
-        rx="24"
-        fill="#836EF9"
-        stroke="#121212"
-        strokeWidth="5"
+      <Image
+        src="/clario-logo.png"
+        alt={alt}
+        width={pixelSize * 2}
+        height={pixelSize * 2}
+        priority={priority}
+        className="w-full h-full object-contain pointer-events-none"
       />
-
-      {/* Geometric 'C' Monogram with Flat Terminals and Uniform Stroke */}
-      <path
-        d="M 68 38 L 52 38 A 14 14 0 1 0 52 62 L 68 62 A 28 28 0 1 1 68 38 Z"
-        fill="#FFFFFF"
-      />
-    </svg>
+    </div>
   );
 }
 
