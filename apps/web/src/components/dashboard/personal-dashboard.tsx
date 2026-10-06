@@ -2392,14 +2392,16 @@ export function PersonalDashboard({
               )}
 
               {onAddTransaction && (
-                <button
+                <WatermelonButton
                   type="button"
-                  onClick={() => onAddTransaction("fiat")}
-                  className="neo-btn neo-btn-primary"
+                  variant="primary"
+                  size="sm"
+                  textMorph
+                  leftIcon={<Plus className="h-4 w-4" />}
+                  onClick={() => onAddTransaction(subLedger)}
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Expense</span>
-                </button>
+                  {subLedger === "onchain" ? "Log On-Chain TX" : "Add Expense"}
+                </WatermelonButton>
               )}
             </div>
           </div>
@@ -2731,13 +2733,16 @@ export function PersonalDashboard({
               </p>
             </div>
             {onAddTransaction && (
-              <button
+              <WatermelonButton
+                type="button"
+                variant="primary"
+                size="sm"
+                textMorph
+                leftIcon={<Plus className="h-4 w-4" />}
                 onClick={() => onAddTransaction("fiat")}
-                className="neo-btn neo-btn-primary"
               >
-                <Plus className="h-4 w-4" />
-                <span>Log Income</span>
-              </button>
+                Log Income
+              </WatermelonButton>
             )}
           </div>
 
@@ -3692,18 +3697,24 @@ export function PersonalDashboard({
                     proof.
                   </p>
                   <div className="mt-5 flex gap-3">
-                    <button
+                    <WatermelonButton
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      textMorph
                       onClick={onUploadReceipt}
-                      className="neo-btn neo-btn-primary"
                     >
                       Scan Receipt
-                    </button>
-                    <button
+                    </WatermelonButton>
+                    <WatermelonButton
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      textMorph
                       onClick={() => onAddTransaction?.("fiat")}
-                      className="neo-btn neo-btn-secondary"
                     >
                       Manual Entry
-                    </button>
+                    </WatermelonButton>
                   </div>
                 </div>
               )}
@@ -3734,23 +3745,27 @@ export function PersonalDashboard({
                       Receipts you save and verify on Monad will appear here.
                     </p>
                     <div className="mt-5 flex flex-wrap justify-center gap-3">
-                      <button
+                      <WatermelonButton
                         type="button"
+                        variant="primary"
+                        size="sm"
+                        textMorph
+                        leftIcon={<Plus className="h-3.5 w-3.5" />}
                         onClick={() => onAddTransaction?.("fiat")}
-                        className="neo-btn neo-btn-primary flex items-center gap-1.5"
                       >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>LOG EXPENSE</span>
-                      </button>
+                        LOG EXPENSE
+                      </WatermelonButton>
                       {onUploadReceipt && (
-                        <button
+                        <WatermelonButton
                           type="button"
+                          variant="secondary"
+                          size="sm"
+                          textMorph
+                          leftIcon={<UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />}
                           onClick={onUploadReceipt}
-                          className="neo-btn neo-btn-secondary flex items-center gap-1.5"
                         >
-                          <UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />
-                          <span>SCAN RECEIPT WITH AI</span>
-                        </button>
+                          SCAN RECEIPT WITH AI
+                        </WatermelonButton>
                       )}
                     </div>
                   </div>
