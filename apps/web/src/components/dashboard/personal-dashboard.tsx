@@ -3402,15 +3402,25 @@ export function PersonalDashboard({
                     <p className="text-xs text-slate-500 mt-1 max-w-sm">
                       Receipts you save and verify on Monad will appear here.
                     </p>
-                    <div className="mt-5 flex gap-3">
+                    <div className="mt-5 flex flex-wrap justify-center gap-3">
                       <button
                         type="button"
                         onClick={onAddTransaction}
                         className="neo-btn neo-btn-primary flex items-center gap-1.5"
                       >
                         <Plus className="h-3.5 w-3.5" />
-                        <span>ADD TRANSACTION</span>
+                        <span>LOG EXPENSE</span>
                       </button>
+                      {onUploadReceipt && (
+                        <button
+                          type="button"
+                          onClick={onUploadReceipt}
+                          className="neo-btn neo-btn-secondary flex items-center gap-1.5"
+                        >
+                          <UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />
+                          <span>SCAN RECEIPT WITH AI</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (

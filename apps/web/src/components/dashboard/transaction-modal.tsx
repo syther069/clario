@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PlusCircle, X, Wallet, FileText, ArrowLeft } from "lucide-react";
+import { PlusCircle, X, Wallet, FileText, ArrowLeft, Camera, Sparkles } from "lucide-react";
 import type { Transaction } from "@/lib/supabase/types";
 import { TransactionImportDialog } from "@/components/transaction-import-dialog";
 import type { NormalizedTransaction } from "@/lib/import/types";
@@ -26,6 +26,7 @@ interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (tx: Partial<Transaction>) => void;
+  onScanReceipt?: () => void;
   userId?: string | undefined;
   userAddress?: string | undefined;
   workspaceId?: string | undefined;
@@ -37,6 +38,7 @@ export function TransactionModal({
   isOpen,
   onClose,
   onSave,
+  onScanReceipt,
   userId = "user_default",
   userAddress,
   workspaceId = "00000000-0000-0000-0000-000000000001",
@@ -281,12 +283,44 @@ export function TransactionModal({
               </button>
             </div>
 
-            <div className="mt-5 space-y-3.5">
-              {/* Option 1: Fetch Onchain via Alchemy */}
+            <div className="mt-5 space-y-3">
+              {/* Option 1: Scan Receipt with AI (Instant Gemini OCR) */}
+              {onScanReceipt && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onScanReceipt();
+                  }}
+                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f3edff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/40">
+                      <Sparkles className="h-3 w-3" />
+                      Gemini AI OCR
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+                      Auto-Extract
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Camera className="h-3.5 w-3.5 text-[#836EF9]" />
+                      Scan Receipt / Invoice
+                    </span>
+                    <span className="text-sm font-mono font-bold">→</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Upload receipt photo or PDF. Gemini automatically extracts merchant, items, amount, and date.
+                  </p>
+                </button>
+              )}
+
+              {/* Option 2: Fetch Onchain via Alchemy */}
               <button
                 type="button"
                 onClick={handleFetchViaAlchemy}
-                className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px]"
+                className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded border border-[#0052FF]/30">

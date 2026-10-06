@@ -30,6 +30,7 @@ export function ReceiptUploadModal({
   userId = "user_default",
 }: ReceiptUploadModalProps) {
   const [uploading, setUploading] = useState(false);
+  const [uploadStep, setUploadStep] = useState("Step 1/3: Reading receipt & generating SHA-256 fingerprint...");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [result, setResult] = useState<{
@@ -44,6 +45,15 @@ export function ReceiptUploadModal({
     setError(null);
     setResult(null);
     setUploading(true);
+    setUploadStep("Step 1/3: Reading receipt & generating SHA-256 fingerprint...");
+
+    const stepTimer1 = setTimeout(() => {
+      setUploadStep("Step 2/3: Multimodal OCR extraction via Gemini AI...");
+    }, 1800);
+
+    const stepTimer2 = setTimeout(() => {
+      setUploadStep("Step 3/3: Parsing merchant, total amount & line items...");
+    }, 4200);
 
     try {
       const formData = new FormData();
@@ -72,6 +82,8 @@ export function ReceiptUploadModal({
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
     } finally {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
       setUploading(false);
     }
   }
@@ -173,11 +185,11 @@ export function ReceiptUploadModal({
                   {uploading ? (
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="h-8 w-8 animate-spin text-[#836EF9]" />
-                      <p className="text-xs font-black uppercase tracking-wider text-[#121212]">
-                        Scanning receipt & computing cryptographic hash...
+                      <p className="text-xs font-black uppercase tracking-wider text-[#121212] font-mono">
+                        {uploadStep}
                       </p>
                       <p className="text-[11px] text-slate-500">
-                        Gemini 2.5 Flash is extracting merchant, items, and tax
+                        Private offchain evidence remains safe — only cryptographic hash anchors to Monad.
                       </p>
                     </div>
                   ) : (

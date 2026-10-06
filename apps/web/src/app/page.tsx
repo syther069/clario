@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { ModeHeader } from "@/components/layout/mode-header";
+import { ModeHeader, type CorePillar } from "@/components/layout/mode-header";
 import { PersonalDashboard } from "@/components/dashboard/personal-dashboard";
 import { FreelancerDashboard } from "@/components/dashboard/freelancer-dashboard";
 import { FamilyDashboard } from "@/components/dashboard/family-dashboard";
@@ -38,6 +38,7 @@ export default function Home() {
     connectedEvmAddress,
     connectEvmWallet,
   } = useClarioAuth();
+  const [activeTab, setActiveTab] = useState<CorePillar>("expenses");
   const [activeMode, setActiveMode] = useState<PlatformMode>("personal");
   const [personalView, setPersonalView] = useState<PersonalView>("overview");
   const [freelancerView, setFreelancerView] =
@@ -170,6 +171,26 @@ export default function Home() {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
       window.history.replaceState({}, "", url.toString());
+    }
+  };
+
+  const handleTabChange = (tab: CorePillar) => {
+    setActiveTab(tab);
+    if (tab === "expenses") {
+      setPersonalView("overview");
+      setFreelancerView("overview");
+      setFamilyView("overview");
+      setBusinessView("overview");
+    } else if (tab === "vault") {
+      setPersonalView("receipts");
+      setFreelancerView("receipts");
+      setFamilyView("settlements");
+      setBusinessView("audit");
+    } else if (tab === "insights") {
+      setPersonalView("budgets");
+      setFreelancerView("tax");
+      setFamilyView("budgets");
+      setBusinessView("reports");
     }
   };
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
@@ -388,11 +409,14 @@ export default function Home() {
     <div className="min-h-screen bg-grid text-[#121212] flex flex-col font-sans">
       {/* Main Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Page-Level Header: Mode Selector & Clario Brand */}
+        {/* Page-Level Header: Mode Selector, 3 Core Pillars & Primary CTA */}
         <ModeHeader
           currentMode={activeMode}
           onModeChange={handleModeChange}
           onOpenCopilot={() => setCopilotOpen(true)}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onLogExpense={() => setTxModalOpen(true)}
         />
 
         {/* Vault Data Safety & Privacy Reassurance */}
@@ -517,11 +541,12 @@ export default function Home() {
         userId={userId}
       />
 
-      {/* Manual Transaction Modal */}
+      {/* Manual & Onchain Transaction Modal with AI Scan Shortcut */}
       <TransactionModal
         isOpen={txModalOpen}
         onClose={() => setTxModalOpen(false)}
         onSave={handleAddTransaction}
+        onScanReceipt={() => setReceiptModalOpen(true)}
         userId={userId}
         userAddress={connectedEvmAddress || undefined}
         hasConnectedWallet={hasConnectedEvmWallet}
