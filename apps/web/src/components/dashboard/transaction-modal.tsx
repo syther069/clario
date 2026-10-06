@@ -334,46 +334,50 @@ export function TransactionModal({
         </div>
 
         {/* Top-Level Rail Switcher (Personal Finance vs On-Chain) */}
-        <div className="mt-4 p-1 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-1.5">
-          <button
+        <div className="mt-4 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-2">
+          <motion.button
             type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               setSubLedger("fiat");
               setPaymentMethod("Credit Card");
               setCategory("food_dining");
             }}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
               subLedger === "fiat"
-                ? "bg-[#121212] text-white shadow-[2px_2px_0_0_#836EF9]"
-                : "text-slate-600 hover:text-[#121212]"
+                ? "bg-[#121212] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#836EF9]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
             <CreditCard className="h-3.5 w-3.5 text-[#836EF9]" />
             <span>Personal Finance</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
               Fiat
             </span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => {
               setSubLedger("onchain");
               setPaymentMethod("Onchain (Monad)");
               setCategory("crypto_ops");
             }}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
               subLedger === "onchain"
-                ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
-                : "text-slate-600 hover:text-[#121212]"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
             <MonadLogo className="h-3.5 w-3.5" />
             <span>On-Chain</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-100 text-[#836EF9] font-bold border border-purple-300">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-[#836EF9] font-bold border border-purple-300">
               Web3
             </span>
-          </button>
+          </motion.button>
         </div>
 
         {/* VIEW 1: SELECTION SCREEN */}
@@ -383,146 +387,173 @@ export function TransactionModal({
               <>
                 {/* Fiat Option 1: Scan Receipt / Bill (Gemini OCR) */}
                 {onScanReceipt && (
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.99, x: 1, y: 1 }}
+                    transition={{ duration: 0.15 }}
                     onClick={() => {
                       onClose();
                       onScanReceipt();
                     }}
-                    className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f3edff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                    className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f3edff] shadow-[3px_3px_0_0_#121212] transition-colors group flex flex-col justify-between cursor-pointer"
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/40">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2.5 py-0.5 rounded-md border border-[#836EF9]/40 shadow-[1px_1px_0_0_#836EF9]">
                         <Sparkles className="h-3 w-3" />
                         Gemini AI OCR
                       </span>
-                      <span className="text-[10px] font-mono font-bold uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
-                        Zero Manual Effort
+                      <span className="text-[10px] font-mono font-black uppercase text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-300 shadow-[1px_1px_0_0_#121212]">
+                        Zero Friction
                       </span>
                     </div>
-                    <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <Camera className="h-3.5 w-3.5 text-[#836EF9]" />
+                    <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition-colors flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <Camera className="h-4 w-4 text-[#836EF9]" />
                         Scan Bill / Invoice / Receipt
                       </span>
-                      <span className="text-sm font-mono font-bold">→</span>
+                      <span className="text-sm font-mono font-black">→</span>
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                       Upload grocery, dining, or shopping receipts. Multimodal Gemini extracts merchant, total amount & currency.
                     </p>
-                  </button>
+                  </motion.button>
                 )}
 
                 {/* Fiat Option 2: Record Manual Expense / Income */}
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.99, x: 1, y: 1 }}
+                  transition={{ duration: 0.15 }}
                   onClick={() => setView("manual")}
-                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f9fafb] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                  className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#fafafa] shadow-[3px_3px_0_0_#121212] transition-colors group flex flex-col justify-between cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-mono font-bold uppercase text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-mono font-black uppercase text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md border border-[#121212] shadow-[1px_1px_0_0_#121212]">
                       Personal Ledger Entry
                     </span>
-                    <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
+                    <span className="text-[10px] font-mono font-black uppercase text-slate-500">
                       Cash • UPI • Cards
                     </span>
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <FileText className="h-3.5 w-3.5 text-slate-600" />
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition-colors flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-slate-600" />
                       Add Personal Expense Manually
                     </span>
-                    <span className="text-sm font-mono font-bold">→</span>
+                    <span className="text-sm font-mono font-black">→</span>
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     Log daily spending, rent, coffee, or subscription with multi-currency ($, ₹, €, £) and payment method tagging.
                   </p>
-                </button>
+                </motion.button>
               </>
             ) : (
               <>
                 {/* On-Chain Option 1: Fetch via Alchemy API */}
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.99, x: 1, y: 1 }}
+                  transition={{ duration: 0.15 }}
                   onClick={handleFetchViaAlchemy}
-                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                  className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-colors group flex flex-col justify-between cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded border border-[#0052FF]/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-black uppercase text-[#0052FF] bg-[#f0f4ff] px-2.5 py-0.5 rounded-md border border-[#0052FF]/30 shadow-[1px_1px_0_0_#0052FF]">
                       <AlchemyLogo className="h-3.5 w-3.5" />
                       Alchemy Multi-Chain
                     </span>
-                    <span className="text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
+                    <span className="text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2.5 py-0.5 rounded-md border border-[#836EF9]/30 shadow-[1px_1px_0_0_#121212]">
                       Monad • Base • ETH
                     </span>
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
-                    <span>Fetch Transfers from Wallet</span>
-                    <span className="text-sm font-mono font-bold">→</span>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition-colors flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <span>Fetch Transfers from Wallet</span>
+                    </span>
+                    <span className="text-sm font-mono font-black">→</span>
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     Auto-scan connected EVM address for recent transfers across Monad, Base, Ethereum & Arbitrum.
                   </p>
-                </button>
+                </motion.button>
 
                 {/* On-Chain Option 2: Record TX Hash Manually */}
-                <button
+                <motion.button
                   type="button"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.99, x: 1, y: 1 }}
+                  transition={{ duration: 0.15 }}
                   onClick={() => setView("manual")}
-                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f9fafb] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                  className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#fafafa] shadow-[3px_3px_0_0_#121212] transition-colors group flex flex-col justify-between cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-mono font-bold uppercase text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-mono font-black uppercase text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200 shadow-[1px_1px_0_0_#121212]">
                       Manual On-Chain Record
                     </span>
-                    <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
+                    <span className="text-[10px] font-mono font-black uppercase text-slate-500">
                       Hash • Contract • Gas
                     </span>
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition flex items-center justify-between">
-                    <span>Add On-Chain TX Manually</span>
-                    <span className="text-sm font-mono font-bold">→</span>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition-colors flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-[#836EF9]" />
+                      <span>Add On-Chain TX Manually</span>
+                    </span>
+                    <span className="text-sm font-mono font-black">→</span>
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     Manually paste transaction hash, token amount, and gas spent for tracking protocol interactions.
                   </p>
-                </button>
+                </motion.button>
               </>
             )}
 
             <div className="mt-6 pt-3 border-t-2 border-[#121212] flex items-center justify-end">
-              <ClarioButton type="button" variant="secondary" onClick={onClose}>
+              <WatermelonButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                textMorph
+                onClick={onClose}
+              >
                 Cancel
-              </ClarioButton>
+              </WatermelonButton>
             </div>
           </div>
         ) : (
           /* VIEW 2: MANUAL TRANSACTION FORM */
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             {/* Inflow / Outflow Toggle */}
-            <div className="flex gap-2 p-1 bg-[#f3f4f6] rounded-xl border-2 border-[#121212]">
-              <button
+            <div className="flex gap-2 p-1.5 bg-[#f3f4f6] rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+              <motion.button
                 type="button"
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setType("expense")}
-                className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                className={`flex-1 rounded-lg py-2.5 text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
                   type === "expense"
                     ? "bg-[#fee2e2] text-[#b91c1c] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
+                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent hover:border-[#121212]/30"
                 }`}
               >
                 Expense (Outflow)
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setType("income")}
-                className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                className={`flex-1 rounded-lg py-2.5 text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
                   type === "income"
                     ? "bg-[#dcfce7] text-[#15803d] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
+                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent hover:border-[#121212]/30"
                 }`}
               >
                 Income (Inflow)
-              </button>
+              </motion.button>
             </div>
 
             {/* Currency & Amount */}
@@ -646,64 +677,49 @@ export function TransactionModal({
                     { name: "Bank Transfer", icon: Building2 },
                     { name: "Apple Pay", icon: Smartphone },
                   ].map((item) => (
-                    <button
+                    <motion.button
                       key={item.name}
                       type="button"
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => setPaymentMethod(item.name)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded border-2 border-[#121212] transition shadow-[1.5px_1.5px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
                         paymentMethod === item.name
-                          ? "bg-[#121212] text-white"
-                          : "bg-white text-slate-800 hover:bg-[#f3f4f6]"
+                          ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                          : "bg-white text-slate-800 shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
                       }`}
                     >
                       <item.icon className="h-3 w-3" />
                       <span>{item.name}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               ) : (
                 /* On-Chain Payment Assets */
                 <div className="flex items-center gap-1.5 flex-wrap mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("Onchain (Monad)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-[#f3f0ff] text-[#836EF9] border border-[#121212] hover:bg-[#e7e1fe] transition shadow-[1px_1px_0_0_#121212]"
-                  >
-                    <MonadLogo className="h-3 w-3" />
-                    Monad
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("Onchain (Ethereum)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-slate-100 text-slate-800 border border-[#121212] hover:bg-slate-200 transition shadow-[1px_1px_0_0_#121212]"
-                  >
-                    <EthereumLogo className="h-3 w-3" />
-                    ETH
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("Onchain (Base)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-blue-50 text-[#0052FF] border border-[#121212] hover:bg-blue-100 transition shadow-[1px_1px_0_0_#121212]"
-                  >
-                    <BaseLogo className="h-3 w-3" />
-                    Base
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("USDC")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-sky-50 text-[#2775CA] border border-[#121212] hover:bg-sky-100 transition shadow-[1px_1px_0_0_#121212]"
-                  >
-                    <UsdcLogo className="h-3 w-3" />
-                    USDC
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("USDT")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-emerald-50 text-[#26A17B] border border-[#121212] hover:bg-emerald-100 transition shadow-[1px_1px_0_0_#121212]"
-                  >
-                    <UsdtLogo className="h-3 w-3" />
-                    USDT
-                  </button>
+                  {[
+                    { name: "Onchain (Monad)", label: "Monad", icon: MonadLogo },
+                    { name: "Onchain (Ethereum)", label: "ETH", icon: EthereumLogo },
+                    { name: "Onchain (Base)", label: "Base", icon: BaseLogo },
+                    { name: "USDC", label: "USDC", icon: UsdcLogo },
+                    { name: "USDT", label: "USDT", icon: UsdtLogo },
+                  ].map((coin) => (
+                    <motion.button
+                      key={coin.name}
+                      type="button"
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setPaymentMethod(coin.name)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
+                        paymentMethod === coin.name
+                          ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                          : "bg-white text-slate-800 shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
+                      }`}
+                    >
+                      <coin.icon className="h-3 w-3" />
+                      <span>{coin.label}</span>
+                    </motion.button>
+                  ))}
                 </div>
               )}
 
