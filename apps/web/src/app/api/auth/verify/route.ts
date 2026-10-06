@@ -8,9 +8,34 @@ import {
 } from "@/lib/auth/session";
 import { getSessionSecret } from "@/lib/auth/context";
 import { getDatabaseClient } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    // Limit to 10 verify attempts per minute per IP to prevent brute-forcing
+    const rateCheck = checkRateLimit(`auth:verify:${clientIp}`, {
+      maxRequests: 10,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Too many verification attempts. Please try again shortly.",
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { message, signature } = body as {
       message?: unknown;

@@ -34,6 +34,10 @@ import {
   UploadCloud,
   Calendar,
   Trash2,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  Building2,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { executeSaveTransaction } from "@/lib/blockchain/save-transaction";
@@ -123,7 +127,7 @@ interface PersonalDashboardProps {
   currencySymbol?: string | undefined;
   activeView?: PersonalView | undefined;
   onViewChange?: ((view: PersonalView) => void) | undefined;
-  onAddTransaction?: (() => void) | undefined;
+  onAddTransaction?: ((subLedger?: "fiat" | "onchain") => void) | undefined;
   onUploadReceipt?: (() => void) | undefined;
   onUpdateTransaction?: ((tx: Transaction) => void) | undefined;
   userId?: string | undefined;
@@ -183,12 +187,90 @@ export function PersonalDashboard({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
 
-  const displayedTransactions = transactions.slice(0, 10);
+  // Sub-ledger state (Personal Finance / Fiat vs On-Chain / Web3)
+  const [subLedger, setSubLedger] = useState<"fiat" | "onchain">("fiat");
+  const [fiatCurrency, setFiatCurrency] = useState<{
+    code: string;
+    symbol: string;
+  }>({
+    code: "USD",
+    symbol: currencySymbol || "$",
+  });
+
+  // Quick Add state for Personal Finance
+  const [quickDesc, setQuickDesc] = useState("");
+  const [quickAmount, setQuickAmount] = useState("");
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState("Credit Card");
+
+  // Helper to distinguish On-Chain vs Fiat
+  const isTxOnChain = (t: Transaction): boolean => {
+    const pm = (t.payment_method || "").toLowerCase();
+    return Boolean(
+      t.blockchain_tx_hash ||
+      t.monad_tx_hash ||
+      t.source === "onchain_monad" ||
+      t.source === "onchain_other" ||
+      t.category === "crypto_ops" ||
+      t.category_id === "crypto_ops" ||
+      pm.includes("onchain") ||
+      pm.includes("eth") ||
+      pm.includes("monad") ||
+      pm.includes("usdc") ||
+      pm.includes("usdt") ||
+      pm.includes("base") ||
+      pm.includes("arbitrum")
+    );
+  };
+
+  const fiatTransactions = useMemo(
+    () => transactions.filter((t) => !isTxOnChain(t)),
+    [transactions],
+  );
+
+  const onChainTransactions = useMemo(
+    () => transactions.filter((t) => isTxOnChain(t)),
+    [transactions],
+  );
+
+  const activeTransactions = subLedger === "fiat" ? fiatTransactions : onChainTransactions;
+  const activeCurrencySymbol = subLedger === "fiat" ? fiatCurrency.symbol : "$";
+
+  const handleQuickAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickDesc.trim() || !quickAmount) return;
+    const num = parseFloat(quickAmount);
+    if (isNaN(num) || num <= 0) return;
+
+    onUpdateTransaction?.({
+      id: crypto.randomUUID(),
+      user_id: userId,
+      type: "expense",
+      amount: num,
+      currency: fiatCurrency.code,
+      merchant: quickDesc.trim(),
+      description: quickDesc.trim(),
+      category: "food_dining",
+      category_id: "food_dining",
+      date: new Date().toISOString().split("T")[0]!,
+      timestamp: new Date().toISOString(),
+      payment_method: quickPaymentMethod,
+      verification_state: "unverified",
+      verification_status: "unverified",
+      blockchain_status: null,
+      source: "manual",
+      version: 1,
+    } as Transaction);
+
+    setQuickDesc("");
+    setQuickAmount("");
+  };
+
+  const displayedTransactions = activeTransactions.slice(0, 10);
   const isAllSelected =
     displayedTransactions.length > 0 &&
     displayedTransactions.every((t) => selectedTxIds.has(t.id));
 
-  const selectedTransactions = transactions.filter((t) =>
+  const selectedTransactions = activeTransactions.filter((t) =>
     selectedTxIds.has(t.id),
   );
   const selectedTransactionsTotal = selectedTransactions.reduce(
@@ -744,18 +826,18 @@ export function PersonalDashboard({
     useState<SubFrequency>("monthly");
   const [subNextBillingInput, setSubNextBillingInput] = useState("");
 
-  // Real metrics from transactions
+  // Real metrics from scoped transactions
   const totalIncome = useMemo(() => {
-    return transactions
+    return activeTransactions
       .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-  }, [transactions]);
+  }, [activeTransactions]);
 
   const totalExpenses = useMemo(() => {
-    return transactions
+    return activeTransactions
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-  }, [transactions]);
+  }, [activeTransactions]);
 
   const netCashFlow = totalIncome - totalExpenses;
 
@@ -763,24 +845,24 @@ export function PersonalDashboard({
   const currentYear = new Date().getFullYear();
 
   const monthlyIncome = useMemo(() => {
-    return transactions
+    return activeTransactions
       .filter((t) => {
         if (t.type !== "income") return false;
         const d = new Date(t.date || t.timestamp || t.created_at);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-  }, [transactions, currentMonth, currentYear]);
+  }, [activeTransactions, currentMonth, currentYear]);
 
   const monthlySpending = useMemo(() => {
-    return transactions
+    return activeTransactions
       .filter((t) => {
         if (t.type !== "expense") return false;
         const d = new Date(t.date || t.timestamp || t.created_at);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-  }, [transactions, currentMonth, currentYear]);
+  }, [activeTransactions, currentMonth, currentYear]);
 
   const totalBudgetLimit = useMemo(() => {
     return localBudgets.reduce(
@@ -818,14 +900,14 @@ export function PersonalDashboard({
 
   const categoryTotals = useMemo(() => {
     const acc: Record<string, number> = {};
-    for (const tx of transactions) {
+    for (const tx of activeTransactions) {
       if (tx.type === "expense") {
         const cat = String(tx.category || tx.category_id || "other");
         acc[cat] = (acc[cat] || 0) + Number(tx.amount || 0);
       }
     }
     return acc;
-  }, [transactions]);
+  }, [activeTransactions]);
 
   const spendingCategoriesWithData = useMemo(() => {
     const list: { slug: string; name: string; amount: number; pct: number }[] =
@@ -929,7 +1011,7 @@ export function PersonalDashboard({
       };
     });
 
-    for (const tx of transactions) {
+    for (const tx of activeTransactions) {
       const txTime = new Date(
         tx.date || tx.timestamp || tx.created_at,
       ).getTime();
@@ -945,7 +1027,7 @@ export function PersonalDashboard({
     }
 
     const hasAny = buckets.some((b) => b.income > 0 || b.expenses > 0);
-    if (!hasAny && transactions.length > 0) {
+    if (!hasAny && activeTransactions.length > 0) {
       return [
         {
           name: "Period Start",
@@ -970,12 +1052,12 @@ export function PersonalDashboard({
       income: Number(b.income.toFixed(2)),
       expenses: Number(b.expenses.toFixed(2)),
     }));
-  }, [transactions, cashFlowPeriod, totalIncome, totalExpenses]);
+  }, [activeTransactions, cashFlowPeriod, totalIncome, totalExpenses]);
 
   // Filtered expenses for Expenses view
   const filteredExpenses = useMemo(() => {
     const now = new Date();
-    return transactions.filter((t) => {
+    return activeTransactions.filter((t) => {
       if (t.type !== "expense") return false;
 
       // Search filter
@@ -1059,7 +1141,7 @@ export function PersonalDashboard({
       return true;
     });
   }, [
-    transactions,
+    activeTransactions,
     expenseSearch,
     expenseCategoryFilter,
     expenseDateFilter,
@@ -1107,8 +1189,8 @@ export function PersonalDashboard({
 
   // Income analysis
   const incomeTransactions = useMemo(() => {
-    return transactions.filter((t) => t.type === "income");
-  }, [transactions]);
+    return activeTransactions.filter((t) => t.type === "income");
+  }, [activeTransactions]);
 
   const filteredIncome = useMemo(() => {
     if (!incomeSearch.trim()) return incomeTransactions;
@@ -1254,50 +1336,184 @@ export function PersonalDashboard({
 
   return (
     <div className="space-y-8">
-      {/* 1. Header & Quick Actions */}
+      {/* 1. Contextual Header & Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
-              Universal Ledger & Proof Spines
-            </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
-              <MonadLogo className="h-3 w-3" />
-              Monad Testnet
-            </span>
+            {subLedger === "fiat" ? (
+              <>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Personal Finance Ledger
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]">
+                  100% Private & Off-Chain
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
+                  Universal Ledger & Proof Spines
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
+                  <MonadLogo className="h-3 w-3" />
+                  Monad Testnet (10143)
+                </span>
+              </>
+            )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
-            Financial Intelligence
+            {subLedger === "fiat"
+              ? "Personal Finance & Daily Living"
+              : "On-Chain & Web3 Activity"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            Real-time cash flow, recurring expenses, and cryptographic record
-            proofs on Monad.
+            {subLedger === "fiat"
+              ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
+              : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Magnetic range={60} intensity={0.35}>
-            <WatermelonButton
-              onClick={onUploadReceipt}
-              variant="secondary"
-              icon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
-              morphText="Scan Receipt"
-            />
-          </Magnetic>
+          {subLedger === "fiat" ? (
+            <>
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={onUploadReceipt}
+                  variant="secondary"
+                  icon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
+                  morphText="Scan Receipt"
+                />
+              </Magnetic>
 
-          <Magnetic range={70} intensity={0.4}>
-            <WatermelonButton
-              onClick={onAddTransaction}
-              variant="primary"
-              icon={<Plus className="h-4 w-4" />}
-              morphText="Add Transaction"
-            />
-          </Magnetic>
+              <Magnetic range={70} intensity={0.4}>
+                <WatermelonButton
+                  onClick={() => onAddTransaction?.("fiat")}
+                  variant="primary"
+                  icon={<Plus className="h-4 w-4" />}
+                  morphText="Add Expense"
+                />
+              </Magnetic>
+            </>
+          ) : (
+            <>
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={() => onAddTransaction?.("onchain")}
+                  variant="secondary"
+                  icon={<MonadLogo className="h-4 w-4" />}
+                  morphText="Sync via Alchemy"
+                />
+              </Magnetic>
+
+              <Magnetic range={70} intensity={0.4}>
+                <WatermelonButton
+                  onClick={() => onAddTransaction?.("onchain")}
+                  variant="primary"
+                  icon={<Plus className="h-4 w-4" />}
+                  morphText="Add On-Chain TX"
+                />
+              </Magnetic>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Primary Mode Navigation Bar */}
+      {/* 2. Two-Tier Sub-Ledger Switcher: Personal Finance (Fiat) vs On-Chain (Web3) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] rounded-2xl">
+        <div className="flex items-center gap-2 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl">
+          <motion.button
+            type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setSubLedger("fiat");
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
+              subLedger === "fiat"
+                ? "bg-[#121212] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#836EF9]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
+            }`}
+          >
+            <CreditCard className="h-3.5 w-3.5 text-[#836EF9]" />
+            <span>Personal Finance</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+              Fiat
+            </span>
+          </motion.button>
+          <motion.button
+            type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setSubLedger("onchain");
+              if (
+                currentView !== "overview" &&
+                currentView !== "expenses" &&
+                currentView !== "receipts"
+              ) {
+                setCurrentView("overview");
+                if (onViewChange) onViewChange("overview");
+              }
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
+              subLedger === "onchain"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
+            }`}
+          >
+            <MonadLogo className="h-3.5 w-3.5" />
+            <span>On-Chain</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-[#836EF9] font-bold border border-purple-300">
+              Web3
+            </span>
+          </motion.button>
+        </div>
+
+        {/* Dynamic Controls */}
+        <div className="flex items-center gap-2.5">
+          {subLedger === "fiat" ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500">
+                Currency:
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[
+                  { code: "USD", symbol: "$" },
+                  { code: "INR", symbol: "₹" },
+                  { code: "EUR", symbol: "€" },
+                  { code: "GBP", symbol: "£" },
+                ].map((cur) => (
+                  <motion.button
+                    key={cur.code}
+                    type="button"
+                    whileHover={{ y: -1 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setFiatCurrency(cur)}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-black uppercase border-2 transition-all cursor-pointer ${
+                      fiatCurrency.code === cur.code
+                        ? "bg-[#121212] text-white border-[#121212] shadow-[2px_2px_0_0_#836EF9]"
+                        : "bg-white text-slate-700 border-[#121212] shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
+                    }`}
+                  >
+                    {cur.code} ({cur.symbol})
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-3 py-1.5 rounded-lg border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5">
+                <MonadLogo className="h-3.5 w-3.5" />
+                <span>Monad Testnet (10143)</span>
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Primary Mode Navigation Bar */}
       <nav
         aria-label="Personal Navigation"
         className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
@@ -1311,39 +1527,56 @@ export function PersonalDashboard({
             damping: 30,
           }}
         >
-          {[
-            { id: "overview", label: "Overview", icon: LayoutDashboard },
-            {
-              id: "expenses",
-              label: "Expenses",
-              icon: TrendingDown,
-              count: transactions.filter((t) => t.type === "expense").length,
-            },
-            {
-              id: "income",
-              label: "Income",
-              icon: TrendingUp,
-              count: transactions.filter((t) => t.type === "income").length,
-            },
-            {
-              id: "budgets",
-              label: "Budgets",
-              icon: ChartNoAxesCombined,
-              count: budgets.length,
-            },
-            {
-              id: "recurring",
-              label: "Recurring",
-              icon: RotateCcw,
-              count: subscriptions.length,
-            },
-            {
-              id: "receipts",
-              label: "Saved Receipts",
-              icon: Receipt,
-              count: verifiedReceipts.length,
-            },
-          ].map((tab) => {
+          {(subLedger === "fiat"
+            ? [
+                { id: "overview", label: "Overview", icon: LayoutDashboard },
+                {
+                  id: "expenses",
+                  label: "Expenses",
+                  icon: TrendingDown,
+                  count: fiatTransactions.filter((t) => t.type === "expense").length,
+                },
+                {
+                  id: "income",
+                  label: "Income",
+                  icon: TrendingUp,
+                  count: fiatTransactions.filter((t) => t.type === "income").length,
+                },
+                {
+                  id: "budgets",
+                  label: "Budgets",
+                  icon: ChartNoAxesCombined,
+                  count: budgets.length,
+                },
+                {
+                  id: "recurring",
+                  label: "Recurring",
+                  icon: RotateCcw,
+                  count: subscriptions.length,
+                },
+                {
+                  id: "receipts",
+                  label: "Saved Receipts",
+                  icon: Receipt,
+                  count: verifiedReceipts.length,
+                },
+              ]
+            : [
+                { id: "overview", label: "Web3 Overview", icon: LayoutDashboard },
+                {
+                  id: "expenses",
+                  label: "On-Chain Activity",
+                  icon: ArrowLeftRight,
+                  count: onChainTransactions.length,
+                },
+                {
+                  id: "receipts",
+                  label: "Monad Proofs",
+                  icon: ShieldCheck,
+                  count: verifiedReceipts.length,
+                },
+              ]
+          ).map((tab) => {
             const Icon = tab.icon;
             const isActive = currentView === tab.id;
             return (
@@ -1398,7 +1631,7 @@ export function PersonalDashboard({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500 bg-[#f8f9fa] px-2.5 py-1 rounded-md border-1.5 border-[#121212]">
-                      Total Net Balance
+                      {subLedger === "fiat" ? "Personal Net Cashflow" : "Web3 Net Position"}
                     </span>
                     <span
                       className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded border border-[#121212] ${
@@ -1410,32 +1643,41 @@ export function PersonalDashboard({
                       {netCashFlow >= 0 ? "Surplus" : "Deficit"}
                     </span>
                   </div>
-                  <div className="relative overflow-hidden flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 bg-[#f3f4f6] px-2.5 py-1 rounded border border-[#121212]">
-                    <MonadLogo className="h-3.5 w-3.5" />
-                    <span>Monad Ledger</span>
-                    <BorderTrail
-                      size={30}
-                      className="bg-[#836EF9]"
-                      transition={{
-                        repeat: Infinity,
-                        duration: 4,
-                        ease: "linear",
-                      }}
-                    />
-                  </div>
+                  {subLedger === "fiat" ? (
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-[#121212]">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span>Private Ledger</span>
+                    </div>
+                  ) : (
+                    <div className="relative overflow-hidden flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 bg-[#f3f4f6] px-2.5 py-1 rounded border border-[#121212]">
+                      <MonadLogo className="h-3.5 w-3.5" />
+                      <span>Monad Ledger</span>
+                      <BorderTrail
+                        size={30}
+                        className="bg-[#836EF9]"
+                        transition={{
+                          repeat: Infinity,
+                          duration: 4,
+                          ease: "linear",
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* The Undisputed Hero Number */}
                 <div className="my-2">
                   <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-[#121212] flex items-center">
                     <span>{netCashFlow >= 0 ? "+" : "-"}</span>
-                    <span>{currencySymbol}</span>
+                    <span>{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(Math.abs(netCashFlow) * 100) / 100}
                     />
                   </div>
                   <p className="mt-1 text-xs text-slate-500 font-medium">
-                    Net recorded cash balance across verified accounts & wallets
+                    {subLedger === "fiat"
+                      ? "Net recorded personal cashflow across cash, cards & bank accounts"
+                      : "Net crypto balance across Monad, Base, Ethereum & Arbitrum"}
                   </p>
                 </div>
               </div>
@@ -1448,7 +1690,7 @@ export function PersonalDashboard({
                     <TrendingUp className="h-3.5 w-3.5" />
                   </div>
                   <div className="text-lg sm:text-xl font-black font-mono text-[#15803d] mt-1 flex items-center">
-                    <span>+{currencySymbol}</span>
+                    <span>+{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(monthlyIncome * 100) / 100}
                     />
@@ -1464,7 +1706,7 @@ export function PersonalDashboard({
                     <TrendingDown className="h-3.5 w-3.5" />
                   </div>
                   <div className="text-lg sm:text-xl font-black font-mono text-[#b91c1c] mt-1 flex items-center">
-                    <span>-{currencySymbol}</span>
+                    <span>-{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(monthlySpending * 100) / 100}
                     />
@@ -1566,6 +1808,87 @@ export function PersonalDashboard({
               </div>
             </div>
           </div>
+
+          {/* Quick Log Personal Expense Bar (Personal Finance Exclusive) */}
+          {subLedger === "fiat" && (
+            <div className="neo-card p-5 bg-[#fbf9fe] border-2 border-[#121212] shadow-[4px_4px_0_0_#121212]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-md bg-[#836EF9] text-white flex items-center justify-center border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+                    <Plus className="h-3.5 w-3.5" />
+                  </div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                    Quick Add Personal Expense
+                  </h3>
+                  <span className="text-[10px] font-mono font-bold uppercase text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
+                    Zero Friction
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { label: "Cash", icon: Banknote },
+                    { label: "UPI", icon: Smartphone },
+                    { label: "Credit Card", icon: CreditCard },
+                    { label: "Bank Transfer", icon: Building2 },
+                  ].map((m) => (
+                    <motion.button
+                      key={m.label}
+                      type="button"
+                      whileHover={{ y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setQuickPaymentMethod(m.label)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
+                        quickPaymentMethod === m.label
+                          ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                          : "bg-white text-slate-700 shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
+                      }`}
+                    >
+                      <m.icon className="h-3 w-3" />
+                      <span>{m.label}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              <form
+                onSubmit={handleQuickAddSubmit}
+                className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center"
+              >
+                <input
+                  type="text"
+                  placeholder="Merchant / Purpose (e.g. Starbucks, Groceries, Metro, Gym)"
+                  value={quickDesc}
+                  onChange={(e) => setQuickDesc(e.target.value)}
+                  className="flex-1 neo-input text-xs !py-2"
+                  required
+                />
+                <div className="relative w-full sm:w-44">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-mono font-bold text-slate-500 pointer-events-none">
+                    {fiatCurrency.symbol}
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={quickAmount}
+                    onChange={(e) => setQuickAmount(e.target.value)}
+                    className="w-full neo-input !pl-8 text-xs font-mono font-bold !py-2"
+                    required
+                  />
+                </div>
+                <WatermelonButton
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  textMorph
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                  className="!py-2 !px-5 whitespace-nowrap shadow-[3px_3px_0_0_#121212]"
+                >
+                  Add Expense
+                </WatermelonButton>
+              </form>
+            </div>
+          )}
 
           {/* Cash Flow Dynamics + Subscriptions Panel */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1929,9 +2252,9 @@ export function PersonalDashboard({
               </button>
             </div>
 
-            {transactions.length > 0 ? (
+            {activeTransactions.length > 0 ? (
               <div className="divide-y-2 divide-[#121212] border-2 border-[#121212] rounded-lg overflow-hidden bg-white shadow-[2px_2px_0_0_#121212]">
-                {transactions.slice(0, 5).map((tx) => {
+                {activeTransactions.slice(0, 5).map((tx) => {
                   const isExpense = tx.type === "expense";
                   return (
                     <div
@@ -1976,20 +2299,28 @@ export function PersonalDashboard({
                             }`}
                           >
                             {isExpense ? "-" : "+"}
-                            {currencySymbol}
+                            {tx.currency && tx.currency !== "USD"
+                              ? tx.currency === "INR"
+                                ? "₹"
+                                : tx.currency === "EUR"
+                                  ? "€"
+                                  : tx.currency === "GBP"
+                                    ? "£"
+                                    : tx.currency
+                              : activeCurrencySymbol}
                             {Number(tx.amount || 0).toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                             })}
                           </div>
                           <div className="flex items-center justify-end gap-1 mt-0.5">
-                            {tx.verification_state === "verified" ? (
+                            {tx.verification_state === "verified" || tx.verification_state === "anchored_onchain" ? (
                               <span className="inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] px-1.5 py-0.2 rounded border border-[#121212]">
                                 <ShieldCheck className="h-2.5 w-2.5 text-[#15803d]" />
                                 Monad Verified
                               </span>
                             ) : (
                               <span className="text-[9px] font-mono uppercase text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
-                                Unverified
+                                Private Off-Chain
                               </span>
                             )}
                           </div>
@@ -2063,7 +2394,7 @@ export function PersonalDashboard({
               {onAddTransaction && (
                 <button
                   type="button"
-                  onClick={onAddTransaction}
+                  onClick={() => onAddTransaction("fiat")}
                   className="neo-btn neo-btn-primary"
                 >
                   <Plus className="h-4 w-4" />
@@ -2097,7 +2428,7 @@ export function PersonalDashboard({
                 {filteredExpenses.length}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Of {transactions.filter((t) => t.type === "expense").length}{" "}
+                Of {activeTransactions.filter((t) => t.type === "expense").length}{" "}
                 total expenses
               </p>
             </div>
@@ -2401,7 +2732,7 @@ export function PersonalDashboard({
             </div>
             {onAddTransaction && (
               <button
-                onClick={onAddTransaction}
+                onClick={() => onAddTransaction("fiat")}
                 className="neo-btn neo-btn-primary"
               >
                 <Plus className="h-4 w-4" />
@@ -3368,7 +3699,7 @@ export function PersonalDashboard({
                       Scan Receipt
                     </button>
                     <button
-                      onClick={onAddTransaction}
+                      onClick={() => onAddTransaction?.("fiat")}
                       className="neo-btn neo-btn-secondary"
                     >
                       Manual Entry
@@ -3405,7 +3736,7 @@ export function PersonalDashboard({
                     <div className="mt-5 flex flex-wrap justify-center gap-3">
                       <button
                         type="button"
-                        onClick={onAddTransaction}
+                        onClick={() => onAddTransaction?.("fiat")}
                         className="neo-btn neo-btn-primary flex items-center gap-1.5"
                       >
                         <Plus className="h-3.5 w-3.5" />

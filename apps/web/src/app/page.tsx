@@ -195,6 +195,7 @@ export default function Home() {
   };
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [txModalOpen, setTxModalOpen] = useState(false);
+  const [txModalSubLedger, setTxModalSubLedger] = useState<"fiat" | "onchain">("fiat");
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -416,7 +417,10 @@ export default function Home() {
           onOpenCopilot={() => setCopilotOpen(true)}
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onLogExpense={() => setTxModalOpen(true)}
+          onLogExpense={() => {
+            setTxModalSubLedger(activeMode === "crypto" ? "onchain" : "fiat");
+            setTxModalOpen(true);
+          }}
         />
 
         {/* Vault Data Safety & Privacy Reassurance */}
@@ -509,7 +513,10 @@ export default function Home() {
             currencySymbol="$"
             activeView={personalView}
             onViewChange={handlePersonalViewChange}
-            onAddTransaction={() => setTxModalOpen(true)}
+            onAddTransaction={(subLedger) => {
+              setTxModalSubLedger(subLedger || "fiat");
+              setTxModalOpen(true);
+            }}
             onUploadReceipt={() => setReceiptModalOpen(true)}
             onUpdateTransaction={handleAddTransaction}
             userId={userId}
@@ -551,6 +558,7 @@ export default function Home() {
         userAddress={connectedEvmAddress || undefined}
         hasConnectedWallet={hasConnectedEvmWallet}
         onConnectWallet={connectEvmWallet}
+        initialSubLedger={txModalSubLedger}
       />
     </div>
   );

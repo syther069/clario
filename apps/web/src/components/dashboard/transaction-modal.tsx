@@ -1,5 +1,20 @@
+"use client";
+
 import { useState } from "react";
-import { PlusCircle, X, Wallet, FileText, ArrowLeft, Camera, Sparkles } from "lucide-react";
+import {
+  PlusCircle,
+  X,
+  Wallet,
+  FileText,
+  ArrowLeft,
+  Camera,
+  Sparkles,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  Building2,
+  ShieldCheck,
+} from "lucide-react";
 import type { Transaction } from "@/lib/supabase/types";
 import { TransactionImportDialog } from "@/components/transaction-import-dialog";
 import type { NormalizedTransaction } from "@/lib/import/types";
@@ -17,10 +32,11 @@ import {
 } from "@/components/ui/crypto-icon";
 import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { motion, AnimatePresence } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";
 import { NeoDatePicker } from "@/components/ui/neo-date-picker";
+
+export type SubLedgerMode = "fiat" | "onchain";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -32,7 +48,15 @@ interface TransactionModalProps {
   workspaceId?: string | undefined;
   hasConnectedWallet?: boolean | undefined;
   onConnectWallet?: (() => void) | undefined;
+  initialSubLedger?: SubLedgerMode | undefined;
 }
+
+const SUPPORTED_CURRENCIES = [
+  { code: "USD", symbol: "$", label: "USD ($)" },
+  { code: "INR", symbol: "₹", label: "INR (₹)" },
+  { code: "EUR", symbol: "€", label: "EUR (€)" },
+  { code: "GBP", symbol: "£", label: "GBP (£)" },
+];
 
 export function TransactionModal({
   isOpen,
@@ -44,6 +68,7 @@ export function TransactionModal({
   workspaceId = "00000000-0000-0000-0000-000000000001",
   hasConnectedWallet,
   onConnectWallet,
+  initialSubLedger = "fiat",
 }: TransactionModalProps) {
   const auth = useClarioAuth();
   const effectiveConnectedAddress =
@@ -51,30 +76,45 @@ export function TransactionModal({
   const isWalletConnected = hasConnectedWallet ?? auth.hasConnectedEvmWallet;
   const handleConnectWallet = onConnectWallet || auth.connectEvmWallet;
 
+  const [subLedger, setSubLedger] = useState<SubLedgerMode>(initialSubLedger);
   const [view, setView] = useState<"selection" | "manual">("selection");
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [type, setType] = useState<"expense" | "income">("expense");
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("other");
+  const [category, setCategory] = useState("food_dining");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]!);
   const [paymentMethod, setPaymentMethod] = useState("Credit Card");
-  // Reset to selection view whenever modal is freshly opened
+  const [anchorToMonad, setAnchorToMonad] = useState(false);
+
+  // Sync subledger and view on fresh open
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
+      const mode = initialSubLedger || "fiat";
+      setSubLedger(mode);
       setView("selection");
       setIsNoWalletPopupOpen(false);
       setIsImportOpen(false);
+      if (mode === "fiat") {
+        setPaymentMethod("Credit Card");
+        setCategory("food_dining");
+      } else {
+        setPaymentMethod("Onchain (Monad)");
+        setCategory("crypto_ops");
+      }
     }
   }
 
   if (!isOpen) return null;
 
+  const currentCurrencySymbol =
+    SUPPORTED_CURRENCIES.find((c) => c.code === currency)?.symbol || "$";
+
   const handleFetchViaAlchemy = () => {
-    // Rule: Only allow "Fetch via Alchemy" to run when a valid EVM wallet address is actually connected
     if (
       isWalletConnected &&
       effectiveConnectedAddress &&
@@ -82,9 +122,6 @@ export function TransactionModal({
     ) {
       setIsImportOpen(true);
     } else {
-      // User has NO connected EVM wallet:
-      // Do NOT perform the Alchemy transaction lookup!
-      // Show clear popup with the 2 clear options
       setIsNoWalletPopupOpen(true);
     }
   };
@@ -95,25 +132,27 @@ export function TransactionModal({
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) return;
 
+    const isCrypto = subLedger === "onchain";
+
     onSave({
       id: crypto.randomUUID(),
       user_id: userId,
       type,
       amount: numericAmount,
-      currency: "USD",
+      currency: isCrypto ? "USD" : currency,
       merchant: description.trim(),
       description: description.trim(),
       category,
       category_id: category,
       date,
       timestamp: new Date(date).toISOString(),
-      payment_method: paymentMethod?.trim() || "Credit Card",
-      verification_state: "unverified",
-      verification_status: "unverified",
-      blockchain_status: "unverified",
-      blockchain_network: "Monad Testnet",
-      blockchain_chain_id: 10143,
-      source: "manual",
+      payment_method: paymentMethod?.trim() || (isCrypto ? "Onchain (Monad)" : "Credit Card"),
+      verification_state: anchorToMonad || isCrypto ? "anchored_onchain" : "unverified",
+      verification_status: anchorToMonad || isCrypto ? "anchored" : "unverified",
+      blockchain_status: anchorToMonad || isCrypto ? "unverified" : null,
+      blockchain_network: anchorToMonad || isCrypto ? "Monad Testnet" : null,
+      blockchain_chain_id: anchorToMonad || isCrypto ? 10143 : null,
+      source: isCrypto ? "onchain_monad" : "manual",
       version: 1,
     });
 
@@ -159,13 +198,14 @@ export function TransactionModal({
             setDate(new Date(tx.blockTimestamp).toISOString().split("T")[0]!);
           }
           setIsImportOpen(false);
+          setSubLedger("onchain");
           setView("manual");
         }}
       />
     );
   }
 
-  // Requirement 1 & 2: "Connect EVM Wallet" Guard Popup Modal (Single Backdrop)
+  // Connect EVM Wallet Guard Popup Modal
   if (isNoWalletPopupOpen) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -200,15 +240,11 @@ export function TransactionModal({
               Connect your EVM wallet to fetch blockchain transactions.
             </p>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your account does not have a connected EVM wallet. To
-              automatically search and index transactions via Alchemy, connect
-              an external EVM wallet (e.g. MetaMask, Coinbase Wallet, Rainbow),
-              or record the transaction manually.
+              To search and index transactions via Alchemy, connect an external EVM wallet (e.g. MetaMask, Phantom, Coinbase Wallet), or record your entry manually.
             </p>
           </div>
 
           <div className="mt-6 space-y-2.5">
-            {/* Option 1: CONNECT EVM WALLET */}
             <ClarioButton
               variant="primary"
               className="w-full justify-center !py-3"
@@ -221,17 +257,17 @@ export function TransactionModal({
               CONNECT EVM WALLET
             </ClarioButton>
 
-            {/* Option 2: ADD TRANSACTION MANUALLY */}
             <ClarioButton
               variant="outline"
               className="w-full justify-center !py-3"
               icon={<FileText className="h-4 w-4" />}
               onClick={() => {
                 setIsNoWalletPopupOpen(false);
+                setSubLedger("onchain");
                 setView("manual");
               }}
             >
-              ADD TRANSACTION MANUALLY
+              RECORD TRANSACTION MANUALLY
             </ClarioButton>
           </div>
         </div>
@@ -254,117 +290,205 @@ export function TransactionModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
         transition={{ type: "spring", stiffness: 400, damping: 28 }}
-        className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+        className="relative z-10 w-full max-w-lg rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212] max-h-[92vh] overflow-y-auto"
       >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between pb-3.5 border-b-2 border-[#121212]">
+          <div className="flex items-center gap-2.5">
+            {view === "manual" && (
+              <ClarioButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                icon={<ArrowLeft className="h-3.5 w-3.5" />}
+                onClick={() => setView("selection")}
+                title="Return to selection screen"
+              >
+                Back
+              </ClarioButton>
+            )}
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+              <PlusCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                Record Transaction
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                {view === "selection"
+                  ? "Choose how you want to add an entry"
+                  : subLedger === "fiat"
+                    ? "Personal Finance Ledger Entry"
+                    : "Web3 On-Chain Activity Entry"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Top-Level Rail Switcher (Personal Finance vs On-Chain) */}
+        <div className="mt-4 p-1 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setSubLedger("fiat");
+              setPaymentMethod("Credit Card");
+              setCategory("food_dining");
+            }}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+              subLedger === "fiat"
+                ? "bg-[#121212] text-white shadow-[2px_2px_0_0_#836EF9]"
+                : "text-slate-600 hover:text-[#121212]"
+            }`}
+          >
+            <CreditCard className="h-3.5 w-3.5 text-[#836EF9]" />
+            <span>Personal Finance</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+              Fiat
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSubLedger("onchain");
+              setPaymentMethod("Onchain (Monad)");
+              setCategory("crypto_ops");
+            }}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer ${
+              subLedger === "onchain"
+                ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                : "text-slate-600 hover:text-[#121212]"
+            }`}
+          >
+            <MonadLogo className="h-3.5 w-3.5" />
+            <span>On-Chain</span>
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-100 text-[#836EF9] font-bold border border-purple-300">
+              Web3
+            </span>
+          </button>
+        </div>
+
         {/* VIEW 1: SELECTION SCREEN */}
         {view === "selection" ? (
-          <div>
-            <div className="flex items-center justify-between pb-4 border-b-2 border-[#121212]">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                  <PlusCircle className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                    Record Transaction
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Choose how you want to add an entry to your ledger
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+          <div className="mt-5 space-y-3">
+            {subLedger === "fiat" ? (
+              <>
+                {/* Fiat Option 1: Scan Receipt / Bill (Gemini OCR) */}
+                {onScanReceipt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onScanReceipt();
+                    }}
+                    className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f3edff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/40">
+                        <Sparkles className="h-3 w-3" />
+                        Gemini AI OCR
+                      </span>
+                      <span className="text-[10px] font-mono font-bold uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+                        Zero Manual Effort
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Camera className="h-3.5 w-3.5 text-[#836EF9]" />
+                        Scan Bill / Invoice / Receipt
+                      </span>
+                      <span className="text-sm font-mono font-bold">→</span>
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                      Upload grocery, dining, or shopping receipts. Multimodal Gemini extracts merchant, total amount & currency.
+                    </p>
+                  </button>
+                )}
 
-            <div className="mt-5 space-y-3">
-              {/* Option 1: Scan Receipt with AI (Instant Gemini OCR) */}
-              {onScanReceipt && (
+                {/* Fiat Option 2: Record Manual Expense / Income */}
                 <button
                   type="button"
-                  onClick={() => {
-                    onClose();
-                    onScanReceipt();
-                  }}
-                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] hover:bg-[#f3edff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                  onClick={() => setView("manual")}
+                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f9fafb] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/40">
-                      <Sparkles className="h-3 w-3" />
-                      Gemini AI OCR
+                    <span className="text-[10px] font-mono font-bold uppercase text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]/30">
+                      Personal Ledger Entry
                     </span>
-                    <span className="text-[10px] font-mono font-bold uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
-                      Auto-Extract
+                    <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
+                      Cash • UPI • Cards
                     </span>
                   </div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
-                      <Camera className="h-3.5 w-3.5 text-[#836EF9]" />
-                      Scan Receipt / Invoice
+                      <FileText className="h-3.5 w-3.5 text-slate-600" />
+                      Add Personal Expense Manually
                     </span>
                     <span className="text-sm font-mono font-bold">→</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Upload receipt photo or PDF. Gemini automatically extracts merchant, items, amount, and date.
+                    Log daily spending, rent, coffee, or subscription with multi-currency ($, ₹, €, £) and payment method tagging.
                   </p>
                 </button>
-              )}
+              </>
+            ) : (
+              <>
+                {/* On-Chain Option 1: Fetch via Alchemy API */}
+                <button
+                  type="button"
+                  onClick={handleFetchViaAlchemy}
+                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded border border-[#0052FF]/30">
+                      <AlchemyLogo className="h-3.5 w-3.5" />
+                      Alchemy Multi-Chain
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
+                      Monad • Base • ETH
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
+                    <span>Fetch Transfers from Wallet</span>
+                    <span className="text-sm font-mono font-bold">→</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Auto-scan connected EVM address for recent transfers across Monad, Base, Ethereum & Arbitrum.
+                  </p>
+                </button>
 
-              {/* Option 2: Fetch Onchain via Alchemy */}
-              <button
-                type="button"
-                onClick={handleFetchViaAlchemy}
-                className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f5efff] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded border border-[#0052FF]/30">
-                    <AlchemyLogo className="h-3.5 w-3.5" />
-                    Alchemy API
-                  </span>
-                  <span className="text-[10px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
-                    Multi-Chain EVM
-                  </span>
-                </div>
-                <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition flex items-center justify-between">
-                  <span>Fetch via Alchemy (Onchain)</span>
-                  <span className="text-sm font-mono font-bold">→</span>
-                </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Automatically index transfers across Monad, Ethereum, Base &
-                  Hyperliquid from your connected EVM wallet.
-                </p>
-              </button>
-
-              {/* Option 2: Add Transaction Manually */}
-              <button
-                type="button"
-                onClick={() => setView("manual")}
-                className="w-full text-left p-4 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f9fafb] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px]"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]/30">
-                    Manual Ledger Entry
-                  </span>
-                  <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
-                    Direct Form
-                  </span>
-                </div>
-                <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition flex items-center justify-between">
-                  <span>Add Transaction Manually</span>
-                  <span className="text-sm font-mono font-bold">→</span>
-                </h4>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Enter merchant details, amount, category, date, and payment
-                  method directly into your personal ledger.
-                </p>
-              </button>
-            </div>
+                {/* On-Chain Option 2: Record TX Hash Manually */}
+                <button
+                  type="button"
+                  onClick={() => setView("manual")}
+                  className="w-full text-left p-3.5 rounded-xl border-2 border-[#121212] bg-white hover:bg-[#f9fafb] shadow-[3px_3px_0_0_#121212] transition-all group flex flex-col justify-between active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono font-bold uppercase text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      Manual On-Chain Record
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
+                      Hash • Contract • Gas
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-black transition flex items-center justify-between">
+                    <span>Add On-Chain TX Manually</span>
+                    <span className="text-sm font-mono font-bold">→</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Manually paste transaction hash, token amount, and gas spent for tracking protocol interactions.
+                  </p>
+                </button>
+              </>
+            )}
 
             <div className="mt-6 pt-3 border-t-2 border-[#121212] flex items-center justify-end">
               <ClarioButton type="button" variant="secondary" onClick={onClose}>
@@ -374,91 +498,58 @@ export function TransactionModal({
           </div>
         ) : (
           /* VIEW 2: MANUAL TRANSACTION FORM */
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
-              <div className="flex items-center gap-2.5">
-                <ClarioButton
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  icon={<ArrowLeft className="h-3.5 w-3.5" />}
-                  onClick={() => setView("selection")}
-                  title="Return to selection screen"
-                >
-                  Back
-                </ClarioButton>
-                <div>
-                  <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                    Record Transaction
-                  </h3>
-                  <p className="text-[11px] text-slate-500">Manual entry</p>
-                </div>
-              </div>
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+            {/* Inflow / Outflow Toggle */}
+            <div className="flex gap-2 p-1 bg-[#f3f4f6] rounded-xl border-2 border-[#121212]">
               <button
                 type="button"
-                onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
-                aria-label="Close"
+                onClick={() => setType("expense")}
+                className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                  type === "expense"
+                    ? "bg-[#fee2e2] text-[#b91c1c] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
+                }`}
               >
-                <X className="h-5 w-5" />
+                Expense (Outflow)
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("income")}
+                className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                  type === "income"
+                    ? "bg-[#dcfce7] text-[#15803d] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+                    : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
+                }`}
+              >
+                Income (Inflow)
               </button>
             </div>
 
-            {/* Onchain Quick Fetch Trigger */}
-            <div className="mt-3.5 p-2.5 bg-[#fbf9fe] border-2 border-[#121212] rounded-xl flex items-center justify-between shadow-[2px_2px_0_0_#121212]">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono font-bold uppercase text-slate-500">
-                  OR IMPORT:
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase text-[#0052FF] bg-[#f0f4ff] px-1.5 py-0.5 rounded border border-[#0052FF]/30">
-                  ALCHEMY API
-                </span>
-              </div>
-              <ClarioButton
-                type="button"
-                variant="primary"
-                size="sm"
-                icon={<MonadLogo className="h-4 w-4" />}
-                onClick={handleFetchViaAlchemy}
-              >
-                Fetch via Alchemy
-              </ClarioButton>
-            </div>
+            {/* Currency & Amount */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              {subLedger === "fiat" && (
+                <div className="sm:col-span-5">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                    Currency
+                  </label>
+                  <NeoSelect
+                    value={currency}
+                    onChange={setCurrency}
+                    options={SUPPORTED_CURRENCIES.map((c) => ({
+                      value: c.code,
+                      label: c.label,
+                    }))}
+                  />
+                </div>
+              )}
 
-            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              {/* Inflow / Outflow Toggle */}
-              <div className="flex gap-2 p-1 bg-[#f3f4f6] rounded-xl border-2 border-[#121212]">
-                <button
-                  type="button"
-                  onClick={() => setType("expense")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition ${
-                    type === "expense"
-                      ? "bg-[#fee2e2] text-[#b91c1c] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                      : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
-                  }`}
-                >
-                  Expense (Outflow)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setType("income")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase tracking-wider transition ${
-                    type === "income"
-                      ? "bg-[#dcfce7] text-[#15803d] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                      : "text-slate-600 hover:text-[#121212] border-2 border-transparent"
-                  }`}
-                >
-                  Income (Inflow)
-                </button>
-              </div>
-
-              <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Amount ($)
+              <div className={subLedger === "fiat" ? "sm:col-span-7" : "sm:col-span-12"}>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                  Amount ({subLedger === "fiat" ? currentCurrencySymbol : "$ USD"})
                 </label>
-                <div className="relative mt-1">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs font-mono font-bold pointer-events-none">
-                    $
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-600 text-xs font-mono font-bold pointer-events-none">
+                    {subLedger === "fiat" ? currentCurrencySymbol : "$"}
                   </span>
                   <input
                     type="number"
@@ -468,72 +559,115 @@ export function TransactionModal({
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
                     className="w-full neo-input !pl-8 font-mono font-bold"
-                    style={{ paddingLeft: "2rem" }}
                   />
                 </div>
               </div>
+            </div>
 
+            {/* Description / Merchant */}
+            <div>
+              <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                {subLedger === "fiat" ? "Merchant / Description" : "Asset / Transfer Description"}
+              </label>
+              <input
+                type="text"
+                required
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={
+                  subLedger === "fiat"
+                    ? "e.g. Blue Tokai Coffee, Whole Foods, Monthly Rent"
+                    : "e.g. Monad Validator Deployment, 250 USDC Transfer"
+                }
+                className="w-full neo-input"
+              />
+            </div>
+
+            {/* Category & Date */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                  Description / Merchant
+                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                  Category
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. AWS Cloud, Monad Validator Node, Client Retainer"
-                  className="mt-1 w-full neo-input"
+                <NeoSelect
+                  value={category}
+                  onChange={setCategory}
+                  options={
+                    subLedger === "fiat"
+                      ? [
+                          { value: "food_dining", label: "Food & Dining" },
+                          { value: "housing", label: "Housing & Rent" },
+                          { value: "transportation", label: "Transportation" },
+                          { value: "shopping", label: "Shopping & Retail" },
+                          { value: "utilities", label: "Utilities & Bills" },
+                          { value: "software_tools", label: "Subscriptions" },
+                          { value: "health", label: "Health & Medical" },
+                          { value: "other", label: "Other" },
+                        ]
+                      : [
+                          { value: "crypto_ops", label: "Crypto Operations" },
+                          { value: "defi", label: "DeFi / Swap" },
+                          { value: "gas_fees", label: "Gas & Protocol Fees" },
+                          { value: "nft", label: "NFT & Collectibles" },
+                          { value: "grant", label: "Grant / Bounty" },
+                          { value: "other", label: "Other" },
+                        ]
+                  }
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Category
-                  </label>
-                  <NeoSelect
-                    value={category}
-                    onChange={setCategory}
-                    options={[
-                      { value: "software_tools", label: "Software & Tools" },
-                      { value: "food_dining", label: "Food & Dining" },
-                      { value: "transportation", label: "Transportation" },
-                      { value: "office_expenses", label: "Office Expenses" },
-                      { value: "utilities", label: "Utilities" },
-                      { value: "crypto_ops", label: "Crypto Operations" },
-                      { value: "other", label: "Other" },
-                    ]}
-                  />
-                </div>
+              <div>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                  Date
+                </label>
+                <NeoDatePicker value={date} onChange={setDate} />
+              </div>
+            </div>
 
-                <div>
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Date
-                  </label>
-                  <NeoDatePicker
-                    value={date}
-                    onChange={setDate}
-                  />
-                </div>
+            {/* Payment Method Section */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                  Payment Method
+                </label>
+                <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
+                  Quick Select
+                </span>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600">
-                    Payment Method
-                  </label>
-                  <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
-                    Quick Select
-                  </span>
+              {subLedger === "fiat" ? (
+                /* Fiat Payment Rails */
+                <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                  {[
+                    { name: "Cash", icon: Banknote },
+                    { name: "UPI", icon: Smartphone },
+                    { name: "Credit Card", icon: CreditCard },
+                    { name: "Debit Card", icon: CreditCard },
+                    { name: "Bank Transfer", icon: Building2 },
+                    { name: "Apple Pay", icon: Smartphone },
+                  ].map((item) => (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => setPaymentMethod(item.name)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded border-2 border-[#121212] transition shadow-[1.5px_1.5px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] cursor-pointer ${
+                        paymentMethod === item.name
+                          ? "bg-[#121212] text-white"
+                          : "bg-white text-slate-800 hover:bg-[#f3f4f6]"
+                      }`}
+                    >
+                      <item.icon className="h-3 w-3" />
+                      <span>{item.name}</span>
+                    </button>
+                  ))}
                 </div>
-
-                {/* Quick Select Crypto Badges */}
-                <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+              ) : (
+                /* On-Chain Payment Assets */
+                <div className="flex items-center gap-1.5 flex-wrap mb-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("Onchain (Monad)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-[#f3f0ff] text-[#836EF9] border border-[#121212] hover:bg-[#e7e1fe] transition shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-[#f3f0ff] text-[#836EF9] border border-[#121212] hover:bg-[#e7e1fe] transition shadow-[1px_1px_0_0_#121212]"
                   >
                     <MonadLogo className="h-3 w-3" />
                     Monad
@@ -541,7 +675,7 @@ export function TransactionModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("Onchain (Ethereum)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-slate-100 text-slate-800 border border-[#121212] hover:bg-slate-200 transition shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-slate-100 text-slate-800 border border-[#121212] hover:bg-slate-200 transition shadow-[1px_1px_0_0_#121212]"
                   >
                     <EthereumLogo className="h-3 w-3" />
                     ETH
@@ -549,7 +683,7 @@ export function TransactionModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("Onchain (Base)")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-blue-50 text-[#0052FF] border border-[#121212] hover:bg-blue-100 transition shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-blue-50 text-[#0052FF] border border-[#121212] hover:bg-blue-100 transition shadow-[1px_1px_0_0_#121212]"
                   >
                     <BaseLogo className="h-3 w-3" />
                     Base
@@ -557,7 +691,7 @@ export function TransactionModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("USDC")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-sky-50 text-[#2775CA] border border-[#121212] hover:bg-sky-100 transition shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-sky-50 text-[#2775CA] border border-[#121212] hover:bg-sky-100 transition shadow-[1px_1px_0_0_#121212]"
                   >
                     <UsdcLogo className="h-3 w-3" />
                     USDC
@@ -565,82 +699,86 @@ export function TransactionModal({
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("USDT")}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-emerald-50 text-[#26A17B] border border-[#121212] hover:bg-emerald-100 transition shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-black uppercase rounded bg-emerald-50 text-[#26A17B] border border-[#121212] hover:bg-emerald-100 transition shadow-[1px_1px_0_0_#121212]"
                   >
                     <UsdtLogo className="h-3 w-3" />
                     USDT
                   </button>
                 </div>
+              )}
 
-                <div className="relative">
-                  {(() => {
-                    const match = detectCryptoIdentity(paymentMethod);
-                    return match ? (
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        {match.kind === "chain" ? (
-                          <CryptoChainIcon
-                            chain={match.identifier}
-                            className="h-4 w-4"
-                          />
-                        ) : (
-                          <CryptoCoinIcon
-                            symbol={match.identifier}
-                            className="h-4 w-4"
-                          />
-                        )}
-                      </div>
-                    ) : null;
-                  })()}
-                  <input
-                    type="text"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    placeholder="e.g. Chase Visa, Monad Testnet, Wire"
-                    className={`w-full neo-input ${
-                      detectCryptoIdentity(paymentMethod) ? "!pl-10" : ""
-                    }`}
-                    style={
-                      detectCryptoIdentity(paymentMethod)
-                        ? { paddingLeft: "2.5rem" }
-                        : undefined
-                    }
-                  />
+              <input
+                type="text"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                placeholder={
+                  subLedger === "fiat"
+                    ? "e.g. HDFC Credit Card, Cash in Wallet, Apple Pay"
+                    : "e.g. Onchain (Monad), Base Sepolia"
+                }
+                className="w-full neo-input text-xs"
+              />
+            </div>
+
+            {/* Optional Monad Verifiable Proof Anchor */}
+            {subLedger === "fiat" && (
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition">
+                <input
+                  type="checkbox"
+                  checked={anchorToMonad}
+                  onChange={(e) => setAnchorToMonad(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9]"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
+                    <span className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                      Anchor Proof to Monad Testnet
+                    </span>
+                    <span className="text-[9px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#836EF9]/30">
+                      Optional
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                    Personal data remains 100% private. Creates an immutable cryptographic hash commitment for audit & reimbursement proof.
+                  </p>
                 </div>
-              </div>
+              </label>
+            )}
 
-              <div className="flex items-center justify-between pt-3 border-t-2 border-[#121212]">
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-3 border-t-2 border-[#121212]">
+              <WatermelonButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                textMorph
+                leftIcon={<ArrowLeft className="h-3.5 w-3.5" />}
+                onClick={() => setView("selection")}
+              >
+                Back
+              </WatermelonButton>
+              <div className="flex items-center gap-2">
                 <WatermelonButton
                   type="button"
                   variant="secondary"
                   size="sm"
                   textMorph
-                  leftIcon={<ArrowLeft className="h-3.5 w-3.5" />}
-                  onClick={() => setView("selection")}
+                  onClick={onClose}
                 >
-                  Back
+                  Cancel
                 </WatermelonButton>
-                <div className="flex items-center gap-2">
-                  <WatermelonButton
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    textMorph
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </WatermelonButton>
-                  <WatermelonButton
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    textMorph
-                  >
-                    Add Entry
-                  </WatermelonButton>
-                </div>
+                <WatermelonButton
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  textMorph
+                >
+                  Record Entry
+                </WatermelonButton>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         )}
       </motion.div>
     </div>

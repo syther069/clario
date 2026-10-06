@@ -2,9 +2,34 @@ import { NextResponse } from "next/server";
 import { isAddress } from "viem";
 import { getServerConfiguration } from "@/config/server";
 import { createAuthChallenge } from "@/lib/auth/challenge";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    // Limit to 20 challenge requests per minute per IP
+    const rateCheck = checkRateLimit(`auth:challenge:${clientIp}`, {
+      maxRequests: 20,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Too many challenge requests. Please try again shortly.",
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { address } = body as { address?: unknown };
 

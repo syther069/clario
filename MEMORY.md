@@ -2,8 +2,8 @@
 
 **Status:** Active persistent context  
 **Memory version:** 1.0  
-**Last verified:** 2026-10-04  
-**Current phase:** Audit Phase 3 (Product Integration & UX Polish) Completed & Verified  
+**Last verified:** 2026-10-06  
+**Current phase:** Audit Phase 3 (Product Integration, Security Hardening & UX Polish) Completed & Verified  
 **Next executable task:** Final Hackathon Submission & Live Walkthrough Demonstration
 
 > Read this file at the start of every Clario task. It records verified project state, durable decisions, unresolved questions, and facts future agents must preserve. It is context, not a substitute for the governing documents.
@@ -88,6 +88,7 @@ The founding documentation set is established:
 - `MODE-EXP-PHASE-5` (Business Mode Dedicated Experience & Corporate Policy Engine): Completed all 6 Business Mode subviews in `business-dashboard.tsx`: Overview (6 Montally KPIs, department spend breakdown, pending reimbursement queue preview), Corporate Expenses (department filters, policy flags, CSV export), Reimbursement Queue (role-separated Approve & Pay via Monad Testnet USDC, Reject with mandatory reason commitment), Department Budgets (live spend vs limit variance tracking), Policy Engine (enforceable thresholds for receipts, amounts, and duplicate detection), and Audit Log (immutable event trail with CSV export).
 - `AI-COPILOT-001` (Grounded AI Financial Copilot): Implemented `CopilotDrawer` and `apps/web/src/lib/ai/copilot.ts` with Rule 41 grounded analysis (budget overruns, abnormal amounts, duplicate payments, recurring renewals), with full unit test coverage (`copilot.test.ts`).
 - `PHASE-7-RELEASE` (`E2E-001`, `REL-001`, `REL-002`, `SUB-001`): Verified 12-step end-to-end release scenario (`scripts/test-e2e-release.mjs`) across 5 identities. Generated 3 safe synthetic sample archives in `fixtures/samples/`: `sample-full-valid.zip` (`VERIFIED`), `sample-full-tampered.zip` (`FAILED`), `sample-redacted.zip` (`UNVERIFIABLE`). Rehearsed contract deployment (`pnpm deploy:contracts --dry-run`). Monorepo test suite passing 100% (735 tests across web, protocol, database, and Foundry) with 0 lint errors, 0 warnings, and clean Next.js 15/15 routes production build. Invariant preserved: no changes pushed to remote, preserving working copy for local testing on `localhost:3000`.
+- `SEC-UX-HARDENING-001` (API Rate Limiting, Safe Error Sanitization & Montally Form Feedback): Implemented in-memory sliding window rate limiter in `apps/web/src/lib/security/rate-limit.ts` guarding `/api/auth/challenge` (20 req/min) and `/api/auth/verify` (10 req/min) with automated bucket cleanup and tests (`rate-limit.test.ts`). Built safe error handling envelope `apps/web/src/lib/security/safe-error.ts` preventing database schema and internal path leakage on API responses with unit tests (`safe-error.test.ts`). Added server-side bounds checking on `/api/workspaces` (name $\le 64$ chars, policy hex check). Created `apps/web/src/components/ui/form-feedback.tsx` with `<FormFieldFeedback />` (inline monospace validation alerts with live character limits) and `<AsyncStateLoader />` (multi-stage async effort feedback). Web test suite expanded to 66 test files (512 passing tests) with 100% clean typecheck.
 
 ### What is not complete
 
