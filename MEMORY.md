@@ -646,7 +646,16 @@ Record only accepted durable decisions. Proposals stay in “Known issues and un
      - `BorderTrail`: High-speed animated perimeter beam indicating active cryptographic verification.
      - Seamlessly integrated across Landing Page (`/landing`) and Proof Center (`/proof`).
    - **Monorepo Quality Gate:** 100% clean typecheck (`pnpm typecheck`), 0 ESLint warnings (`pnpm lint`), 497 web unit tests passing, 113 Foundry contract tests passing, clean Prettier code formatting (`pnpm format:check:code`), and clean Next.js production build (`next build`, 17/17 pages generated).
-12. **Next Step:**
+12. **Audit Phase 4 (Motion Primitives & Complexity Reduction) Completed & Verified (2026-10-07):**
+   - **Motion Primitives Implementation:**
+     - Created `MorphingPopover` (`apps/web/src/components/ui/motion/morphing-popover.tsx`) for seamless spring transitions from trigger to technical specification details. Integrated in `landing-explainer.tsx` across the 4 core architectural cards without modal takeovers.
+     - Created `ToolbarExpandable` (`apps/web/src/components/ui/motion/toolbar-expandable.tsx`) providing collapsed pill summaries (`[EXTRA FILTERS • Configure ▾]`) that spring-expand into secondary selectors. Integrated in `personal-dashboard.tsx` to simplify expense filters without modifying transaction flows.
+     - Verified `ScrollProgress` active in `/docs` and `/proof` pages.
+   - **Quality & Verification:**
+     - 100% clean TypeScript validation (`pnpm --filter @clario/web typecheck`).
+     - Dev server active and serving HTTP 200 OK on `http://localhost:3000`.
+     - Committed and pushed to `origin/main` (`8349865`).
+13. **Next Step:**
    - Final Hackathon Submission & Live Walkthrough Demonstration.
 
 Build the narrow proof chain before adding polish. Keep private data offchain. Freeze canonical bytes before dependent layers. Make every approval and reimbursement refer to the exact current version. Treat AI and providers as fallible. Make failures recoverable and idempotent. Show only real state. Leave the product independently verifiable.
