@@ -4,8 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
-  Zap,
-  Lock,
   BadgeCheck,
   ArrowRight,
   Layers,
@@ -14,7 +12,8 @@ import {
   Receipt,
   Check,
   Copy,
-  Info,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { ClarioLogo } from "@/components/ui/clario-logo";
@@ -98,7 +97,7 @@ const FAQS = [
   {
     question: "How do I back up my receipts?",
     answer:
-      "You can download a complete backup package (ZIP) from the Proof Center with one click. Save it on your computer or forward it to your accountant anytime.",
+      "You can download a complete backup package (ZIP) from your workspace with one click. Save it on your computer or forward it to your accountant anytime.",
   },
   {
     question: "What happens if I clear my browser history or switch computers?",
@@ -118,10 +117,10 @@ const FAQS = [
 ];
 
 const NAV_LINKS = [
-  { label: "How it works", href: "#receipt-flow" },
+  { label: "How It Works", href: "#receipt-flow" },
   { label: "Workspaces", href: "#modes" },
-  { label: "Before & after", href: "#comparison" },
-  { label: "Live sandbox", href: "#verifier" },
+  { label: "Advantage", href: "#comparison" },
+  { label: "Simulator", href: "#verifier" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -134,9 +133,6 @@ export default function LandingPage() {
   const [isNavCompact, setIsNavCompact] = useState(false);
 
   // Hash Verifier Simulator state
-  const [verifierInput, setVerifierInput] = useState(
-    "0x89f4b7a120c8de3176ef98231c51bc19aa314"
-  );
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<null | {
     valid: boolean;
@@ -188,55 +184,38 @@ export default function LandingPage() {
     <div className="min-h-screen bg-grid text-gray-900 font-sans selection:bg-[#7C6CF6] selection:text-white relative">
       <ScrollProgress />
 
-      {/* Top Banner Notice */}
-      <div className="bg-[#121212] text-white border-b border-gray-800 px-4 py-2 text-center text-xs font-sans font-medium flex items-center justify-center gap-2">
-        <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span>Monad Testnet Edition</span>
-        <span className="text-gray-500">•</span>
-        <span className="text-gray-300">
-          Unaudited software for hackathon demonstration
-        </span>
-        <span className="text-gray-500">•</span>
-        <Link
-          href="/proof"
-          className="text-[#9b8eff] hover:underline font-medium inline-flex items-center gap-1"
-        >
-          Explore Proof Center{" "}
-          <ExternalLink className="h-3 w-3" aria-hidden="true" />
-        </Link>
-      </div>
 
-      {/* Navigation Header */}
+      {/* Navigation Header (Montally Neo-Brutalism) */}
       <header
-        className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 sm:px-8 transition-all duration-200 ${
-          isNavCompact ? "py-2.5 shadow-2xs" : "py-3.5"
+        className={`sticky top-0 z-40 bg-white border-b-2 border-[#121212] px-4 sm:px-8 transition-all duration-200 ${
+          isNavCompact ? "py-2.5 shadow-[0_2px_0_0_#121212]" : "py-3.5 shadow-[0_2px_0_0_#121212]"
         }`}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <ClarioLogo
-              size={34}
-              className="transition group-hover:opacity-90"
+              size={36}
+              className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
             />
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-gray-900 flex items-center gap-2">
+              <span className="text-base font-black tracking-wider uppercase text-[#121212] flex items-center gap-2 font-sans">
                 Clario
-                <span className="text-[11px] font-medium text-[#7C6CF6] bg-[#f5f3ff] px-2 py-0.5 rounded-full border border-[#e0dbfd] flex items-center gap-1">
+                <span className="text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f5f3ff] px-2 py-0.5 rounded border-2 border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1">
                   <MonadLogo className="h-3 w-3" aria-hidden="true" />
                   Testnet
                 </span>
               </span>
-              <span className="text-[11px] text-gray-500 font-medium">
-                Private receipts. Verifiable proof.
+              <span className="text-[10px] text-gray-600 font-mono font-bold uppercase tracking-wider">
+                Private receipts · Verifiable proof
               </span>
             </div>
           </Link>
 
-          {/* Nav Links with Shared Layout Sliding Pill */}
+          {/* Nav Links */}
           <nav
             onMouseLeave={() => setHoveredNav(null)}
-            className="hidden md:flex items-center gap-1 text-sm font-medium relative"
+            className="hidden md:flex items-center gap-1 p-1 bg-[#f8f9fa] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl"
           >
             {NAV_LINKS.map((link) => {
               const isHovered = hoveredNav === link.href;
@@ -245,45 +224,27 @@ export default function LandingPage() {
                   key={link.href}
                   href={link.href}
                   onMouseEnter={() => setHoveredNav(link.href)}
-                  className="relative px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 transition-colors"
+                  className={`relative px-3.5 py-1.5 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all duration-100 ${
+                    isHovered
+                      ? "bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[1px_1px_0_0_#121212]"
+                      : "!text-[#121212] hover:!text-[#836EF9] border-2 border-transparent"
+                  }`}
                 >
-                  {isHovered && (
-                    <motion.div
-                      layoutId="nav-pill"
-                      className="absolute inset-0 bg-gray-100 rounded-lg -z-10"
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 30,
-                      }}
-                    />
-                  )}
                   <span>{link.label}</span>
                 </a>
               );
             })}
           </nav>
 
-          {/* Primary Action Buttons with Magnetic Pull */}
+          {/* Primary Action Button */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/proof"
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors shadow-2xs"
-            >
-              <ShieldCheck
-                className="h-3.5 w-3.5 text-[#7C6CF6]"
-                aria-hidden="true"
-              />
-              <span>Proof Center</span>
-            </Link>
-
             <Magnetic range={80} maxTranslation={8} intensity={0.5}>
               <Link
                 href="/?mode=personal"
-                className="inline-flex items-center justify-center gap-1.5 font-bold text-xs px-3.5 py-2 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                className="inline-flex items-center justify-center gap-1.5 font-mono text-xs font-black uppercase tracking-wider px-4 py-2 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
               >
-                <span>Launch testnet app</span>
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="!text-white">Launch App</span>
+                <ArrowRight className="h-3.5 w-3.5 !text-white stroke-[2.5]" aria-hidden="true" />
               </Link>
             </Magnetic>
           </div>
@@ -297,9 +258,9 @@ export default function LandingPage() {
             {/* Hero Left Content */}
             <div className="lg:col-span-7 flex flex-col items-start gap-6">
               {/* Single Hero Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white/90 shadow-2xs text-xs font-medium text-gray-700">
-                <span className="flex h-2 w-2 rounded-full bg-[#7C6CF6]" />
-                <span>Live on Monad Testnet (Chain ID 10143)</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] text-xs font-mono font-bold uppercase tracking-wider text-[#121212]">
+                <span className="flex h-2 w-2 rounded-full bg-[#836EF9]" />
+                <span>Live on Monad Testnet</span>
               </div>
 
               {/* Main Headline */}
@@ -319,58 +280,58 @@ export default function LandingPage() {
               </p>
 
               {/* Hero CTAs */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2 w-full sm:w-auto">
                 <Magnetic range={80} maxTranslation={8} intensity={0.5}>
                   <Link
                     href="/?mode=personal"
-                    className="inline-flex items-center justify-center gap-2 font-bold text-base px-6 py-3.5 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                    className="inline-flex items-center justify-center gap-2 font-mono text-sm font-black uppercase tracking-wider px-6 py-3.5 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                   >
-                    <span>Launch testnet app</span>
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <span className="!text-white">Launch Testnet App</span>
+                    <ArrowRight className="h-4 w-4 !text-white stroke-[2.5]" aria-hidden="true" />
                   </Link>
                 </Magnetic>
 
                 <button
                   type="button"
                   onClick={() => setIsGuideOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 font-medium text-base px-5 py-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 font-mono text-sm font-black uppercase tracking-wider px-6 py-3.5 rounded-xl border-2 border-[#121212] bg-white !text-[#121212] hover:bg-[#f3f4f6] hover:-translate-y-0.5 shadow-[4px_4px_0_0_#121212] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
                 >
                   <Layers
-                    className="h-4 w-4 text-[#7C6CF6]"
+                    className="h-4 w-4 text-[#836EF9] stroke-[2.5]"
                     aria-hidden="true"
                   />
-                  <span>See how it works</span>
+                  <span className="!text-[#121212]">See How It Works</span>
                 </button>
               </div>
 
               {/* Testnet Disclaimer */}
-              <p className="text-xs text-gray-500 font-normal leading-normal">
-                Unaudited testnet software on Monad Testnet (Chain ID 10143). No real money required.
+              <p className="text-xs font-mono font-bold uppercase tracking-wider text-gray-700">
+                Unaudited testnet software on Monad Testnet. No real money required.
               </p>
 
               {/* Micro Guarantees */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-200 w-full text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t-2 border-[#121212] w-full text-left">
                 <div>
-                  <span className="text-sm font-semibold text-gray-900 block">
+                  <span className="font-mono text-xs font-black uppercase tracking-wider text-[#121212] block">
                     Local-first privacy
                   </span>
-                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                  <span className="text-xs text-gray-700 leading-snug block mt-1 font-medium">
                     Receipts stay on your device
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-gray-900 block">
+                  <span className="font-mono text-xs font-black uppercase tracking-wider text-[#121212] block">
                     Tamper-proof records
                   </span>
-                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                  <span className="text-xs text-gray-700 leading-snug block mt-1 font-medium">
                     Locked with a private fingerprint
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-gray-900 block">
+                  <span className="font-mono text-xs font-black uppercase tracking-wider text-[#121212] block">
                     Never paid twice
                   </span>
-                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                  <span className="text-xs text-gray-700 leading-snug block mt-1 font-medium">
                     Smart contracts stop duplicate payouts
                   </span>
                 </div>
@@ -385,18 +346,16 @@ export default function LandingPage() {
                 rotationFactor={3}
                 className="p-0 overflow-hidden shadow-[4px_4px_0_0_#121212] rounded-2xl bg-white border-2 border-[#121212]"
               >
-                {/* Card Header Bar */}
+                {/* Card Header Bar (Montally Neo-Brutalist) */}
                 <div className="bg-[#121212] text-white px-4 py-3 flex items-center justify-between border-b-2 border-[#121212]">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[#ef4444]" />
-                    <div className="h-3 w-3 rounded-full bg-[#f59e0b]" />
-                    <div className="h-3 w-3 rounded-full bg-[#10b981]" />
-                    <span className="text-xs font-mono font-medium text-gray-300 ml-1.5">
+                    <Receipt className="h-4 w-4 text-[#836EF9]" />
+                    <span className="text-xs font-mono font-black uppercase tracking-wider text-white">
                       Sample Receipt Voucher
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono bg-[#7C6CF6] text-white px-2 py-0.5 rounded font-bold">
-                    Monad #10143
+                  <span className="text-[11px] font-mono bg-[#836EF9] text-white px-2.5 py-0.5 rounded border border-[#121212] font-black uppercase tracking-wider">
+                    Monad Testnet
                   </span>
                 </div>
 
@@ -530,14 +489,14 @@ export default function LandingPage() {
 
                   {/* Action Link */}
                   <Link
-                    href="/proof"
-                    className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-xl border border-gray-900 bg-gray-900 text-white hover:bg-black transition-colors shadow-2xs"
+                    href="#verifier"
+                    className="w-full flex items-center justify-center gap-2 py-3 font-mono text-xs font-black uppercase tracking-wider rounded-xl border-2 border-[#121212] bg-[#121212] !text-white hover:bg-[#836EF9] hover:border-[#836EF9] transition-all shadow-[2px_2px_0_0_#121212]"
                   >
                     <ShieldCheck
-                      className="h-4 w-4 text-[#9b8eff]"
+                      className="h-4 w-4 text-[#836EF9] stroke-[2.5]"
                       aria-hidden="true"
                     />
-                    <span>Verify in Proof Center</span>
+                    <span className="!text-white">Inspect Verification Live</span>
                   </Link>
                 </div>
               </InteractiveCard>
@@ -545,182 +504,147 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Trust Signals Strip / Built on Monad */}
-        <section className="border-y border-gray-200 bg-white py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-left w-full md:w-auto">
-              <div>
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  &lt; 1 sec
-                </span>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  Instant settlement on Monad
-                </p>
-              </div>
-              <div>
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  100% Private
-                </span>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  Receipt files stay on your device
-                </p>
-              </div>
-              <div>
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  4 Modes
-                </span>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  Personal, freelance, family, business
-                </p>
-              </div>
-              <div>
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  0 Duplicate
-                </span>
-                <p className="text-xs font-medium text-gray-500 mt-0.5">
-                  Impossible to reimburse twice
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-600 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
-              <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
-                <MonadLogo className="h-4 w-4" />
-                <span>Built on Monad</span>
-              </div>
-              <span className="text-gray-300 hidden md:inline">•</span>
-              <Link
-                href="https://testnet.monadexplorer.com"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-gray-900 hover:underline flex items-center gap-1"
-              >
-                Explorer Contract{" "}
-                <ExternalLink className="h-3 w-3" aria-hidden="true" />
-              </Link>
-              <span className="text-gray-300 hidden md:inline">•</span>
-              <Link
-                href="https://github.com/clario-finance/clario"
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-gray-900 hover:underline flex items-center gap-1"
-              >
-                GitHub Repo{" "}
-                <ExternalLink className="h-3 w-3" aria-hidden="true" />
-              </Link>
-              <span className="text-gray-300 hidden md:inline">•</span>
-              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium">
-                Unaudited testnet software
-              </span>
-            </div>
-          </div>
-        </section>
-
         {/* 4 Dedicated Workspaces: Single Card + Tabs */}
         <WorkspaceShowcase />
 
-        {/* Follow One Receipt: 4-Step Plain Story Rail (Replaces Founder Invariants) */}
+        {/* Follow One Receipt: 4-Step Plain Story Rail */}
         <FollowReceiptRail />
 
-        {/* Live Verifier Sandbox */}
+        {/* Live Verifier Inspector */}
         <section
           id="verifier"
-          className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-gray-200"
+          className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t-2 border-[#121212]"
         >
-          <div className="rounded-2xl border border-gray-900 bg-[#121212] text-white p-6 sm:p-10 shadow-lg overflow-hidden">
+          <div className="rounded-2xl border-2 border-[#121212] bg-[#121212] text-white p-6 sm:p-10 shadow-[6px_6px_0_0_#836EF9] overflow-hidden">
             <div className="max-w-2xl">
-              <span className="text-xs font-semibold text-[#9b8eff] bg-white/10 px-2.5 py-1 rounded-md border border-white/10 inline-block mb-3">
-                Live Simulator
+              <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-white/10 px-3 py-1 rounded-md border border-white/20 inline-flex items-center gap-1.5 mb-3">
+                <Sparkles className="h-3 w-3" />
+                Live Verification Inspector
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white [text-wrap:balance]">
-                Test receipt verification live
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white leading-tight">
+                Inspect Receipt Integrity in Real Time
               </h2>
-              <p className="text-gray-300 text-sm sm:text-base mt-2 leading-relaxed">
-                Auditors, clients, and teammates can independently check that an expense
-                has not been altered and has not been paid twice.
+              <p className="text-gray-300 text-sm sm:text-base mt-2 leading-relaxed font-medium">
+                Test how auditors, clients, and teammates can independently verify that an expense
+                has not been altered and has never been double-reimbursed.
               </p>
             </div>
 
-            {/* Sandbox Input Box */}
-            <div className="mt-8 bg-[#1e1e1e] rounded-xl border border-white/15 p-5 space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1">
-                  <label className="text-xs font-medium text-gray-400 block mb-1.5">
-                    Paste a receipt fingerprint or verification hash:
-                  </label>
-                  <input
-                    type="text"
-                    value={verifierInput}
-                    onChange={(e) => setVerifierInput(e.target.value)}
-                    className="w-full bg-[#121212] text-white font-mono text-xs sm:text-sm px-4 py-3 rounded-lg border border-white/20 focus:border-[#7C6CF6] focus:outline-none"
-                    placeholder="0x..."
-                  />
-                </div>
-                <div className="self-end sm:self-auto">
-                  <Magnetic range={60} maxTranslation={6} intensity={0.4}>
+            {/* Interactive Inspector Box */}
+            <div className="mt-8 bg-[#1a1a1a] rounded-xl border-2 border-white/20 p-5 sm:p-6 space-y-6">
+              {/* Scenario Selector */}
+              <div>
+                <label className="font-mono text-xs font-bold uppercase tracking-wider text-gray-300 block mb-2.5">
+                  Select a live expense scenario to inspect:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {SAMPLE_EXPENSES.map((exp, idx) => (
                     <button
+                      key={exp.id}
                       type="button"
-                      onClick={handleRunVerify}
-                      disabled={isVerifying}
-                      className="w-full sm:w-auto font-semibold text-sm px-5 py-3 rounded-lg bg-[#7C6CF6] text-white hover:bg-[#6c5be8] disabled:opacity-50 transition cursor-pointer"
+                      onClick={() => {
+                        setSelectedExpense(idx);
+                        setVerificationResult(null);
+                      }}
+                      className={`text-left p-3.5 rounded-lg border-2 transition-all cursor-pointer ${
+                        selectedExpense === idx
+                          ? "border-[#836EF9] bg-[#836EF9]/20 shadow-[2px_2px_0_0_#836EF9]"
+                          : "border-white/10 bg-[#121212] hover:border-white/30 text-gray-400"
+                      }`}
                     >
-                      {isVerifying ? "Verifying..." : "Verify fingerprint"}
+                      <div className="font-mono text-[11px] font-black uppercase text-[#836EF9]">{exp.id}</div>
+                      <div className="text-xs font-bold text-white truncate mt-0.5">{exp.title}</div>
+                      <div className="font-mono text-xs font-bold text-gray-300 mt-1">{exp.amount}</div>
                     </button>
-                  </Magnetic>
+                  ))}
                 </div>
               </div>
 
-              {/* Quick Sample Selector */}
-              <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
-                <span className="text-gray-400">Quick samples:</span>
+              {/* Action Button */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+                <div className="text-xs text-gray-400 font-mono">
+                  Active Fingerprint: <span className="text-white font-bold">{activeExpense.hash.slice(0, 18)}...</span>
+                </div>
                 <button
                   type="button"
-                  onClick={() =>
-                    setVerifierInput("0x89f4b7a120c8de3176ef98231c51bc19aa314")
-                  }
-                  className="text-[#9b8eff] underline hover:text-white cursor-pointer"
+                  onClick={handleRunVerify}
+                  disabled={isVerifying}
+                  className="w-full sm:w-auto font-mono text-xs font-black uppercase tracking-wider px-6 py-3 rounded-lg bg-[#836EF9] text-white border-2 border-white shadow-[3px_3px_0_0_#fff] hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50 transition cursor-pointer"
                 >
-                  Cloud server receipt (#EXP-9042)
-                </button>
-                <span className="text-gray-600">•</span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setVerifierInput("0x4b7c11f9e9842dc59012a6771e8bf43912da0")
-                  }
-                  className="text-[#9b8eff] underline hover:text-white cursor-pointer"
-                >
-                  Conference travel (#EXP-9043)
+                  {isVerifying ? "Verifying Onchain Ledger..." : "Run Instant Verification"}
                 </button>
               </div>
 
-              {/* Verification Result Output */}
+              {/* Real-time Verification Output */}
               <AnimatePresence>
                 {verificationResult && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+                    exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="mt-4 rounded-lg border border-emerald-500/50 bg-emerald-950/20 p-4 space-y-2"
+                    className="rounded-xl border-2 border-emerald-500 bg-emerald-950/30 p-5 space-y-4"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                    <div className="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                      <span className="font-mono text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
                         <BadgeCheck className="h-4 w-4" aria-hidden="true" />
-                        Receipt fingerprint verified valid
+                        Verification Passed: 100% Valid
                       </span>
-                      <span className="text-xs font-mono text-gray-400">
+                      <span className="font-mono text-xs text-emerald-300 font-bold">
                         Monad Block #{verificationResult.block}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-300 font-mono">
-                      {verificationResult.details}
-                    </p>
-                    <div className="pt-2 text-xs font-mono text-gray-400 flex flex-wrap gap-4 border-t border-white/10">
-                      <span>
-                        Authorized Signer: {verificationResult.approver}
-                      </span>
-                      <span>Network: Monad Testnet</span>
+
+                    {/* 4 Point Real-time Checklist */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                      <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
+                        <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero Cloud Leak
+                        </div>
+                        <p className="text-[11px] text-gray-300">Receipt image and sensitive notes remained AES-256 encrypted in device storage.</p>
+                      </div>
+
+                      <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
+                        <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Tamper-Proof Match
+                        </div>
+                        <p className="text-[11px] text-gray-300">Amount, vendor, and date cryptographic fingerprint matches onchain anchor perfectly.</p>
+                      </div>
+
+                      <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
+                        <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Human Governance
+                        </div>
+                        <p className="text-[11px] text-gray-300">Authorized human officer signature verified. Automated AI copilot had zero release power.</p>
+                      </div>
+
+                      <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
+                        <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero Duplicate Settlement
+                        </div>
+                        <p className="text-[11px] text-gray-300">Nullifier recorded on Monad; the smart contract prevents duplicate reimbursement forever.</p>
+                      </div>
+                    </div>
+
+                    {/* Expandable Technical Proof Payload */}
+                    <div className="pt-2 border-t border-emerald-500/30">
+                      <button
+                        type="button"
+                        onClick={() => setShowVoucherDetails(!showVoucherDetails)}
+                        className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 flex items-center justify-between w-full cursor-pointer py-1"
+                      >
+                        <span>View Cryptographic Proof Payload (JSON / Signer)</span>
+                        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showVoucherDetails ? "rotate-180" : ""}`} />
+                      </button>
+
+                      {showVoucherDetails && (
+                        <div className="mt-3 p-3.5 rounded-lg bg-[#121212] border border-white/20 font-mono text-[11px] text-gray-300 space-y-1.5">
+                          <div><span className="text-gray-500">Commitment Hash:</span> {activeExpense.hash}</div>
+                          <div><span className="text-gray-500">Authorized Signer:</span> {verificationResult.approver}</div>
+                          <div><span className="text-gray-500">Network:</span> Monad Testnet</div>
+                          <div><span className="text-gray-500">Verification Spec:</span> {activeExpense.verificationMethod}</div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -794,12 +718,16 @@ export default function LandingPage() {
 
         {/* Closing Call to Action Section */}
         <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-          <div className="rounded-3xl border border-gray-200 bg-gradient-to-b from-white to-[#f5f3ff] p-8 sm:p-14 text-center shadow-sm">
+          <div className="rounded-2xl border-2 border-[#121212] bg-white p-8 sm:p-14 text-center shadow-[6px_6px_0_0_#836EF9]">
             <div className="max-w-xl mx-auto space-y-5">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 leading-tight [text-wrap:balance]">
+              <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-3 py-1 rounded-md border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                Get Started Today
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight [text-wrap:balance]">
                 Ready to test private, verifiable expenses?
               </h2>
-              <p className="text-gray-600 text-base leading-relaxed">
+              <p className="text-gray-700 text-sm sm:text-base leading-relaxed font-medium">
                 Launch personal budgeting, freelance billing, or team expense approvals on Monad testnet in seconds.
               </p>
 
@@ -807,190 +735,213 @@ export default function LandingPage() {
                 <Magnetic range={80} maxTranslation={8} intensity={0.5}>
                   <Link
                     href="/?mode=personal"
-                    className="inline-flex items-center justify-center gap-2 font-bold text-base px-6 py-3.5 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                    className="inline-flex items-center justify-center gap-2 font-mono text-sm font-black uppercase tracking-wider px-6 py-3.5 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                   >
-                    <span>Launch testnet app</span>
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <span className="!text-white">Launch Testnet App</span>
+                    <ArrowRight className="h-4 w-4 !text-white stroke-[2.5]" aria-hidden="true" />
                   </Link>
                 </Magnetic>
               </div>
 
-              <p className="text-xs text-gray-500 font-normal pt-2">
-                Free to test · No real money required · Monad Testnet Chain ID 10143
+              <p className="text-xs text-gray-600 font-mono font-bold pt-2 uppercase tracking-wider">
+                Free to test · No real money required · Monad Testnet
               </p>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Production-Grade Full Footer */}
-      <footer className="border-t border-gray-200 bg-white py-14 px-4 sm:px-6 lg:px-8">
+      {/* Production-Grade Montally Neo-Brutalist Footer */}
+      <footer className="border-t-2 border-[#121212] bg-white py-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 pb-12 border-b border-gray-200">
-            {/* Col 1: Brand */}
-            <div className="md:col-span-2 space-y-3">
-              <div className="flex items-center gap-2.5">
-                <ClarioLogo size={32} />
-                <span className="text-base font-bold tracking-tight text-gray-900">
-                  Clario
-                </span>
-                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                  Testnet
-                </span>
-              </div>
-              <p className="text-xs text-gray-600 max-w-sm leading-relaxed">
-                Private expense tracking built on Monad. Keep receipts local on your own device while settling verified proof onchain.
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 pb-12">
+            {/* Col 1: Brand & Status Card (spans 2 columns on md) */}
+            <div className="md:col-span-2 space-y-4">
+              <Link href="/" className="inline-flex items-center gap-2.5 group">
+                <ClarioLogo
+                  size={36}
+                  className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
+                />
+                <div className="flex flex-col">
+                  <span className="text-base font-black tracking-wider uppercase text-[#121212] flex items-center gap-2 font-sans">
+                    Clario
+                    <span className="text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f5f3ff] px-2 py-0.5 rounded border-2 border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1">
+                      <MonadLogo className="h-3 w-3" aria-hidden="true" />
+                      Testnet
+                    </span>
+                  </span>
+                  <span className="text-[10px] text-gray-600 font-mono font-bold uppercase tracking-wider">
+                    Private receipts · Verifiable proof
+                  </span>
+                </div>
+              </Link>
+
+              <p className="text-xs text-gray-700 leading-relaxed font-medium max-w-sm">
+                Private expense tracking built on Monad. Keep receipts local on your own device while settling verified cryptographic proofs onchain.
               </p>
-              <div className="pt-2 text-xs text-gray-500">
-                Contact:{" "}
+
+              {/* Status Micro-Card */}
+              <div className="p-3 rounded-xl border-2 border-[#121212] bg-[#f8f9fa] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-3">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="flex flex-col">
+                  <span className="font-mono text-[11px] font-black uppercase text-[#121212]">
+                    Monad Testnet Ledger
+                  </span>
+                  <span className="font-mono text-[10px] font-bold uppercase text-gray-600">
+                    Decentralized · Real-Time Proof
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-1">
                 <a
                   href="mailto:contact@clario.finance"
-                  className="text-gray-900 underline hover:text-[#7C6CF6]"
+                  className="font-mono text-xs font-black uppercase tracking-wider text-[#121212] hover:text-[#836EF9] inline-flex items-center gap-1.5 transition-colors"
                 >
-                  contact@clario.finance
+                  <span>Contact: contact@clario.finance</span>
                 </a>
               </div>
             </div>
 
             {/* Col 2: Workspaces */}
-            <div className="space-y-2.5 text-xs">
-              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
+            <div className="space-y-3">
+              <span className="font-mono text-xs font-black text-[#121212] uppercase tracking-wider block mb-3.5 pb-1 border-b-2 border-[#121212]">
                 Workspaces
               </span>
-              <div>
-                <Link
-                  href="/?mode=personal"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Personal Mode
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/?mode=freelancer"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Freelancer Mode
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/?mode=family"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Family Pool
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/?mode=business"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Business Treasury
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/proof"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Proof Center
-                </Link>
-              </div>
+              <ul className="space-y-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+                <li>
+                  <Link
+                    href="/?mode=personal"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Personal Mode
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/?mode=freelancer"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Freelancer Mode
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/?mode=family"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Family Pool
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/?mode=business"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Business Treasury
+                  </Link>
+                </li>
+              </ul>
             </div>
 
             {/* Col 3: Developers */}
-            <div className="space-y-2.5 text-xs">
-              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
+            <div className="space-y-3">
+              <span className="font-mono text-xs font-black text-[#121212] uppercase tracking-wider block mb-3.5 pb-1 border-b-2 border-[#121212]">
                 Developers
               </span>
-              <div>
-                <Link
-                  href="https://testnet.monadexplorer.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                >
-                  Monad Explorer <ExternalLink className="h-3 w-3" />
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="https://github.com/clario-finance/clario"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                >
-                  GitHub Repository <ExternalLink className="h-3 w-3" />
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/docs"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Protocol Docs
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="https://docs.monad.xyz"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                >
-                  Monad Docs <ExternalLink className="h-3 w-3" />
-                </Link>
-              </div>
+              <ul className="space-y-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+                <li>
+                  <Link
+                    href="https://testnet.monadexplorer.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1.5 transition-all"
+                  >
+                    Monad Explorer <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://github.com/clario-finance/clario"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1.5 transition-all"
+                  >
+                    GitHub Repo <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Protocol Docs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://docs.monad.xyz"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1.5 transition-all"
+                  >
+                    Monad Docs <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </li>
+              </ul>
             </div>
 
-            {/* Col 4: Legal & Policies */}
-            <div className="space-y-2.5 text-xs">
-              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
-                Legal & Security
+            {/* Col 4: Legal & Security */}
+            <div className="space-y-3">
+              <span className="font-mono text-xs font-black text-[#121212] uppercase tracking-wider block mb-3.5 pb-1 border-b-2 border-[#121212]">
+                Security &amp; Legal
               </span>
-              <div>
-                <Link
-                  href="/docs?s=privacy"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Privacy Policy
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/docs?s=terms"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Terms of Service
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/docs?s=security"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Security Details
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/docs?s=disclosure"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Responsible Disclosure
-                </Link>
-              </div>
+              <ul className="space-y-2.5 font-mono text-xs font-bold uppercase tracking-wider">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/security"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Security Details
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/disclosure"
+                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
+                  >
+                    Disclosure
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Bottom Disclaimer */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-            <span>© 2026 Clario Protocol. All rights reserved.</span>
-            <span className="text-[11px] text-gray-500 max-w-xl text-center sm:text-right leading-relaxed">
-              Disclaimer: Clario is experimental software deployed on Monad
-              Testnet. It is not an audited financial product. Do not deposit real funds
-              or rely on it for official tax filings without offline record backups.
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t-2 border-[#121212] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
+              <span>© 2026 Clario Protocol</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-600 font-bold">All rights reserved</span>
+            </div>
+            <span className="font-mono text-[11px] font-bold text-gray-600 max-w-xl text-center sm:text-right leading-relaxed uppercase">
+              Experimental software on Monad Testnet. Zero cloud leak. Immutable by code.
             </span>
           </div>
         </div>
