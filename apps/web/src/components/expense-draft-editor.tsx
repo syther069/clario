@@ -1188,7 +1188,7 @@ export function ExpenseDraftEditor({
                           {sourceChainId
                             ? getSupportedChain(sourceChainId)?.name ||
                               `Chain ${sourceChainId}`
-                            : "Monad Testnet (10143)"}
+                            : "Monad Testnet"}
                         </strong>
                       </span>
                     </span>

@@ -18,7 +18,6 @@ import {
   Plus,
   Receipt,
   Download,
-  Clock,
   ShieldCheck,
   Search,
   X,
@@ -53,7 +52,6 @@ import { ReceiptBundleModal } from "./receipt-bundle-modal";
 import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 import { Magnetic } from "@/components/ui/motion/magnetic";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { motion, AnimatePresence } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";
 import { NeoDatePicker } from "@/components/ui/neo-date-picker";
@@ -86,7 +84,30 @@ export function FreelancerDashboard({
   const [internalView, setInternalView] = useState<FreelancerView>("overview");
   const activeView = propActiveView || internalView;
 
+  const currentTab = useMemo<"overview" | "invoices" | "expenses" | "tax">(() => {
+    if (activeView === "clients" || activeView === "invoices") return "invoices";
+    if (activeView === "expenses") return "expenses";
+    if (activeView === "tax" || activeView === "receipts") return "tax";
+    return "overview";
+  }, [activeView]);
+
+  const [invoiceSubTab, setInvoiceSubTab] = useState<"invoices" | "clients">(
+    activeView === "clients" ? "clients" : "invoices",
+  );
+  const [taxSubTab, setTaxSubTab] = useState<"tax" | "proofs">(
+    activeView === "receipts" ? "proofs" : "tax",
+  );
+
   const handleViewChange = (view: FreelancerView) => {
+    if (view === "clients") {
+      setInvoiceSubTab("clients");
+    } else if (view === "invoices") {
+      setInvoiceSubTab("invoices");
+    } else if (view === "receipts") {
+      setTaxSubTab("proofs");
+    } else if (view === "tax") {
+      setTaxSubTab("tax");
+    }
     if (onViewChange) {
       onViewChange(view);
     }
@@ -229,7 +250,7 @@ export function FreelancerDashboard({
   }, [transactions, paidInvoicesTotal]);
 
   const netProfit = totalRevenue - totalDeductibleAmount;
-  const profitMargin =
+  const _profitMargin =
     totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 100;
   const estimatedTaxLiability = Math.max(0, netProfit * (taxRateBracket / 100));
 
@@ -709,34 +730,15 @@ export function FreelancerDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            {userAddress && (
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-mono font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
-                  ANCHOR: {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
-                </span>
-              </div>
-            )}
-            <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212]">
-              Freelance & Consulting Operations
+            <h1 className="text-2xl font-bold tracking-tight text-[#121212]">
+              Freelance
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-              Client invoices, tax-deductible expenses, CRM roster, and
-              quarterly estimates.
+            <p className="text-sm text-slate-600 mt-0.5">
+              Client invoices, deductible expenses, clients, and tax estimates.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Magnetic range={60} intensity={0.35}>
-              <WatermelonButton
-                variant="secondary"
-                textMorph
-                onClick={handleOpenCreateClient}
-                leftIcon={<UsersRound className="h-4 w-4 text-[#836EF9]" />}
-              >
-                Add Client
-              </WatermelonButton>
-            </Magnetic>
-
+          <div>
             <Magnetic range={70} intensity={0.4}>
               <WatermelonButton
                 variant="primary"
@@ -744,85 +746,74 @@ export function FreelancerDashboard({
                 onClick={() => handleOpenCreateInvoice()}
                 leftIcon={<Plus className="h-4 w-4" />}
               >
-                Create Invoice
+                Create invoice
               </WatermelonButton>
             </Magnetic>
           </div>
         </div>
 
-        {/* Primary Mode Navigation Bar */}
+        {/* Primary Mode Navigation Bar: Fixed 4 tabs */}
         <nav
           aria-label="Freelancer Navigation"
-          className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
+          className="p-1 bg-white border border-[#121212]/15 shadow-sm rounded-xl grid grid-cols-4 w-full gap-1"
         >
           <AnimatedBackground
-            defaultValue={activeView}
-            className="rounded-lg bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
+            defaultValue={currentTab}
+            className="rounded-lg bg-[#836EF9] border border-[#121212] shadow-[2px_2px_0_0_#121212]"
             transition={{
               type: "spring",
               bounce: 0.15,
-              duration: 0.4,
+              duration: 0.3,
             }}
             onValueChange={(id) => {
               if (id) handleViewChange(id as FreelancerView);
             }}
           >
             {[
-              { id: "overview", label: "Overview", icon: TrendingUp },
+              { id: "overview" as const, label: "Overview", icon: TrendingUp },
               {
-                id: "clients",
-                label: "Clients CRM",
-                icon: UsersRound,
-                count: clients.length,
-              },
-              {
-                id: "invoices",
-                label: "Invoices",
+                id: "invoices" as const,
+                label: "Invoices & clients",
                 icon: FileText,
-                count: invoices.length,
+                count:
+                  invoices.filter((i) => i.status === "sent" || i.status === "overdue").length > 0
+                    ? invoices.filter((i) => i.status === "sent" || i.status === "overdue").length
+                    : undefined,
               },
               {
-                id: "expenses",
-                label: "Business Expenses",
+                id: "expenses" as const,
+                label: "Expenses",
                 icon: DollarSign,
-                count: deductibleExpenses.length,
               },
-              {
-                id: "receipts",
-                label: "Receipts & Proofs",
-                icon: Receipt,
-                count: businessReceipts.length,
-              },
-              { id: "tax", label: "Tax Organizer", icon: ShieldCheck },
+              { id: "tax" as const, label: "Tax & proofs", icon: ShieldCheck },
             ].map((tab) => {
               const Icon = tab.icon;
-              const isActive = activeView === tab.id;
+              const isActive = currentTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   data-id={tab.id}
                   type="button"
-                  className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
+                  onClick={() => handleViewChange(tab.id as FreelancerView)}
+                  className={`group flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer text-center ${
                     isActive
                       ? "text-white"
-                      : "text-[#121212] hover:bg-[#f3f4f6]/50"
+                      : "text-[#121212] hover:bg-slate-100/60"
                   }`}
                 >
                   <Icon
                     className={`h-4 w-4 shrink-0 transition-colors ${
-                      isActive
-                        ? "text-white"
-                        : "text-[#836EF9] group-hover:text-[#7257f8]"
+                      isActive ? "text-white" : "text-[#836EF9]"
                     }`}
                     aria-hidden="true"
                   />
-                  <span className="shrink-0">{tab.label}</span>
+                  <span className="truncate">{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
-                      className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                      className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-bold rounded-full leading-none shrink-0 ${
                         isActive
                           ? "bg-white text-[#121212]"
-                          : "bg-[#f3f0ff] text-[#836EF9]"
+                          : "bg-[#836EF9] text-white"
                       }`}
                     >
                       {tab.count}
@@ -836,148 +827,79 @@ export function FreelancerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. OVERVIEW VIEW */}
+      {/* 2. OVERVIEW VIEW: Exactly 4 stat cards */}
       {/* ========================================================================= */}
-      {activeView === "overview" && (
-        <div className="space-y-8">
-          {/* 6-Grid Freelancer KPIs */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {currentTab === "overview" && (
+        <div className="space-y-6">
+          {/* Exactly 4 Freelancer KPIs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Gross Revenue */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Gross Revenue
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#dcfce7] text-[#15803d] shadow-[2px_2px_0_0_#121212]">
-                  <DollarSign className="h-4 w-4" />
-                </div>
+            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
+              <span className="text-xs font-medium text-slate-500">
+                Gross revenue
+              </span>
+              <div className="text-2xl font-bold font-mono text-[#121212] mt-1">
+                {currencySymbol}
+                {totalRevenue.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
-                  {currencySymbol}
-                  {totalRevenue.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  Paid client receipts & income
-                </p>
-              </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Paid client receipts & income
+              </p>
             </div>
 
             {/* Outstanding Invoices */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Unpaid Invoices
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#fef9c3] text-[#854d0e] shadow-[2px_2px_0_0_#121212]">
-                  <Clock className="h-4 w-4" />
-                </div>
+            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
+              <span className="text-xs font-medium text-slate-500">
+                Unpaid invoices
+              </span>
+              <div className="text-2xl font-bold font-mono text-[#854d0e] mt-1">
+                {currencySymbol}
+                {unpaidInvoicesTotal.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
-                  {currencySymbol}
-                  {unpaidInvoicesTotal.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  {
-                    invoices.filter(
-                      (i) => i.status === "sent" || i.status === "overdue",
-                    ).length
-                  }{" "}
-                  awaiting payment
-                </p>
-              </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                {
+                  invoices.filter(
+                    (i) => i.status === "sent" || i.status === "overdue",
+                  ).length
+                }{" "}
+                awaiting payment
+              </p>
             </div>
 
             {/* Deductible Expenses */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Deductions
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#fee2e2] text-[#b91c1c] shadow-[2px_2px_0_0_#121212]">
-                  <Receipt className="h-4 w-4" />
-                </div>
+            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
+              <span className="text-xs font-medium text-slate-500">
+                Deductible expenses
+              </span>
+              <div className="text-2xl font-bold font-mono text-[#b91c1c] mt-1">
+                {currencySymbol}
+                {totalDeductibleAmount.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
-                  {currencySymbol}
-                  {totalDeductibleAmount.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  Schedule C write-offs
-                </p>
-              </div>
-            </div>
-
-            {/* Net Profit Margin */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Net Profit Margin
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#f3f0ff] text-[#836EF9] shadow-[2px_2px_0_0_#121212]">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#836EF9] tracking-tight">
-                  {profitMargin}%
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  Net: {currencySymbol}
-                  {Math.max(0, netProfit).toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            {/* Active Clients */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Active Clients
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#e0f2fe] text-[#0369a1] shadow-[2px_2px_0_0_#121212]">
-                  <UsersRound className="h-4 w-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
-                  {clients.filter((c) => c.status === "active").length}
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  {clients.length} total in CRM
-                </p>
-              </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Schedule C write-offs
+              </p>
             </div>
 
             {/* Tax Reserve Estimate */}
-            <div className="neo-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  Tax Reserve
-                </span>
-                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#f3f0ff] text-[#836EF9] shadow-[2px_2px_0_0_#121212]">
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
+            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
+              <span className="text-xs font-medium text-slate-500">
+                Estimated tax
+              </span>
+              <div className="text-2xl font-bold font-mono text-[#836EF9] mt-1">
+                {currencySymbol}
+                {estimatedTaxLiability.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
               </div>
-              <div className="mt-3">
-                <div className="text-2xl font-black font-mono text-[#836EF9] tracking-tight">
-                  {currencySymbol}
-                  {estimatedTaxLiability.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-                <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                  At {taxRateBracket}% bracket
-                </p>
-              </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                At {taxRateBracket}% bracket
+              </p>
             </div>
           </div>
 
@@ -1214,7 +1136,7 @@ export function FreelancerDashboard({
                               {inv.status !== "paid" ? (
                                 <button
                                   onClick={() => handleMarkInvoicePaid(inv)}
-                                  className="px-2 py-0.5 bg-[#121212] text-white text-[10px] font-black uppercase tracking-wider rounded hover:bg-[#836EF9] transition"
+                                  className="px-2 py-0.5 bg-[#836EF9] text-white text-[10px] font-black uppercase tracking-wider rounded border border-[#121212] shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#7257f8] transition"
                                 >
                                   Mark Paid
                                 </button>
@@ -1305,31 +1227,59 @@ export function FreelancerDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 3. CLIENTS CRM VIEW */}
+      {/* 3. INVOICES & CLIENTS VIEW */}
       {/* ========================================================================= */}
-      {activeView === "clients" && (
+      {currentTab === "invoices" && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
-                Clients CRM
-              </h2>
-              <p className="text-xs text-slate-500">
-                Directory of active clients, agreed billing rates, and work
-                history.
-              </p>
-            </div>
-            <Magnetic range={60} intensity={0.35}>
-              <WatermelonButton
-                onClick={handleOpenCreateClient}
-                variant="primary"
-                textMorph
-                leftIcon={<Plus className="h-4 w-4" />}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5 p-1 bg-white border border-[#121212]/15 rounded-lg shadow-sm">
+              <button
+                type="button"
+                onClick={() => setInvoiceSubTab("invoices")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
+                  invoiceSubTab === "invoices"
+                    ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
               >
-                Add New Client
-              </WatermelonButton>
-            </Magnetic>
+                Invoices ({invoices.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setInvoiceSubTab("clients")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
+                  invoiceSubTab === "clients"
+                    ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                Clients ({clients.length})
+              </button>
+            </div>
+
+            {invoiceSubTab === "clients" ? (
+              <button
+                type="button"
+                onClick={handleOpenCreateClient}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#836EF9] text-white border border-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-[#7257f8] flex items-center gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add client</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleOpenCreateInvoice()}
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#836EF9] text-white border border-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-[#7257f8] flex items-center gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create invoice</span>
+              </button>
+            )}
           </div>
+
+          {invoiceSubTab === "clients" ? (
+            <div className="space-y-6">
 
           {/* Search & Filter Bar */}
           <div className="neo-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1522,34 +1472,8 @@ export function FreelancerDashboard({
             </div>
           )}
         </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 4. INVOICES VIEW */}
-      {/* ========================================================================= */}
-      {activeView === "invoices" && (
+      ) : (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
-                Invoices Ledger
-              </h2>
-              <p className="text-xs text-slate-500">
-                Create, track, inspect, and reconcile professional freelance
-                invoices.
-              </p>
-            </div>
-            <Magnetic range={60} intensity={0.35}>
-              <WatermelonButton
-                onClick={() => handleOpenCreateInvoice()}
-                variant="primary"
-                textMorph
-                leftIcon={<Plus className="h-4 w-4" />}
-              >
-                Create New Invoice
-              </WatermelonButton>
-            </Magnetic>
-          </div>
 
           {/* Search & Status Filters */}
           <div className="neo-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1741,11 +1665,13 @@ export function FreelancerDashboard({
           )}
         </div>
       )}
+    </div>
+  )}
 
       {/* ========================================================================= */}
-      {/* 5. BUSINESS EXPENSES VIEW */}
+      {/* 4. BUSINESS EXPENSES VIEW */}
       {/* ========================================================================= */}
-      {activeView === "expenses" && (
+      {currentTab === "expenses" && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -1975,10 +1901,37 @@ export function FreelancerDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 6. RECEIPTS & PROOFS VIEW */}
+      {/* 5. TAX & PROOFS VIEW */}
       {/* ========================================================================= */}
-      {activeView === "receipts" && (
+      {currentTab === "tax" && (
         <div className="space-y-6">
+          <div className="flex items-center gap-1.5 p-1 bg-white border border-[#121212]/15 rounded-lg shadow-sm w-fit">
+            <button
+              type="button"
+              onClick={() => setTaxSubTab("tax")}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
+                taxSubTab === "tax"
+                  ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
+                  : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              Tax organizer
+            </button>
+            <button
+              type="button"
+              onClick={() => setTaxSubTab("proofs")}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
+                taxSubTab === "proofs"
+                  ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
+                  : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              Receipts & proofs ({businessReceipts.length})
+            </button>
+          </div>
+
+          {taxSubTab === "proofs" ? (
+            <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
@@ -2039,7 +1992,7 @@ export function FreelancerDashboard({
                 Monad Network
               </span>
               <div className="text-2xl font-black font-mono text-[#836EF9] mt-1">
-                Chain 10143
+                Monad Testnet
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 Monad Testnet Verified
@@ -2177,12 +2130,7 @@ export function FreelancerDashboard({
             </div>
           )}
         </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 7. TAX ORGANIZER VIEW */}
-      {/* ========================================================================= */}
-      {activeView === "tax" && (
+      ) : (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -2385,6 +2333,8 @@ export function FreelancerDashboard({
           </div>
         </div>
       )}
+    </div>
+  )}
 
       {/* ========================================================================= */}
       {/* MODAL: ADD / EDIT CLIENT */}

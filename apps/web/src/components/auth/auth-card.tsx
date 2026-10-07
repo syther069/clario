@@ -199,7 +199,7 @@ export function AuthCard({
           </div>
           <ClarioBadge variant="purple" size="sm" className="gap-1">
             <MonadLogo className="h-3 w-3" />
-            Chain 10143
+            Monad Testnet
           </ClarioBadge>
         </div>
         <h2 className="text-xl sm:text-2xl font-black tracking-tight text-[#121212]">

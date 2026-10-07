@@ -26,13 +26,10 @@ import {
   UsdcLogo,
   UsdtLogo,
   AlchemyLogo,
-  detectCryptoIdentity,
-  CryptoChainIcon,
-  CryptoCoinIcon,
 } from "@/components/ui/crypto-icon";
-import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { ClarioButton } from "@/components/ui/clario-ui";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";
 import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 
@@ -346,11 +343,11 @@ export function TransactionModal({
             }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
               subLedger === "fiat"
-                ? "bg-[#121212] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#836EF9]"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
                 : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
-            <CreditCard className="h-3.5 w-3.5 text-[#836EF9]" />
+            <CreditCard className="h-3.5 w-3.5 text-white" />
             <span>Personal Finance</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
               Fiat

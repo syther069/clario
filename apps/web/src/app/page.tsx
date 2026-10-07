@@ -25,8 +25,6 @@ import type {
   FamilyView,
   BusinessView,
 } from "@/lib/supabase/types";
-import { VaultSecurityBanner } from "@/components/layout/vault-security-banner";
-import { LandingExplainer } from "@/components/layout/landing-explainer";
 import { LogIn } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
@@ -411,24 +409,15 @@ export default function Home() {
     <div className="min-h-screen bg-grid text-[#121212] flex flex-col font-sans">
       {/* Main Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Page-Level Header: Mode Selector, 3 Core Pillars & Primary CTA */}
+        {/* Page-Level Header: Mode Selector & Primary CTA */}
         <ModeHeader
           currentMode={activeMode}
           onModeChange={handleModeChange}
-          onOpenCopilot={() => setCopilotOpen(true)}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
           onLogExpense={() => {
             setTxModalSubLedger(activeMode === "crypto" ? "onchain" : "fiat");
             setTxModalOpen(true);
           }}
         />
-
-        {/* Verifiable Workflow & Proof Chain Explainer */}
-        <LandingExplainer />
-
-        {/* Vault Data Safety & Privacy Reassurance */}
-        <VaultSecurityBanner />
 
         {/* Connect Reassurance for Unauthenticated Visitors */}
         {!isAuthenticated && (

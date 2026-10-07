@@ -7,7 +7,6 @@ import {
   Wallet,
   Check,
   Copy,
-  Link2,
   KeyRound,
   ExternalLink,
   ShieldCheck,
@@ -19,7 +18,9 @@ import {
   Globe,
   Settings,
   Pencil,
+  BookOpen,
 } from "lucide-react";
+import Link from "next/link";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -34,7 +35,6 @@ export function UserButton() {
     user,
     displayName,
     nickname,
-    walletNicknames,
     setNickname,
     getNickname,
     primaryEmail,
@@ -652,8 +652,22 @@ export function UserButton() {
             )}
           </div>
 
-          {/* Account Settings Option */}
-          <div className="py-1.5 border-b-2 border-[#121212]">
+          {/* Documentation & Security Info */}
+          <div className="py-1.5 border-b-2 border-[#121212] space-y-0.5">
+            <Link
+              href="/docs"
+              onClick={() => setDropdownOpen(false)}
+              className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs font-bold text-[#121212] hover:bg-slate-100 transition border border-transparent hover:border-slate-300"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <BookOpen className="h-3.5 w-3.5 text-[#836EF9] shrink-0" />
+                <span>Documentation</span>
+              </div>
+              <span className="text-[9px] font-mono uppercase bg-purple-50 text-[#836EF9] px-1.5 py-0.5 rounded border border-purple-200">
+                Guides
+              </span>
+            </Link>
+
             <button
               onClick={() => {
                 setDropdownOpen(false);
