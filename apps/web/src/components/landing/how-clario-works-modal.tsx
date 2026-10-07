@@ -10,16 +10,11 @@ import {
   Lock,
   BadgeCheck,
   ShieldCheck,
-  Zap,
-  Layers,
-  FileText,
   UserRound,
   BriefcaseBusiness,
   UsersRound,
   Building2,
-  ExternalLink,
   Receipt,
-  CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
@@ -58,7 +53,7 @@ export const GUIDE_SLIDES: GuideSlide[] = [
         },
         {
           title: "On-Chain Sub-Ledger",
-          desc: "Ingest Monad Testnet (10143), Base, and Ethereum transactions directly via public EVM RPC.",
+          desc: "Ingest Monad Testnet, Base, and Ethereum transactions directly via public EVM RPC.",
         },
         {
           title: "Zero Co-Mingling",
@@ -104,7 +99,7 @@ export const GUIDE_SLIDES: GuideSlide[] = [
                   ON-CHAIN SUB-LEDGER
                 </span>
                 <span className="text-[9px] font-mono uppercase bg-[#836EF9] text-white px-1.5 py-0.5 rounded font-black">
-                  CHAIN 10143
+                  MONAD TESTNET
                 </span>
               </div>
               <div className="text-base font-black text-[#121212]">1,280.50 MON</div>
@@ -248,8 +243,8 @@ export const GUIDE_SLIDES: GuideSlide[] = [
                 <Lock className="h-3.5 w-3.5" />
                 Step 2: On-Chain Commitment
               </span>
-              <span className="text-[9px] bg-[#836EF9] text-white px-1.5 py-0.5 rounded">
-                MONAD #10143
+              <span className="text-[9px] bg-[#836EF9] text-white px-1.5 py-0.5 rounded font-black uppercase">
+                MONAD TESTNET
               </span>
             </div>
             <div className="text-[10px] text-gray-300 break-all bg-black/50 p-2 rounded border border-white/10">
@@ -311,7 +306,7 @@ export const GUIDE_SLIDES: GuideSlide[] = [
               Independent Verification
             </span>
             <p className="text-[11px] leading-relaxed">
-              Anyone with the voucher hash can independently verify settlement validity in the Proof Center without contacting a bank or logging into private servers.
+              Anyone with the voucher hash can independently verify settlement validity in the Live Simulator without contacting a bank or logging into private servers.
             </p>
           </div>
         </div>
@@ -386,12 +381,12 @@ export const GUIDE_SLIDES: GuideSlide[] = [
 
           <div className="pt-2 text-center">
             <Link
-              href="/proof"
+              href="/#verifier"
               onClick={() => onClose?.()}
-              className="text-[10px] font-bold text-[#836EF9] hover:underline uppercase inline-flex items-center gap-1"
+              className="text-[10px] font-mono font-bold text-[#836EF9] hover:underline uppercase inline-flex items-center gap-1"
             >
               <ShieldCheck className="h-3 w-3" />
-              Or explore the independent Proof Center
+              Test live verification inspector
             </Link>
           </div>
         </div>
@@ -404,13 +399,15 @@ export const GUIDE_SLIDES: GuideSlide[] = [
     onClose,
     initialSlide = 0,
   }: HowClarioWorksModalProps) {
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
     const [activeSlide, setActiveSlide] = useState(initialSlide);
 
-    useEffect(() => {
+    if (isOpen !== prevIsOpen) {
+      setPrevIsOpen(isOpen);
       if (isOpen) {
         setActiveSlide(initialSlide);
       }
-    }, [isOpen, initialSlide]);
+    }
 
     // Lock body scroll when modal is open
     useEffect(() => {
