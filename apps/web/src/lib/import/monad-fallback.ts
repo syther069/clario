@@ -121,11 +121,13 @@ export class MonadFallbackImportAdapter implements TransactionImportAdapter {
     const [tokenRes, normalRes] = await Promise.all([
       fetch(tokenTxUrl, {
         headers: { Accept: "application/json", "User-Agent": "Clario/1.0" },
+        signal: AbortSignal.timeout(1500),
       })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
       fetch(normalTxUrl, {
         headers: { Accept: "application/json", "User-Agent": "Clario/1.0" },
+        signal: AbortSignal.timeout(1500),
       })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
@@ -436,9 +438,18 @@ export class MonadFallbackImportAdapter implements TransactionImportAdapter {
       limit,
     );
 
-    // 2. If explorer returns no transactions, fall back to direct Monad RPC log scanner
+    // 2. If explorer returns no transactions, fall back to direct Monad RPC log scanner (strictly bounded to 2000ms)
     if (transactions.length === 0) {
-      transactions = await this.fetchFromRpcLogs(targetAddress, chainId, limit);
+      try {
+        transactions = await Promise.race([
+          this.fetchFromRpcLogs(targetAddress, chainId, limit),
+          new Promise<NormalizedTransaction[]>((resolve) =>
+            setTimeout(() => resolve([]), 2000),
+          ),
+        ]);
+      } catch {
+        transactions = [];
+      }
     }
 
     // Sort by Token Hierarchy (USDC > USDT > MON > others), then newest first

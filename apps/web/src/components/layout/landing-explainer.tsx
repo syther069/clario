@@ -9,12 +9,16 @@ import {
   FileCheck2,
   Cpu,
   ChevronRight,
-  Info,
   CheckCircle2,
   X,
-  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import {
+  MorphingPopover,
+  MorphingPopoverTrigger,
+  MorphingPopoverContent,
+} from "@/components/ui/motion/morphing-popover";
 
 interface LandingExplainerProps {
   onExploreClick?: () => void;
@@ -35,6 +39,13 @@ export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
       description:
         "Submit expenses, invoices, or multi-chain transfers. Raw receipts, merchant names, and personal notes are AES-256 encrypted locally and never leaked onchain.",
       proof: "Private Evidence · Zero Data Leaks",
+      specDetails: [
+        "AES-256-GCM envelope encryption with ephemeral 256-bit DEK",
+        "Deterministic RFC 8785 canonical record encoding",
+        "Zero merchant, notes, or PII exposed to public mempool",
+      ],
+      linkText: "Explore Private Evidence Storage",
+      linkHref: "/docs?s=evidence",
     },
     {
       step: "02",
@@ -44,6 +55,13 @@ export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
       description:
         "Every expense version is bound to an RFC 8785 canonical hash commitment with a cryptographic salt. Any edit creates an explicit, auditable successor version.",
       proof: "Monad Testnet · Chain ID 10143",
+      specDetails: [
+        "Cryptographically secure 32-byte salt prevents rainbow table attacks",
+        "Monad ExpenseRegistry contract stores bytes32 commitment",
+        "Cross-runtime golden vectors test suite verified (105 tests)",
+      ],
+      linkText: "Inspect Canonical Schema V1",
+      linkHref: "/docs?s=protocol",
     },
     {
       step: "03",
@@ -53,6 +71,13 @@ export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
       description:
         "Authorized reviewers approve or reject exact version states using EIP-712 typed signatures. AI only assists with OCR extraction and anomaly warnings.",
       proof: "EIP-712 Typed Data Signatures",
+      specDetails: [
+        "Decision binds to exact (workspace, expense, version, commitment)",
+        "Stale approvals automatically invalidate if a material edit occurs",
+        "AI has ZERO authority to approve, reject, or transfer funds",
+      ],
+      linkText: "Review Authority Invariants",
+      linkHref: "/docs?s=decisions",
     },
     {
       step: "04",
@@ -62,6 +87,13 @@ export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
       description:
         "Treasury reimburses on Monad with contract-enforced duplicate prevention. Anyone can download a standalone ZIP package and independently verify proof without trusting Clario servers.",
       proof: "Offline Deterministic Verifier CLI",
+      specDetails: [
+        "Smart contract level atomic transfer & duplicate settlement guard",
+        "Standalone CLI (`pnpm verify:package`) verifies cryptographic proof",
+        "Operates directly against Monad EVM RPC without private db",
+      ],
+      linkText: "Download Verifiable Package Sample",
+      linkHref: "/proof",
     },
   ];
 
@@ -139,13 +171,45 @@ export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
                 <p className="text-[10px] font-mono font-bold uppercase text-[#836EF9] mb-2">
                   {item.tagline}
                 </p>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed mb-3">
                   {item.description}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-[#121212]/15 flex items-center justify-between text-[10px] font-mono font-bold text-slate-500">
-                <span className="truncate">{item.proof}</span>
+              {/* Morphing Popover for Technical Spec Deep-Dive */}
+              <div className="pt-2 border-t border-[#121212]/15 flex items-center justify-between">
+                <MorphingPopover>
+                  <MorphingPopoverTrigger className="text-[10px] font-mono font-bold uppercase text-[#836EF9] hover:underline flex items-center gap-1">
+                    <span>Inspect Specs</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </MorphingPopoverTrigger>
+                  <MorphingPopoverContent className="w-72 sm:w-80 font-sans z-50 text-left">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 bg-[#836EF9] text-white rounded">
+                        Step {item.step} Specification
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] mb-2">
+                      {item.title}
+                    </h4>
+                    <ul className="space-y-1.5 text-[11px] text-slate-600 font-mono mb-3">
+                      {item.specDetails.map((detail, dIdx) => (
+                        <li key={dIdx} className="flex items-start gap-1.5">
+                          <span className="text-[#836EF9] font-bold">›</span>
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      href={item.linkHref}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono font-black uppercase text-[#836EF9] hover:underline"
+                    >
+                      <span>{item.linkText}</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </MorphingPopoverContent>
+                </MorphingPopover>
+
                 <CheckCircle2
                   className={`h-3.5 w-3.5 shrink-0 ${
                     isSelected ? "text-[#836EF9]" : "text-slate-300"

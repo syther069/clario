@@ -15,26 +15,29 @@ import {
   BriefcaseBusiness,
   UsersRound,
   Building2,
-  Wallet,
   UserRound,
   GitBranch,
   BotOff,
+  Receipt,
+  FileCheck2,
+  Check,
+  Copy,
+  Info,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { ClarioLogo } from "@/components/ui/clario-logo";
 import {
   TextEffect,
-  TextLoop,
   InteractiveCard,
-  AnimatedButton,
   ScrollProgress,
   InView,
   AnimatedBackground,
   BorderTrail,
 } from "@/components/ui/motion";
 import { motion, AnimatePresence } from "motion/react";
+import { HowClarioWorksModal } from "@/components/landing/how-clario-works-modal";
 
-// Interactive Demo Expenses for Hero Sandbox
+// Interactive Demo Expenses for Hero Voucher Sandbox
 const SAMPLE_EXPENSES = [
   {
     id: "EXP-9042",
@@ -44,9 +47,10 @@ const SAMPLE_EXPENSES = [
     category: "Cloud Infrastructure",
     hash: "0x89f4b7a120c8de3176ef98231c51bc19aa314",
     blockHeight: "19,842,912",
-    status: "VERIFIED & SETTLED",
+    status: "Verified & Settled",
     mode: "business",
-    privacy: "Vendor invoice offchain · Zero leakage",
+    privacy: "Vendor invoice offchain · Zero public leakage",
+    gasFee: "0.00012 MON ($0.0003)",
   },
   {
     id: "EXP-9043",
@@ -56,9 +60,10 @@ const SAMPLE_EXPENSES = [
     category: "Team Travel",
     hash: "0x4b7c11f9e9842dc59012a6771e8bf43912da0",
     blockHeight: "19,842,945",
-    status: "APPROVED BY TREASURY",
+    status: "Approved by Treasury",
     mode: "freelancer",
     privacy: "Passenger PII & ticket PDF encrypted locally",
+    gasFee: "0.00014 MON ($0.0004)",
   },
   {
     id: "EXP-9044",
@@ -68,33 +73,33 @@ const SAMPLE_EXPENSES = [
     category: "Security & Auditing",
     hash: "0x3f1e98bb4510ad674902187cc8431920fba61",
     blockHeight: "19,842,980",
-    status: "VERIFIED & SETTLED",
+    status: "Verified & Settled",
     mode: "business",
     privacy: "Audit scope offchain · Hash commitment on Monad",
+    gasFee: "0.00011 MON ($0.0003)",
   },
 ];
 
-// 4 Core Modes Showcase Details
-const MODES_DATA = [
+// 4 Core Workspaces Details
+const WORKSPACES_DATA = [
   {
     id: "personal",
     name: "Personal",
     icon: UserRound,
-    tagline: "Total Private Financial Clarity",
-    description:
-      "Manage your everyday spending, monthly budget caps, and recurring SaaS subscriptions with local-first encrypted storage and Monad onchain anchoring.",
+    tagline: "Private cashflow & onchain tracking",
+    summary:
+      "A privacy-first cashflow and expense ledger unifying fiat and onchain balances without sharing bank credentials.",
     features: [
-      "Zero-tracking cashflow & expense ledger",
-      "Interactive category budgets with warning alerts",
-      "Recurring subscription renewal detector",
-      "Instant optical receipt scanner with confidential OCR",
+      "Dual sub-ledger for fiat cash and Monad/Base/ETH tokens",
+      "Interactive category budgets with real-time overspend alerts",
+      "Automatic SaaS recurring subscription renewal detector",
     ],
     preview: {
       stat1: "$3,420.50",
-      stat1Label: "MONTHLY OUTFLOW",
+      stat1Label: "Monthly Outflow",
       stat2: "14 Active",
-      stat2Label: "RECURRING SUBS",
-      badge: "84% BUDGET HEALTH",
+      stat2Label: "Recurring Subscriptions",
+      badge: "84% Budget Health",
       recent: "Whole Foods Organic Groceries — $124.80",
     },
   },
@@ -102,21 +107,20 @@ const MODES_DATA = [
     id: "freelancer",
     name: "Freelancer",
     icon: BriefcaseBusiness,
-    tagline: "Client Billing & Deductible Ledger",
-    description:
-      "Track project-specific expenses, generate client-reimbursable invoices, and organize 1099 tax deductibles with ironclad proof.",
+    tagline: "Client billing & deductible ledger",
+    summary:
+      "Track project-specific expenses, generate client-reimbursable vouchers, and organize Schedule C write-offs.",
     features: [
-      "Client & project billing allocation",
-      "Schedule C tax write-off category tagging",
-      "Cryptographic reimbursement vouchers for clients",
-      "Time tracking & billable milestone log",
+      "Client & project expense allocation with billable tags",
+      "Schedule C tax write-off category organization",
+      "Cryptographic reimbursement vouchers with verifiable hashes",
     ],
     preview: {
       stat1: "$8,950.00",
-      stat1Label: "UNBILLED REIMBURSEMENTS",
+      stat1Label: "Unbilled Reimbursements",
       stat2: "$3,240.00",
-      stat2Label: "Q4 TAX WRITE-OFFS",
-      badge: "6 CLIENTS ACTIVE",
+      stat2Label: "Q4 Tax Deductibles",
+      badge: "6 Clients Active",
       recent: "Figma Enterprise License (Acme Corp) — $75.00",
     },
   },
@@ -124,21 +128,20 @@ const MODES_DATA = [
     id: "family",
     name: "Family",
     icon: UsersRound,
-    tagline: "Shared Household Pools & Allowances",
-    description:
-      "Coordinate shared grocery runs, utility splits, and dependent allowances with transparent household allocation.",
+    tagline: "Shared household pools & split settlement",
+    summary:
+      "Coordinate shared grocery runs, recurring utility calendars, and fair balance settlements across household members.",
     features: [
-      "Shared household expense pools",
-      "Fair expense split calculator with settlement logs",
-      "Dependent allowances & goal tracking",
-      "Household utility & mortgage calendars",
+      "Shared household expense pools with member attribution",
+      "Fair-share split calculation with transparent debt logs",
+      "Recurring monthly utility bills and joint savings goals",
     ],
     preview: {
       stat1: "$4,120.00",
-      stat1Label: "HOUSEHOLD POOL",
+      stat1Label: "Household Pool",
       stat2: "100% Balanced",
-      stat2Label: "SETTLEMENT STATUS",
-      badge: "4 MEMBERS",
+      stat2Label: "Settlement Status",
+      badge: "4 Members",
       recent: "City Water & Power Utility — $142.50",
     },
   },
@@ -146,21 +149,20 @@ const MODES_DATA = [
     id: "business",
     name: "Business",
     icon: Building2,
-    tagline: "Corporate Treasury & Multi-Sig Approval",
-    description:
-      "Department-level budget governance, multi-seat approval queues, and one-click Monad batch reimbursements for global teams.",
+    tagline: "Team treasury governance & nullifier settlement",
+    summary:
+      "Department-level budget governance, multi-seat approval queues, and one-click Monad batch reimbursements.",
     features: [
-      "Two-phase approval queue: Reviewer & Treasury",
-      "Role-based permission envelopes (Submitter, Reviewer, Admin)",
-      "Strict double-reimbursement prevention onchain",
-      "Departmental burn rates and budget caps",
+      "Two-phase approval queue: Reviewer audit and Treasury release",
+      "Sub-second Monad batch reimbursements (<0.8s finality)",
+      "Strict smart-contract nullifier guards preventing double-reimbursement",
     ],
     preview: {
       stat1: "$42,800.00",
-      stat1Label: "TEAM MONTHLY BURN",
+      stat1Label: "Team Monthly Burn",
       stat2: "3 Pending",
-      stat2Label: "TREASURY APPROVALS",
-      badge: "99.8% AUDIT COMPLIANCE",
+      stat2Label: "Treasury Approvals",
+      badge: "99.8% Policy Adherence",
       recent: "AWS Cloud Compute Clusters — $2,840.00",
     },
   },
@@ -170,125 +172,157 @@ const MODES_DATA = [
 const FOUNDER_INVARIANTS = [
   {
     number: "01",
-    title: "Offchain Private Evidence",
+    title: "Offchain private evidence",
     subtitle: "What happens in your receipt stays in your vault",
     icon: Lock,
-    badge: "LOCAL PRIVACY",
     description:
       "Vendor names, line-item itemizations, and receipt scans are never published to public ledgers or IPFS. Clario hashes evidence locally in your browser so you retain total commercial confidentiality.",
     code: "sha256(raw_receipt_bytes) → commitment_hash",
   },
   {
     number: "02",
-    title: "Immutable Material Versions",
-    subtitle: "Every change produces an irreversible audit hash",
+    title: "Immutable material versions",
+    subtitle: "Every edit produces an auditable successor hash",
     icon: GitBranch,
-    badge: "MERKLE TREE",
     description:
       "No retroactive database edits or stealth tampering. If an amount or merchant changes, a new immutable child version is recorded. Reviewers and auditors verify the exact version hash signed by treasury.",
     code: "version_n+1 = hash(version_n + patch_delta)",
   },
   {
     number: "03",
-    title: "AI Has Zero Authority",
-    subtitle: "Machine extraction assists; humans govern",
+    title: "AI has zero authority",
+    subtitle: "Machine extraction assists; authorized humans govern",
     icon: BotOff,
-    badge: "SUBORDINATE AI",
     description:
-      "Our AI copilot extracts receipts, suggests categories, and flags suspicious duplicate submissions. However, the AI possesses zero signing keys, cannot move funds, and cannot approve any reimbursement.",
+      "Our AI copilot extracts receipts, suggests categories, and flags potential duplicate submissions. However, the AI possesses zero signing keys, cannot move funds, and cannot approve any reimbursement.",
     code: "human_signature required for release",
   },
   {
     number: "04",
-    title: "Deterministic Settlement",
+    title: "Deterministic settlement",
     subtitle: "Sub-second Monad finality & nullifier defense",
     icon: Zap,
-    badge: "10,000 TPS",
     description:
       "When treasury approves an expense, Monad executes settlement in under 1 second for less than $0.001 gas. An onchain nullifier guarantees that no receipt can ever be reimbursed twice.",
     code: "require(!nullifierSpent[hash], 'DUPLICATE')",
   },
 ];
 
-// Comparison Matrix
+// Honest Comparison Matrix (Includes competitor wins)
 const COMPARISON = [
   {
-    feature: "Cryptographic Receipt Proof",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Cryptographic receipt commitments",
+    clario: "Yes",
+    web2: "No",
+    cryptoWallet: "No",
   },
   {
-    feature: "Offchain Invoice Privacy",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Offchain invoice data privacy",
+    clario: "Yes",
+    web2: "Centralized",
+    cryptoWallet: "No",
   },
   {
-    feature: "Sub-Second Settlement (< 1s)",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Sub-second parallel settlement",
+    clario: "Yes (Monad)",
+    web2: "No (2-3 days)",
+    cryptoWallet: "Partial",
   },
   {
-    feature: "Zero-Knowledge Hash Verification",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Strict anti-duplicate nullifier guards",
+    clario: "Yes",
+    web2: "Centralized",
+    cryptoWallet: "No",
   },
   {
-    feature: "Strict Anti-Duplicate Nullifiers",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Subordinate AI (zero signing authority)",
+    clario: "Yes",
+    web2: "Centralized",
+    cryptoWallet: "N/A",
   },
   {
-    feature: "Subordinate AI (Zero Private Key Access)",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Dedicated multi-workspace modes",
+    clario: "Yes (4 modes)",
+    web2: "Partial",
+    cryptoWallet: "No",
+  },
+  // Competitor strengths honestly represented:
+  {
+    feature: "Accounting software sync (QuickBooks, Xero)",
+    clario: "Partial (CSV/JSON)",
+    web2: "Yes",
+    cryptoWallet: "No",
   },
   {
-    feature: "5 Dedicated Modes (Freelance, Business, etc.)",
-    clario: true,
-    web2: false,
-    cryptoWallet: false,
+    feature: "Native mobile apps (iOS & Android)",
+    clario: "No (Mobile web)",
+    web2: "Yes",
+    cryptoWallet: "Partial",
+  },
+  {
+    feature: "Traditional fiat payout rails (ACH/SEPA)",
+    clario: "No (Crypto / local)",
+    web2: "Yes",
+    cryptoWallet: "No",
+  },
+  {
+    feature: "Established corporate compliance history",
+    clario: "Partial (Audit trail)",
+    web2: "Yes",
+    cryptoWallet: "No",
   },
 ];
 
-// FAQs
+// Expanded FAQs
 const FAQS = [
   {
-    question: "Is my confidential invoice or receipt data published onchain?",
+    question: "How much does it cost to use Clario?",
     answer:
-      "Never. Clario follows the strict Founder Invariant of Offchain Private Evidence. Only the mathematical SHA-256 cryptographic commitment hash is published to Monad. Your vendor names, itemized lines, and images stay encrypted in your local browser vault.",
+      "Clario charges zero protocol fees on testnet. Onchain commitment anchoring and settlement only incur Monad testnet gas fees, which typically cost less than 0.0002 MON (a fraction of a cent per transaction).",
   },
   {
-    question:
-      "How does Clario prevent someone from claiming the same receipt twice?",
+    question: "What wallets and blockchains are supported?",
     answer:
-      "When an expense commitment is authorized, the smart contract on Monad writes a unique nullifier derived from the receipt's hash. If any user attempts to submit or claim the same invoice again, the Monad contract immediately reverts with a duplicate nullifier error.",
+      "Clario features direct EVM RPC integration across Monad Testnet (Chain ID 10143), Ethereum Mainnet, Base, and Sepolia. Any standard Web3 wallet—including MetaMask, Rabby, Phantom EVM, and WalletConnect—can be connected for onchain signing.",
   },
   {
-    question: "Why is Clario built on Monad?",
+    question: "How are receipts kept private if hashes are recorded onchain?",
     answer:
-      "Expense operations and team reimbursements require sub-second speed and micro-gas fees. Monad's 10,000 TPS parallel EVM provides instant transaction finality (<1 second) and negligible fees, making enterprise-grade crypto accounting seamless.",
+      "Under Founder Invariant #1 (Offchain Private Evidence), vendor names, itemized lines, and uploaded files are envelope-encrypted and stored locally on your machine. Only an irreversible 32-byte SHA-256 commitment hash is published to Monad. Third parties seeing the blockchain cannot reverse or view your receipt contents.",
   },
   {
-    question: "What blockchains are supported for transaction lookup?",
+    question: "How does duplicate reimbursement prevention work?",
     answer:
-      "Clario features direct EVM RPC lookup across Monad Testnet (Chain ID 10143), Ethereum Mainnet (1), Sepolia (11155111), and Base (8453). You can paste any transaction hash to instantly ingest verified onchain records.",
+      "When an expense commitment is settled, the smart contract on Monad writes a unique nullifier derived from the receipt's hash. If anyone attempts to submit or claim reimbursement for the same invoice again, the Monad contract immediately reverts with a duplicate nullifier error.",
   },
   {
-    question: "Can I switch between Personal, Freelancer, and Business modes?",
+    question: "How do I back up and recover my local vault?",
     answer:
-      "Yes! Clario offers 5 dedicated workspace modes. You can toggle between them in 1 click from the page header without losing your preferences, active filters, or data.",
+      "You can export standalone cryptographic verification packages (ZIP) containing canonical RFC 8785 JSON records, encrypted evidence, and signature proofs from the Proof Center. These packages can be securely archived offline or transferred between machines.",
+  },
+  {
+    question: "What happens if I clear my browser data or change devices?",
+    answer:
+      "Onchain commitments and nullifiers remain permanently on Monad. However, because private evidence pre-images are stored locally in your browser storage (localStorage/IndexedDB), clearing your browser storage without an exported backup will remove local receipt copies. We recommend regularly downloading backup packages.",
+  },
+  {
+    question: "Can external auditors or tax authorities verify my expenses?",
+    answer:
+      "Yes. Anyone with the exported voucher package can run our offline deterministic verifier CLI (`pnpm verify:package`) or inspect the hash on Monad Explorer without requiring an account or contacting Clario servers.",
+  },
+  {
+    question: "Is Clario's smart contract code audited?",
+    answer:
+      "Clario is experimental software currently deployed on Monad Testnet for hackathon testing and community demonstration. The contracts have not yet completed a formal third-party security audit. Do not use for real funds or production corporate treasuries.",
   },
 ];
 
 export default function LandingPage() {
   const [selectedExpense, setSelectedExpense] = useState(0);
   const [activeModeTab, setActiveModeTab] = useState("business");
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [showVoucherDetails, setShowVoucherDetails] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(false);
   const [verifierInput, setVerifierInput] = useState(
     "0x89f4b7a120c8de3176ef98231c51bc19aa314",
   );
@@ -302,9 +336,18 @@ export default function LandingPage() {
   }>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const activeExpense = SAMPLE_EXPENSES[selectedExpense] ?? SAMPLE_EXPENSES[0]!;
+  const activeExpense =
+    SAMPLE_EXPENSES[selectedExpense] ?? SAMPLE_EXPENSES[0]!;
   const activeModeData =
-    MODES_DATA.find((m) => m.id === activeModeTab) ?? MODES_DATA[1]!;
+    WORKSPACES_DATA.find((m) => m.id === activeModeTab) ?? WORKSPACES_DATA[3]!;
+
+  const handleCopyHash = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(activeExpense.hash);
+      setCopiedHash(true);
+      setTimeout(() => setCopiedHash(false), 2000);
+    }
+  };
 
   const handleRunVerify = () => {
     setIsVerifying(true);
@@ -313,31 +356,31 @@ export default function LandingPage() {
       setIsVerifying(false);
       setVerificationResult({
         valid: true,
-        timestamp: "JUST NOW",
+        timestamp: "Just now",
         block: "19,842,912",
         approver: "0x7E5F4552091A69125d5Dfcb7b8C2659029395Bdf",
         details:
-          "SHA-256 pre-image matches local voucher. Monad Testnet nullifier is unspent. No duplicate claims detected.",
+          "SHA-256 pre-image matches local voucher commitment. Monad Testnet nullifier is unspent. No duplicate claims detected.",
       });
-    }, 700);
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-grid text-[#121212] selection:bg-[#836EF9] selection:text-white relative">
+    <div className="min-h-screen bg-grid text-gray-900 font-sans selection:bg-[#7C6CF6] selection:text-white relative">
       <ScrollProgress />
 
       {/* Top Banner Notice */}
-      <div className="bg-[#121212] text-white border-b-2 border-[#121212] px-4 py-2 text-center text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2">
-        <span className="flex h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
-        <span>Monad Testnet Hackathon Edition</span>
-        <span className="text-[#836EF9]">•</span>
+      <div className="bg-[#121212] text-white border-b border-gray-800 px-4 py-2 text-center text-xs font-sans font-medium flex items-center justify-center gap-2">
+        <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+        <span>Monad Testnet Edition</span>
+        <span className="text-gray-500">•</span>
         <span className="text-gray-300">
-          10,000 TPS Parallel EVM Settlement
+          Unaudited software for hackathon demonstration
         </span>
-        <span className="text-[#836EF9]">•</span>
+        <span className="text-gray-500">•</span>
         <Link
           href="/proof"
-          className="text-[#836EF9] hover:underline flex items-center gap-1"
+          className="text-[#9b8eff] hover:underline font-medium inline-flex items-center gap-1"
         >
           Explore Proof Center{" "}
           <ExternalLink className="h-3 w-3" aria-hidden="true" />
@@ -345,66 +388,63 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-[#ffffff]/95 backdrop-blur-md border-b-2 border-[#121212] px-4 sm:px-8 py-3.5">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 sm:px-8 py-3.5">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <ClarioLogo
-              size={40}
-              className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
+              size={36}
+              className="transition group-hover:opacity-90"
             />
             <div className="flex flex-col">
-              <span className="text-lg font-black tracking-wider text-[#121212] uppercase flex items-center gap-2">
+              <span className="text-lg font-bold tracking-tight text-gray-900 flex items-center gap-2">
                 Clario
-                <span className="relative overflow-hidden text-[10px] font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded-full border-1.5 border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1">
+                <span className="text-[11px] font-medium text-[#7C6CF6] bg-[#f5f3ff] px-2 py-0.5 rounded-full border border-[#e0dbfd] flex items-center gap-1">
                   <MonadLogo className="h-3 w-3" aria-hidden="true" />
-                  Monad
-                  <BorderTrail
-                    size={20}
-                    className="bg-[#836EF9]"
-                    transition={{
-                      repeat: Infinity,
-                      duration: 3,
-                      ease: "linear",
-                    }}
-                  />
+                  Testnet
                 </span>
               </span>
-              <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#666]">
+              <span className="text-[11px] text-gray-500 font-medium">
                 Cryptographic Evidence Ledger
               </span>
             </div>
           </Link>
 
           {/* Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-mono font-bold uppercase tracking-wider">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <a
+              href="#how-it-works"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              How it works
+            </a>
             <a
               href="#modes"
-              className="text-[#121212] hover:text-[#836EF9] transition"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
-              5 Modes
+              Workspaces
             </a>
             <a
               href="#invariants"
-              className="text-[#121212] hover:text-[#836EF9] transition"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Invariants
             </a>
             <a
               href="#verifier"
-              className="text-[#121212] hover:text-[#836EF9] transition"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Live Sandbox
             </a>
             <a
               href="#comparison"
-              className="text-[#121212] hover:text-[#836EF9] transition"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Comparison
             </a>
             <a
               href="#faq"
-              className="text-[#121212] hover:text-[#836EF9] transition"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               FAQ
             </a>
@@ -412,847 +452,1160 @@ export default function LandingPage() {
 
           {/* Primary Action Button */}
           <div className="flex items-center gap-3">
-            <Link href="/proof">
-              <AnimatedButton
-                variant="secondary"
-                size="sm"
-                icon={
-                  <ShieldCheck
-                    className="h-3.5 w-3.5 text-[#836EF9]"
-                    aria-hidden="true"
-                  />
-                }
-              >
-                Proof Center
-              </AnimatedButton>
+            <Link
+              href="/proof"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors shadow-2xs"
+            >
+              <ShieldCheck
+                className="h-3.5 w-3.5 text-[#7C6CF6]"
+                aria-hidden="true"
+              />
+              <span>Proof Center</span>
             </Link>
-            <Link href="/?mode=personal">
-              <AnimatedButton
-                variant="primary"
-                size="sm"
-                magnetic={true}
-                rightIcon={
-                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                }
-              >
-                Launch App
-              </AnimatedButton>
+            <Link
+              href="/?mode=personal"
+              className="inline-flex items-center justify-center gap-1.5 font-semibold text-xs px-3.5 py-2 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+            >
+              <span>Launch testnet app</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-12 sm:pt-20 pb-16 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          {/* Hero Left Content */}
-          <div className="lg:col-span-7 flex flex-col items-start gap-6">
-            {/* Tag Badge with TextLoop */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border-2 border-[#121212] bg-[#f3f0ff] shadow-[2px_2px_0_0_#121212]">
-              <span className="flex h-2 w-2 rounded-full bg-[#836EF9] animate-ping" />
-              <span className="text-xs font-mono font-black tracking-wider uppercase text-[#836EF9]">
-                <TextLoop interval={3}>
-                  <span>Zero-Leakage Financial Ledger on Monad</span>
-                  <span>10,000 TPS Parallel EVM Consensus</span>
-                  <span>Confidential Local-First Evidence Vault</span>
-                  <span>5 Operating Workspaces in One Unified App</span>
-                </TextLoop>
-              </span>
+      <main>
+        {/* Hero Section */}
+        <section className="pt-14 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Hero Left Content */}
+            <div className="lg:col-span-7 flex flex-col items-start gap-6">
+              {/* Single Hero Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white/90 shadow-2xs text-xs font-medium text-gray-700">
+                <span className="flex h-2 w-2 rounded-full bg-[#7C6CF6]" />
+                <span>Live on Monad Testnet (Chain ID 10143)</span>
+              </div>
+
+              {/* Main Headline */}
+              <TextEffect
+                preset="fade-in-blur"
+                per="word"
+                as="h1"
+                className="text-4xl sm:text-5xl lg:text-[52px] font-bold tracking-tight leading-[1.12] text-gray-900 [text-wrap:balance]"
+              >
+                Private Offchain Evidence. Cryptographic Commitments on Monad.
+              </TextEffect>
+
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg text-gray-600 font-normal leading-relaxed max-w-xl">
+                Organize team expenses and personal cashflow across dedicated
+                workspaces. Keep itemized receipts private on your device while
+                publishing verifiable cryptographic commitments to Monad.
+              </p>
+
+              {/* Hero CTAs */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full sm:w-auto">
+                <Link
+                  href="/?mode=personal"
+                  className="inline-flex items-center justify-center gap-2 font-semibold text-base px-6 py-3.5 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                >
+                  <span>Launch testnet app</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsGuideOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 font-medium text-base px-5 py-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 hover:border-gray-400 shadow-xs transition-all cursor-pointer"
+                >
+                  <Layers
+                    className="h-4 w-4 text-[#7C6CF6]"
+                    aria-hidden="true"
+                  />
+                  <span>See how it works</span>
+                </button>
+              </div>
+
+              {/* Testnet Disclaimer */}
+              <p className="text-xs text-gray-500 font-normal leading-normal">
+                Unaudited testnet deployment on Monad Testnet (Chain ID 10143).
+                Demonstration software—do not use real funds.
+              </p>
+
+              {/* Micro Guarantees */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-200 w-full text-left">
+                <div>
+                  <span className="text-sm font-semibold text-gray-900 block">
+                    Local-first privacy
+                  </span>
+                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                    Receipts stay on your device
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-gray-900 block">
+                    Verifiable commitments
+                  </span>
+                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                    Deterministic SHA-256 digests
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-gray-900 block">
+                    Anti-duplicate guards
+                  </span>
+                  <span className="text-xs text-gray-500 leading-snug block mt-0.5">
+                    Onchain nullifier protection
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Main Headline with TextEffect */}
-            <TextEffect
-              preset="fade-in-blur"
-              per="word"
-              as="h1"
-              className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] text-[#121212]"
-            >
-              Private Offchain Evidence. Cryptographic Proof on Monad.
-            </TextEffect>
+            {/* Hero Right: Simplified Voucher Card */}
+            <div className="lg:col-span-5">
+              <InteractiveCard
+                enableTilt={true}
+                enableSpotlight={true}
+                rotationFactor={3}
+                className="p-0 overflow-hidden shadow-[4px_4px_0_0_#121212] rounded-2xl bg-white border-2 border-[#121212]"
+              >
+                {/* Card Header Bar */}
+                <div className="bg-[#121212] text-white px-4 py-3 flex items-center justify-between border-b-2 border-[#121212]">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-[#ef4444]" />
+                    <div className="h-3 w-3 rounded-full bg-[#f59e0b]" />
+                    <div className="h-3 w-3 rounded-full bg-[#10b981]" />
+                    <span className="text-xs font-mono font-medium text-gray-300 ml-1.5">
+                      Sample Expense Voucher
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono bg-[#7C6CF6] text-white px-2 py-0.5 rounded font-bold">
+                    Monad #10143
+                  </span>
+                </div>
 
-            {/* Subtitle */}
-            <p className="text-base sm:text-lg text-gray-700 font-medium leading-relaxed max-w-2xl">
-              Reimburse team expenses, manage budgets across 5 specialized
-              workspaces, and generate tamper-proof mathematical proofs without
-              ever leaking private invoices, vendor names, or client PII to the
-              world.
-            </p>
+                {/* Sample Selector Tabs */}
+                <div className="bg-[#f9fafb] border-b border-gray-200 p-2 flex gap-1.5">
+                  {SAMPLE_EXPENSES.map((exp, idx) => (
+                    <button
+                      key={exp.id}
+                      type="button"
+                      onClick={() => setSelectedExpense(idx)}
+                      className={`flex-1 text-xs font-mono font-medium py-1.5 px-2 rounded-lg border transition-all text-center ${
+                        selectedExpense === idx
+                          ? "bg-white text-gray-900 border-gray-900 shadow-2xs font-bold"
+                          : "bg-transparent text-gray-600 border-transparent hover:bg-gray-100"
+                      }`}
+                    >
+                      {exp.id}
+                    </button>
+                  ))}
+                </div>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link href="/?mode=personal">
-                <AnimatedButton
-                  variant="primary"
-                  size="lg"
-                  magnetic={true}
-                  rightIcon={
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  }
-                >
-                  Launch App Free
-                </AnimatedButton>
-              </Link>
-              <a href="#verifier">
-                <AnimatedButton
-                  variant="secondary"
-                  size="lg"
-                  icon={
-                    <Terminal
-                      className="h-4 w-4 text-[#836EF9]"
+                {/* Simplified Voucher Content */}
+                <div className="p-5 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-medium text-[#7C6CF6] bg-[#f5f3ff] px-2.5 py-0.5 rounded border border-[#e0dbfd]">
+                        {activeExpense.category}
+                      </span>
+                      <h3 className="text-lg font-bold text-gray-900 mt-2 leading-snug">
+                        {activeExpense.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 font-normal mt-0.5">
+                        {activeExpense.privacy}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {activeExpense.amount}
+                      </span>
+                      <div className="mt-1">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <BadgeCheck
+                            className="h-3 w-3 text-emerald-600"
+                            aria-hidden="true"
+                          />
+                          {activeExpense.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Truncated Hash Row */}
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500 font-medium">
+                        Commitment Hash:
+                      </span>
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-gray-800">
+                        <span>
+                          {activeExpense.hash.slice(0, 10)}...
+                          {activeExpense.hash.slice(-8)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleCopyHash}
+                          title="Copy full hash"
+                          className="p-1 text-gray-400 hover:text-gray-700 transition"
+                        >
+                          {copiedHash ? (
+                            <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Collapsible Details Row */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowVoucherDetails(!showVoucherDetails)
+                        }
+                        className="text-[11px] font-medium text-[#7C6CF6] hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+                      >
+                        <span>
+                          {showVoucherDetails
+                            ? "Hide technical details"
+                            : "Show block & gas details"}
+                        </span>
+                        <ChevronDown
+                          className={`h-3 w-3 transition-transform ${
+                            showVoucherDetails ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {showVoucherDetails && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="pt-2.5 mt-2 border-t border-gray-200 space-y-1.5 text-xs font-mono"
+                          >
+                            <div className="flex items-center justify-between text-gray-600">
+                              <span>Monad Block:</span>
+                              <span className="font-semibold text-gray-900">
+                                #{activeExpense.blockHeight}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-gray-600">
+                              <span>Settlement Gas:</span>
+                              <span className="text-emerald-700 font-semibold">
+                                {activeExpense.gasFee}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-gray-600">
+                              <span>Nullifier Scheme:</span>
+                              <span className="text-gray-800">
+                                SHA-256 pre-image
+                              </span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* Action Link */}
+                  <Link
+                    href="/proof"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-xl border border-gray-900 bg-gray-900 text-white hover:bg-black transition-colors shadow-2xs"
+                  >
+                    <ShieldCheck
+                      className="h-4 w-4 text-[#9b8eff]"
                       aria-hidden="true"
                     />
-                  }
-                >
-                  Simulate Verifier
-                </AnimatedButton>
-              </a>
+                    <span>Verify in Proof Center</span>
+                  </Link>
+                </div>
+              </InteractiveCard>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust Signals Strip / Built on Monad */}
+        <section className="border-y border-gray-200 bg-white py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-left w-full md:w-auto">
+              <div>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  10,000+
+                </span>
+                <p className="text-xs font-medium text-gray-500 mt-0.5">
+                  Monad network capability (parallel TPS)
+                </p>
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  &lt; 0.8s
+                </span>
+                <p className="text-xs font-medium text-gray-500 mt-0.5">
+                  Target consensus finality
+                </p>
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  Private
+                </span>
+                <p className="text-xs font-medium text-gray-500 mt-0.5">
+                  No invoice contents published onchain
+                </p>
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  4 Modes
+                </span>
+                <p className="text-xs font-medium text-gray-500 mt-0.5">
+                  Specialized operating workspaces
+                </p>
+              </div>
             </div>
 
-            {/* Micro Guarantees */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-[#121212]/15 w-full">
-              <div className="flex flex-col">
-                <span className="text-xs font-mono font-black uppercase text-[#121212] flex items-center gap-1">
-                  <BadgeCheck
-                    className="h-3.5 w-3.5 text-[#10b981]"
-                    aria-hidden="true"
-                  />
-                  Local-First
-                </span>
-                <span className="text-[11px] text-gray-500 font-mono">
-                  Receipts stay encrypted
-                </span>
+            <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-600 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
+              <div className="flex items-center gap-1.5 text-gray-900 font-semibold">
+                <MonadLogo className="h-4 w-4" />
+                <span>Built on Monad</span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-mono font-black uppercase text-[#121212] flex items-center gap-1">
-                  <BadgeCheck
-                    className="h-3.5 w-3.5 text-[#10b981]"
-                    aria-hidden="true"
-                  />
-                  10,000 TPS
-                </span>
-                <span className="text-[11px] text-gray-500 font-mono">
-                  Sub-second finality
-                </span>
+              <span className="text-gray-300 hidden md:inline">•</span>
+              <Link
+                href="https://testnet.monadexplorer.com"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-900 hover:underline flex items-center gap-1"
+              >
+                Explorer Contract{" "}
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
+              </Link>
+              <span className="text-gray-300 hidden md:inline">•</span>
+              <Link
+                href="https://github.com/clario-finance/clario"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-900 hover:underline flex items-center gap-1"
+              >
+                GitHub Repo{" "}
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
+              </Link>
+              <span className="text-gray-300 hidden md:inline">•</span>
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium">
+                Unaudited testnet software
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section: 4-Step Visual Flow */}
+        <section
+          id="how-it-works"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto"
+        >
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 [text-wrap:balance]">
+              How Clario works
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+              A 4-step pipeline that combines client-side privacy with onchain
+              mathematical verification.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+            {/* Step 1 */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-[#f5f3ff] text-[#7C6CF6] flex items-center justify-center font-bold">
+                    <Receipt className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-gray-400">
+                    STEP 01
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Capture receipt locally
+                </h3>
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                  Scan or upload receipts and invoices. Optical OCR extracts
+                  vendor, date, and line-item totals directly in your browser.
+                </p>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-mono font-black uppercase text-[#121212] flex items-center gap-1">
-                  <BadgeCheck
-                    className="h-3.5 w-3.5 text-[#10b981]"
-                    aria-hidden="true"
-                  />
-                  Anti-Duplicate
-                </span>
-                <span className="text-[11px] text-gray-500 font-mono">
-                  Nullifier protection
-                </span>
+              <div className="mt-6 pt-3 border-t border-gray-100 text-xs font-medium text-[#7C6CF6]">
+                Offchain client vault
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-[#f5f3ff] text-[#7C6CF6] flex items-center justify-center font-bold">
+                    <Lock className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-gray-400">
+                    STEP 02
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Hash locally
+                </h3>
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                  Your browser creates a deterministic SHA-256 digest of the raw
+                  evidence. Private vendor names and files never touch the
+                  blockchain.
+                </p>
+              </div>
+              <div className="mt-6 pt-3 border-t border-gray-100 text-xs font-medium text-[#7C6CF6]">
+                SHA-256 pre-image commitment
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-[#f5f3ff] text-[#7C6CF6] flex items-center justify-center font-bold">
+                    <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-gray-400">
+                    STEP 03
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Authorize exact version
+                </h3>
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                  Designated reviewers and treasury sign the exact immutable
+                  commitment state using EIP-712 typed data. AI has zero signing
+                  authority.
+                </p>
+              </div>
+              <div className="mt-6 pt-3 border-t border-gray-100 text-xs font-medium text-[#7C6CF6]">
+                Human cryptographic signature
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-[#f5f3ff] text-[#7C6CF6] flex items-center justify-center font-bold">
+                    <Zap className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <span className="text-xs font-mono font-bold text-gray-400">
+                    STEP 04
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Settle on Monad
+                </h3>
+                <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                  Monad parallel EVM finalizes settlement in under a second. An
+                  onchain nullifier permanently guarantees no receipt can ever
+                  be reimbursed twice.
+                </p>
+              </div>
+              <div className="mt-6 pt-3 border-t border-gray-100 text-xs font-medium text-[#7C6CF6]">
+                Sub-second nullifier guard
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Hero Right: Interactive Live Voucher Card */}
-          <div className="lg:col-span-5">
-            <InteractiveCard
-              enableTilt={true}
-              enableSpotlight={true}
-              rotationFactor={4}
-              className="p-0 overflow-hidden shadow-[6px_6px_0_0_#121212] rounded-2xl bg-white border-2 border-[#121212]"
+        {/* Workspaces Showcase */}
+        <section
+          id="modes"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-gray-200"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 [text-wrap:balance]">
+              4 dedicated workspaces. One unified ledger.
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 font-normal mt-3 leading-relaxed">
+              Tailored workflows for personal finance, independent consulting,
+              household expenses, and protocol treasuries.
+            </p>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-8 p-1.5 bg-gray-100 rounded-xl max-w-fit mx-auto border border-gray-200">
+            <AnimatedBackground
+              defaultValue={activeModeTab}
+              className="bg-white rounded-lg shadow-xs"
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 30,
+              }}
             >
-              {/* Card Header Bar */}
-              <div className="bg-[#121212] text-white px-4 py-3 flex items-center justify-between border-b-2 border-[#121212]">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-[#ef4444]" />
-                  <div className="h-3 w-3 rounded-full bg-[#f59e0b]" />
-                  <div className="h-3 w-3 rounded-full bg-[#10b981]" />
-                  <span className="text-[11px] font-mono font-bold tracking-wider uppercase ml-2 text-gray-300">
-                    Live Proof Voucher Sandbox
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono bg-[#836EF9] text-white px-2 py-0.5 rounded font-black uppercase">
-                  Monad #10143
-                </span>
-              </div>
-
-              {/* Sample Selector Tabs */}
-              <div className="bg-[#f8f9fa] border-b-2 border-[#121212] p-2 flex gap-1.5">
-                {SAMPLE_EXPENSES.map((exp, idx) => (
+              {WORKSPACES_DATA.map((mode) => {
+                const Icon = mode.icon;
+                const isActive = activeModeTab === mode.id;
+                return (
                   <button
-                    key={exp.id}
+                    key={mode.id}
+                    data-id={mode.id}
                     type="button"
-                    onClick={() => setSelectedExpense(idx)}
-                    className={`flex-1 text-[11px] font-mono font-bold uppercase py-1.5 px-2 rounded-md border-1.5 transition text-center ${
-                      selectedExpense === idx
-                        ? "bg-[#836EF9] text-white border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-[#121212]"
+                    onClick={() => setActiveModeTab(mode.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
+                      isActive
+                        ? "text-gray-900 font-bold"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
-                    {exp.id}
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    <span>{mode.name}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
+            </AnimatedBackground>
+          </div>
 
-              {/* Expense Details */}
-              <div className="p-5 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-mono font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
-                      {activeExpense.category}
-                    </span>
-                    <h3 className="text-lg font-black text-[#121212] mt-1.5 leading-snug">
-                      {activeExpense.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 font-mono mt-0.5">
-                      Vendor: {activeExpense.vendor}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xl font-black text-[#121212]">
-                      {activeExpense.amount}
-                    </span>
-                    <div className="mt-1">
-                      <span className="inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#15803d]">
-                        <BadgeCheck
-                          className="h-2.5 w-2.5"
-                          aria-hidden="true"
-                        />
-                        {activeExpense.status}
+          {/* Active Workspace Interactive Preview Card */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-10 shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left: Description & Bullets */}
+              <div className="lg:col-span-7 space-y-6">
+                <div>
+                  <span className="text-xs font-semibold text-[#7C6CF6] bg-[#f5f3ff] px-2.5 py-1 rounded-md border border-[#e0dbfd]">
+                    {activeModeData.name} Workspace
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3 leading-snug">
+                    {activeModeData.tagline}
+                  </h3>
+                </div>
+                <p className="text-gray-600 text-base leading-relaxed">
+                  {activeModeData.summary}
+                </p>
+
+                {/* 3 Concise Feature Bullets */}
+                <div className="space-y-2.5 pt-2">
+                  {activeModeData.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5">
+                      <BadgeCheck
+                        className="h-4 w-4 text-[#7C6CF6] shrink-0 mt-0.5"
+                        aria-hidden="true"
+                      />
+                      <span className="text-sm font-medium text-gray-800 leading-snug">
+                        {feature}
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Privacy Envelope Box */}
-                <div className="rounded-lg border-2 border-dashed border-[#836EF9] bg-[#f3f0ff]/60 p-3">
-                  <div className="flex items-center gap-1.5 text-xs font-mono font-black text-[#836EF9] uppercase">
-                    <Lock className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>Founder Invariant #1: Offchain Privacy</span>
-                  </div>
-                  <p className="text-[11px] text-gray-600 font-mono mt-1">
-                    {activeExpense.privacy}
-                  </p>
-                </div>
-
-                {/* Cryptographic Hash Evidence */}
-                <div className="bg-[#f8f9fa] rounded-lg border-2 border-[#121212] p-3 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-gray-500 uppercase font-bold">
-                      SHA-256 Hash:
-                    </span>
-                    <span className="font-mono text-[#836EF9] font-bold">
-                      {activeExpense.hash}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-gray-500 uppercase font-bold">
-                      Monad Block:
-                    </span>
-                    <span className="font-mono text-[#121212] font-bold">
-                      #{activeExpense.blockHeight}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-gray-500 uppercase font-bold">
-                      Settlement Gas:
-                    </span>
-                    <span className="font-mono text-[#10b981] font-bold">
-                      0.00012 MON ($0.0003)
-                    </span>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Action Link */}
-                <Link
-                  href="/proof"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-mono font-black uppercase tracking-wider rounded-lg border-2 border-[#121212] bg-[#121212] text-white hover:bg-[#262626] shadow-[2px_2px_0_0_#836EF9] transition"
-                >
-                  <ShieldCheck
-                    className="h-3.5 w-3.5 text-[#836EF9]"
-                    aria-hidden="true"
-                  />
-                  <span>Verify In Proof Center</span>
-                </Link>
+                <div className="pt-2">
+                  <Link
+                    href={`/?mode=${activeModeData.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-[#7C6CF6] transition-colors"
+                  >
+                    <span>Launch in {activeModeData.name} mode</span>
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
               </div>
-            </InteractiveCard>
-          </div>
-        </div>
-      </section>
 
-      {/* Metrics Ticker Strip */}
-      <section className="border-y-2 border-[#121212] bg-[#ffffff] py-6 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="border-r-0 md:border-r-2 border-[#121212]/15 last:border-0 p-2">
-            <span className="text-3xl sm:text-4xl font-black text-[#121212] tracking-tight">
-              10,000+
-            </span>
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#836EF9] mt-1">
-              Monad Parallel TPS
-            </p>
-          </div>
-          <div className="border-r-0 md:border-r-2 border-[#121212]/15 last:border-0 p-2">
-            <span className="text-3xl sm:text-4xl font-black text-[#121212] tracking-tight">
-              &lt; 0.8s
-            </span>
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#836EF9] mt-1">
-              Settlement Finality
-            </p>
-          </div>
-          <div className="border-r-0 md:border-r-2 border-[#121212]/15 last:border-0 p-2">
-            <span className="text-3xl sm:text-4xl font-black text-[#121212] tracking-tight">
-              0 Bytes
-            </span>
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#836EF9] mt-1">
-              Leaked Invoice Data
-            </p>
-          </div>
-          <div className="p-2">
-            <span className="text-3xl sm:text-4xl font-black text-[#121212] tracking-tight">
-              5 Modes
-            </span>
-            <p className="text-xs font-mono font-bold uppercase tracking-wider text-[#836EF9] mt-1">
-              Unified Workspaces
-            </p>
-          </div>
-        </div>
-      </section>
+              {/* Right: Realistic Browser Frame Preview */}
+              <div className="lg:col-span-5 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden shadow-xs">
+                {/* Browser Frame Header */}
+                <div className="bg-gray-100 border-b border-gray-200 px-3 py-2 flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-gray-300" />
+                  </div>
+                  <span className="font-mono text-[11px] text-gray-600 bg-white px-3 py-0.5 rounded border border-gray-200">
+                    app.clario.finance/?mode={activeModeData.id}
+                  </span>
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                    Active
+                  </span>
+                </div>
 
-      {/* 5 Modes Interactive Showcase */}
-      <section id="modes" className="py-20 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-mono font-black uppercase tracking-widest text-[#836EF9] bg-[#f3f0ff] px-3 py-1 rounded-full border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-1.5">
-            <Layers className="h-3.5 w-3.5 text-[#836EF9]" aria-hidden="true" />
-            Adaptive Architecture
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#121212] mt-4">
-            5 Purpose-Built Workspaces. One Ledger.
-          </h2>
-          <p className="text-gray-600 font-medium text-base mt-2">
-            Whether you are an independent builder, a 50-person crypto protocol,
-            or managing household finances, Clario adapts your workflow in a
-            single click.
-          </p>
-        </div>
-
-        {/* Tab Navigation with AnimatedBackground */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-8 p-1.5 bg-[#f9fafb] border-2 border-[#121212] rounded-2xl max-w-fit mx-auto shadow-[3px_3px_0_0_#121212]">
-          <AnimatedBackground
-            defaultValue={activeModeTab}
-            className="bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl"
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-            }}
-          >
-            {MODES_DATA.map((mode) => {
-              const Icon = mode.icon;
-              const isActive = activeModeTab === mode.id;
-              return (
-                <button
-                  key={mode.id}
-                  data-id={mode.id}
-                  type="button"
-                  onClick={() => setActiveModeTab(mode.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-colors ${
-                    isActive ? "text-white" : "text-gray-700 hover:text-black"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span>{mode.name}</span>
-                </button>
-              );
-            })}
-          </AnimatedBackground>
-        </div>
-
-        {/* Active Mode Display Card with InteractiveCard */}
-        <InteractiveCard
-          enableTilt={true}
-          enableSpotlight={true}
-          rotationFactor={3}
-          className="rounded-2xl border-2 border-[#121212] bg-[#ffffff] shadow-[6px_6px_0_0_#121212] p-6 sm:p-10"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left: Description & Features */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#f3f0ff] border border-[#836EF9] text-xs font-mono font-black text-[#836EF9] uppercase">
-                <span>{activeModeData.name} Mode Workspace</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-[#121212]">
-                {activeModeData.tagline}
-              </h3>
-              <p className="text-gray-600 font-medium text-base leading-relaxed">
-                {activeModeData.description}
-              </p>
-
-              {/* Feature Checklist */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {activeModeData.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <BadgeCheck
-                      className="h-4 w-4 text-[#836EF9] shrink-0 mt-0.5"
-                      aria-hidden="true"
-                    />
-                    <span className="text-xs font-mono font-bold text-gray-800">
-                      {feature}
+                <div className="p-5 space-y-4 bg-white">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <span className="text-xs font-semibold text-gray-900 uppercase tracking-wide">
+                      {activeModeData.name} Dashboard
+                    </span>
+                    <span className="text-xs font-medium bg-[#f5f3ff] text-[#7C6CF6] px-2 py-0.5 rounded">
+                      {activeModeData.preview.badge}
                     </span>
                   </div>
-                ))}
-              </div>
 
-              {/* Action Button */}
-              <div className="pt-4">
-                <Link href={`/?mode=${activeModeData.id}`}>
-                  <AnimatedButton
-                    variant="black"
-                    size="md"
-                    magnetic={true}
-                    rightIcon={
-                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    }
-                  >
-                    Launch in {activeModeData.name} Mode
-                  </AnimatedButton>
-                </Link>
-              </div>
-            </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-3">
+                      <span className="text-xs text-gray-500 font-medium block">
+                        {activeModeData.preview.stat1Label}
+                      </span>
+                      <span className="text-xl font-bold text-gray-900 mt-1 block">
+                        {activeModeData.preview.stat1}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-3">
+                      <span className="text-xs text-gray-500 font-medium block">
+                        {activeModeData.preview.stat2Label}
+                      </span>
+                      <span className="text-xl font-bold text-[#7C6CF6] mt-1 block">
+                        {activeModeData.preview.stat2}
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Right: Simulated Interface Preview */}
-            <div className="lg:col-span-5 bg-grid rounded-xl border-2 border-[#121212] p-5 shadow-[4px_4px_0_0_#121212]">
-              <div className="flex items-center justify-between border-b-2 border-[#121212]/15 pb-3">
-                <span className="text-[10px] font-mono font-black uppercase tracking-widest text-gray-500">
-                  {activeModeData.name.toUpperCase()} DASHBOARD PREVIEW
-                </span>
-                <span className="text-[10px] font-mono font-bold bg-[#836EF9] text-white px-2 py-0.5 rounded">
-                  {activeModeData.preview.badge}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="bg-white rounded-lg border-2 border-[#121212] p-3 shadow-[2px_2px_0_0_#121212]">
-                  <span className="text-[9px] font-mono uppercase text-gray-500 font-bold block">
-                    {activeModeData.preview.stat1Label}
-                  </span>
-                  <span className="text-lg font-black text-[#121212]">
-                    {activeModeData.preview.stat1}
-                  </span>
-                </div>
-                <div className="bg-white rounded-lg border-2 border-[#121212] p-3 shadow-[2px_2px_0_0_#121212]">
-                  <span className="text-[9px] font-mono uppercase text-gray-500 font-bold block">
-                    {activeModeData.preview.stat2Label}
-                  </span>
-                  <span className="text-lg font-black text-[#836EF9]">
-                    {activeModeData.preview.stat2}
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border-2 border-[#121212] p-3 mt-3 shadow-[2px_2px_0_0_#121212]">
-                <span className="text-[9px] font-mono uppercase text-gray-500 font-bold block mb-1">
-                  RECENT ACTIVITY / VOUCHER
-                </span>
-                <p className="text-xs font-mono font-bold text-[#121212] truncate">
-                  {activeModeData.preview.recent}
-                </p>
-                <div className="flex items-center justify-between text-[10px] font-mono text-gray-500 mt-2 pt-2 border-t border-gray-100">
-                  <span>Cryptographic Status:</span>
-                  <span className="text-[#10b981] font-bold inline-flex items-center gap-1">
-                    <BadgeCheck className="h-3 w-3" aria-hidden="true" />
-                    Verified on Monad
-                  </span>
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-3">
+                    <span className="text-xs text-gray-500 font-medium block mb-1">
+                      Recent Ledger Entry
+                    </span>
+                    <p className="text-xs font-semibold text-gray-900 truncate">
+                      {activeModeData.preview.recent}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
+                      <span>Status:</span>
+                      <span className="text-emerald-700 font-medium inline-flex items-center gap-1">
+                        <BadgeCheck className="h-3 w-3" aria-hidden="true" />
+                        Verified on Monad
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </InteractiveCard>
-      </section>
 
-      {/* The 4 Founder Invariants Section */}
-      <section
-        id="invariants"
-        className="py-20 px-4 sm:px-8 max-w-7xl mx-auto border-t-2 border-[#121212]"
-      >
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-xs font-mono font-black uppercase tracking-widest text-[#836EF9] bg-[#f3f0ff] px-3 py-1 rounded-full border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            Architectural Guarantees
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#121212] mt-4">
-            The 4 Founder Invariants
-          </h2>
-          <p className="text-gray-600 font-medium text-base mt-2">
-            Non-negotiable security rules built into Clario&apos;s smart
-            contracts, database schema, and browser runtime.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {FOUNDER_INVARIANTS.map((inv) => {
-            const Icon = inv.icon;
-            return (
-              <InView key={inv.number} once={true}>
-                <InteractiveCard
-                  rotationFactor={3}
-                  enableSpotlight={true}
-                  className="rounded-2xl border-2 border-[#121212] bg-[#ffffff] p-6 sm:p-8 shadow-[5px_5px_0_0_#121212] flex flex-col justify-between h-full"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-3xl font-black text-[#836EF9] font-mono">
-                        {inv.number}
-                      </span>
-                      <span className="text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-full bg-[#f3f0ff] text-[#836EF9] border-1.5 border-[#121212]">
-                        {inv.badge}
+          {/* Compact Comparison Row (Replaces redundant card grid) */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6 text-center">
+              Workspace Overview
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {WORKSPACES_DATA.map((ws) => {
+                const Icon = ws.icon;
+                const isSelected = activeModeTab === ws.id;
+                return (
+                  <button
+                    key={ws.id}
+                    type="button"
+                    onClick={() => setActiveModeTab(ws.id)}
+                    className={`text-left rounded-xl border p-4 transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-[#7C6CF6] bg-[#f5f3ff]/40 shadow-xs"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className="h-4 w-4 text-[#7C6CF6]" />
+                      <span className="font-bold text-sm text-gray-900">
+                        {ws.name}
                       </span>
                     </div>
-                    <h3 className="text-xl font-black text-[#121212] flex items-center gap-2">
-                      <Icon
-                        className="h-5 w-5 text-[#836EF9]"
-                        aria-hidden="true"
-                      />
-                      <span>{inv.title}</span>
+                    <p className="text-xs text-gray-600 leading-snug line-clamp-2 mb-3">
+                      {ws.summary}
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-gray-700">
+                      {ws.features.map((feat, fIdx) => (
+                        <li key={fIdx} className="flex items-start gap-1.5">
+                          <span className="text-[#7C6CF6] font-bold">›</span>
+                          <span className="leading-snug">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* The 4 Founder Invariants Section */}
+        <section
+          id="invariants"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-gray-200"
+        >
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 [text-wrap:balance]">
+              The 4 founder invariants
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+              Architectural rules enforced across Clario&apos;s smart contracts,
+              client vault, and database.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {FOUNDER_INVARIANTS.map((inv) => {
+              const Icon = inv.icon;
+              return (
+                <div
+                  key={inv.number}
+                  className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-2xl font-bold text-[#7C6CF6] font-mono">
+                        {inv.number}
+                      </span>
+                      <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700">
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {inv.title}
                     </h3>
-                    <p className="text-xs font-mono font-bold text-gray-500 uppercase mt-1">
+                    <p className="text-xs font-medium text-gray-500 mt-0.5">
                       {inv.subtitle}
                     </p>
-                    <p className="text-sm text-gray-700 font-medium leading-relaxed mt-3">
+                    <p className="text-sm text-gray-600 font-normal leading-relaxed mt-3">
                       {inv.description}
                     </p>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t-2 border-[#121212]/10 bg-[#f8f9fa] rounded-lg p-3 font-mono text-xs text-[#121212] font-bold">
+                  <div className="mt-6 pt-3 border-t border-gray-100 font-mono text-xs text-gray-700 bg-gray-50 rounded-lg p-3">
                     <span className="text-gray-400 select-none mr-2">$</span>
                     {inv.code}
                   </div>
-                </InteractiveCard>
-              </InView>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Interactive Cryptographic Verifier Sandbox */}
-      <section
-        id="verifier"
-        className="py-20 px-4 sm:px-8 max-w-7xl mx-auto border-t-2 border-[#121212]"
-      >
-        <div className="relative rounded-2xl border-2 border-[#121212] bg-[#121212] text-white p-6 sm:p-12 shadow-[8px_8px_0_0_#836EF9] overflow-hidden">
-          {isVerifying && (
-            <BorderTrail
-              size={120}
-              className="bg-[#836EF9]"
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            />
-          )}
-          <div className="max-w-3xl">
-            <span className="text-xs font-mono font-black uppercase tracking-widest text-[#836EF9] bg-white/10 px-3 py-1 rounded-full border border-[#836EF9]">
-              Interactive Sandbox
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white mt-4">
-              Test Zero-Knowledge Verification Live
-            </h2>
-            <p className="text-gray-300 font-medium text-sm sm:text-base mt-2">
-              Any auditor, team reviewer, or client can independently verify
-              that an expense has not been tampered with and has not been
-              double-spent.
-            </p>
+                </div>
+              );
+            })}
           </div>
+        </section>
 
-          {/* Sandbox Input Box */}
-          <div className="mt-8 bg-[#1e1e1e] rounded-xl border-2 border-white/20 p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Expense Commitment Hash or Preimage:
-                </label>
-                <input
-                  type="text"
-                  value={verifierInput}
-                  onChange={(e) => setVerifierInput(e.target.value)}
-                  className="w-full bg-[#121212] text-white font-mono text-xs sm:text-sm px-4 py-3 rounded-lg border-2 border-white/30 focus:border-[#836EF9] outline-none"
-                  placeholder="0x..."
-                />
-              </div>
-              <div className="self-end sm:self-auto">
-                <AnimatedButton
-                  variant="primary"
-                  size="md"
-                  onClick={handleRunVerify}
-                  isLoading={isVerifying}
-                  loadingText="VERIFYING..."
-                  disabled={isVerifying}
-                >
-                  Verify Hash
-                </AnimatedButton>
-              </div>
+        {/* Cryptographic Commitment Verification Sandbox */}
+        <section
+          id="verifier"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-gray-200"
+        >
+          <div className="rounded-2xl border border-gray-900 bg-[#121212] text-white p-6 sm:p-10 shadow-lg overflow-hidden">
+            <div className="max-w-2xl">
+              <span className="text-xs font-semibold text-[#9b8eff] bg-white/10 px-2.5 py-1 rounded-md border border-white/10 inline-block mb-3">
+                Live Simulator
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white [text-wrap:balance]">
+                Test cryptographic commitment verification live
+              </h2>
+              <p className="text-gray-300 text-sm sm:text-base mt-2 leading-relaxed">
+                Auditors, team reviewers, or clients can independently verify
+                that an expense commitment has not been tampered with and has
+                not been double-spent.
+              </p>
             </div>
 
-            {/* Quick Sample Selector */}
-            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono">
-              <span className="text-gray-400">Quick samples:</span>
-              <button
-                type="button"
-                onClick={() =>
-                  setVerifierInput("0x89f4b7a120c8de3176ef98231c51bc19aa314")
-                }
-                className="text-[#836EF9] underline hover:text-white"
-              >
-                RPC Cluster (#EXP-9042)
-              </button>
-              <span className="text-gray-600">•</span>
-              <button
-                type="button"
-                onClick={() =>
-                  setVerifierInput("0x4b7c11f9e9842dc59012a6771e8bf43912da0")
-                }
-                className="text-[#836EF9] underline hover:text-white"
-              >
-                Devcon Travel (#EXP-9043)
-              </button>
-            </div>
+            {/* Sandbox Input Box */}
+            <div className="mt-8 bg-[#1e1e1e] rounded-xl border border-white/15 p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-gray-400 block mb-1.5">
+                    Expense commitment hash or pre-image:
+                  </label>
+                  <input
+                    type="text"
+                    value={verifierInput}
+                    onChange={(e) => setVerifierInput(e.target.value)}
+                    className="w-full bg-[#121212] text-white font-mono text-xs sm:text-sm px-4 py-3 rounded-lg border border-white/20 focus:border-[#7C6CF6] focus:outline-none"
+                    placeholder="0x..."
+                  />
+                </div>
+                <div className="self-end sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={handleRunVerify}
+                    disabled={isVerifying}
+                    className="w-full sm:w-auto font-semibold text-sm px-5 py-3 rounded-lg bg-[#7C6CF6] text-white hover:bg-[#6c5be8] disabled:opacity-50 transition cursor-pointer"
+                  >
+                    {isVerifying ? "Verifying..." : "Verify hash"}
+                  </button>
+                </div>
+              </div>
 
-            {/* Verification Result Output */}
-            <AnimatePresence>
-              {verificationResult && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  className="mt-4 rounded-lg border-2 border-[#10b981] bg-[#10b981]/10 p-4 space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-black uppercase text-[#10b981] flex items-center gap-1.5">
-                      <BadgeCheck className="h-4 w-4" aria-hidden="true" />
-                      CRYPTOGRAPHIC PROOF VERIFIED VALID
-                    </span>
-                    <span className="text-[10px] font-mono text-gray-300">
-                      Monad Block #{verificationResult.block}
-                    </span>
-                  </div>
-                  <p className="text-xs font-mono text-gray-200">
-                    {verificationResult.details}
-                  </p>
-                  <div className="pt-2 text-[10px] font-mono text-gray-400 flex flex-wrap gap-4 border-t border-white/10">
-                    <span>
-                      Authorized Approver: {verificationResult.approver}
-                    </span>
-                    <span>Settlement: Monad Testnet</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Matrix */}
-      <section
-        id="comparison"
-        className="py-20 px-4 sm:px-8 max-w-7xl mx-auto border-t-2 border-[#121212]"
-      >
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-xs font-mono font-black uppercase tracking-widest text-[#836EF9] bg-[#f3f0ff] px-3 py-1 rounded-full border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            Category Superiority
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#121212] mt-4">
-            Why Clario Outclasses Other Expense Tools
-          </h2>
-          <p className="text-gray-600 font-medium text-base mt-2">
-            Traditional corporate expense apps leak your data to centralized
-            servers; raw crypto wallets lack receipt auditing and private
-            commitments.
-          </p>
-        </div>
-
-        {/* Comparison Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border-2 border-[#121212] bg-[#ffffff] shadow-[6px_6px_0_0_#121212] rounded-xl text-left text-xs font-mono">
-            <thead>
-              <tr className="bg-[#121212] text-white border-b-2 border-[#121212]">
-                <th className="p-4 uppercase tracking-wider text-sm font-black">
-                  Capability / Guarantee
-                </th>
-                <th className="p-4 uppercase tracking-wider text-sm font-black text-[#836EF9] bg-[#1e1e1e]">
-                  Clario on Monad
-                </th>
-                <th className="p-4 uppercase tracking-wider text-sm font-black text-gray-400">
-                  Web2 Apps (Ramp, Expensify)
-                </th>
-                <th className="p-4 uppercase tracking-wider text-sm font-black text-gray-400">
-                  Raw Crypto Wallets
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b-2 border-[#121212]/15 hover:bg-[#f8f9fa] transition"
-                >
-                  <td className="p-4 font-bold text-gray-900">{row.feature}</td>
-                  <td className="p-4 bg-[#f3f0ff]/50 font-black text-[#836EF9]">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#836EF9] text-white">
-                      <BadgeCheck className="h-3 w-3" aria-hidden="true" />
-                      YES
-                    </span>
-                  </td>
-                  <td className="p-4 text-gray-400">
-                    <span className="text-gray-400">✕ No</span>
-                  </td>
-                  <td className="p-4 text-gray-400">
-                    <span className="text-gray-400">✕ No</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section
-        id="faq"
-        className="py-20 px-4 sm:px-8 max-w-4xl mx-auto border-t-2 border-[#121212]"
-      >
-        <div className="text-center mb-12">
-          <span className="text-xs font-mono font-black uppercase tracking-widest text-[#836EF9] bg-[#f3f0ff] px-3 py-1 rounded-full border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            Answers & Clarity
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#121212] mt-4">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {FAQS.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div
-                key={idx}
-                className="rounded-xl border-2 border-[#121212] bg-[#ffffff] shadow-[3px_3px_0_0_#121212] overflow-hidden"
-              >
+              {/* Quick Sample Selector */}
+              <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+                <span className="text-gray-400">Quick samples:</span>
                 <button
                   type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  aria-expanded={isOpen}
-                  className="w-full flex items-center justify-between p-5 text-left font-black text-sm text-[#121212] hover:bg-[#f8f9fa] transition"
+                  onClick={() =>
+                    setVerifierInput("0x89f4b7a120c8de3176ef98231c51bc19aa314")
+                  }
+                  className="text-[#9b8eff] underline hover:text-white cursor-pointer"
                 >
-                  <span>{faq.question}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 text-[#836EF9] transition-transform duration-200 ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
-                    aria-hidden="true"
-                  />
+                  RPC Cluster (#EXP-9042)
                 </button>
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 pb-5 pt-1 text-xs text-gray-600 font-medium leading-relaxed border-t border-gray-100">
-                        {faq.answer}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <span className="text-gray-600">•</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVerifierInput("0x4b7c11f9e9842dc59012a6771e8bf43912da0")
+                  }
+                  className="text-[#9b8eff] underline hover:text-white cursor-pointer"
+                >
+                  Devcon Travel (#EXP-9043)
+                </button>
               </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* Final Call to Action Banner */}
-      <section className="py-20 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="rounded-3xl border-3 border-[#121212] bg-[#836EF9] text-white p-8 sm:p-14 shadow-[8px_8px_0_0_#121212] text-center relative overflow-hidden">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <span className="text-xs font-mono font-black uppercase tracking-widest bg-white text-[#121212] px-3 py-1 rounded-full border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-              Start Testing Now
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-white">
-              Take Control of Your Verifiable Financial Ledger.
-            </h2>
-            <p className="text-white/90 font-medium text-base">
-              Experience the power of local-first privacy coupled with
-              Monad&apos;s ultra-fast parallel EVM. Launch in your preferred
-              workspace in 10 seconds.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
-              <Link href="/?mode=personal">
-                <AnimatedButton variant="secondary" size="md" magnetic={true}>
-                  Launch Personal Mode →
-                </AnimatedButton>
-              </Link>
-              <Link href="/?mode=freelancer">
-                <AnimatedButton variant="black" size="md" magnetic={true}>
-                  Launch Freelancer Mode →
-                </AnimatedButton>
-              </Link>
-              <Link href="/?mode=business">
-                <AnimatedButton variant="secondary" size="md" magnetic={true}>
-                  Launch Business Mode →
-                </AnimatedButton>
-              </Link>
+              {/* Verification Result Output */}
+              <AnimatePresence>
+                {verificationResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                    className="mt-4 rounded-lg border border-emerald-500/50 bg-emerald-950/20 p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                        <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+                        Cryptographic commitment verified valid
+                      </span>
+                      <span className="text-xs font-mono text-gray-400">
+                        Monad Block #{verificationResult.block}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 font-mono">
+                      {verificationResult.details}
+                    </p>
+                    <div className="pt-2 text-xs font-mono text-gray-400 flex flex-wrap gap-4 border-t border-white/10">
+                      <span>
+                        Authorized Signer: {verificationResult.approver}
+                      </span>
+                      <span>Network: Monad Testnet</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
-      <footer className="border-t-2 border-[#121212] bg-[#ffffff] py-12 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <ClarioLogo size={36} />
-            <div>
-              <span className="text-base font-black tracking-wider text-[#121212] uppercase">
-                Clario
-              </span>
-              <p className="text-[10px] font-mono text-gray-500 uppercase">
-                Verifiable Expense Ledger on Monad
+        {/* How Clario Compares (Honest Matrix) */}
+        <section
+          id="comparison"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-gray-200"
+        >
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 [text-wrap:balance]">
+              How Clario compares
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+              Traditional corporate expense software locks records in
+              proprietary silos; raw crypto wallets lack receipt auditing and
+              private commitments.
+            </p>
+          </div>
+
+          {/* Comparison Table */}
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-xs">
+            <table className="w-full border-collapse text-left text-sm font-sans">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-700">
+                  <th className="p-4 uppercase tracking-wider">
+                    Capability / Guarantee
+                  </th>
+                  <th className="p-4 uppercase tracking-wider text-[#7C6CF6] bg-purple-50/50">
+                    Clario on Monad
+                  </th>
+                  <th className="p-4 uppercase tracking-wider text-gray-500">
+                    Web2 Apps (Ramp, Expensify)
+                  </th>
+                  <th className="p-4 uppercase tracking-wider text-gray-500">
+                    Raw Crypto Wallets
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {COMPARISON.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="p-4 font-medium text-gray-900">
+                      {row.feature}
+                    </td>
+                    <td className="p-4 bg-purple-50/30 font-semibold text-[#7C6CF6]">
+                      <span className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-purple-100 text-[#5b45e0]">
+                        {row.clario}
+                      </span>
+                    </td>
+                    <td className="p-4 text-xs font-medium text-gray-600">
+                      {row.web2}
+                    </td>
+                    <td className="p-4 text-xs font-medium text-gray-600">
+                      {row.cryptoWallet}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Comprehensive FAQ Section */}
+        <section
+          id="faq"
+          className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto border-t border-gray-200"
+        >
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 [text-wrap:balance]">
+              Frequently asked questions
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
+              Technical and operational details about Clario, privacy
+              guarantees, and testnet usage.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-2xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    aria-expanded={isOpen}
+                    className="w-full flex items-center justify-between p-5 text-left font-bold text-base text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <span>{faq.question}</span>
+                    <ChevronDown
+                      className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 pt-1 text-sm text-gray-600 font-normal leading-relaxed border-t border-gray-100">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Closing Call to Action Section */}
+        <section className="py-24 sm:py-28 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          <div className="rounded-3xl border border-gray-200 bg-gradient-to-b from-white to-[#f5f3ff] p-8 sm:p-14 text-center shadow-sm">
+            <div className="max-w-xl mx-auto space-y-5">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 leading-tight [text-wrap:balance]">
+                Ready to test verifiable expense management?
+              </h2>
+              <p className="text-gray-600 text-base leading-relaxed">
+                Explore personal budgeting, freelance client billing, or
+                business treasury workflows on Monad testnet in seconds.
+              </p>
+
+              <div className="pt-2">
+                <Link
+                  href="/?mode=personal"
+                  className="inline-flex items-center justify-center gap-2 font-semibold text-base px-6 py-3.5 rounded-xl bg-[#7C6CF6] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#6c5be8] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                >
+                  <span>Launch testnet app</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </div>
+
+              <p className="text-xs text-gray-500 font-normal pt-2">
+                Free to test · No real funds required · Monad Testnet Chain ID
+                10143
               </p>
             </div>
           </div>
+        </section>
+      </main>
 
-          <div className="flex flex-wrap items-center gap-6 text-xs font-mono font-bold text-gray-700 uppercase">
-            <Link href="/proof" className="hover:text-[#836EF9] transition">
-              Proof Center
-            </Link>
-            <Link href="/receipts" className="hover:text-[#836EF9] transition">
-              Receipt Vault
-            </Link>
-            <Link href="/budgets" className="hover:text-[#836EF9] transition">
-              Budgets
-            </Link>
-            <Link
-              href="/subscriptions"
-              className="hover:text-[#836EF9] transition"
-            >
-              Subscriptions
-            </Link>
-            <Link
-              href="/docs"
-              className="hover:text-[#836EF9] transition text-[#836EF9] font-black"
-            >
-              Docs
-            </Link>
-            <Link
-              href="https://docs.monad.xyz"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-[#836EF9] transition flex items-center gap-1"
-            >
-              Monad Docs <ExternalLink className="h-3 w-3" aria-hidden="true" />
-            </Link>
+      {/* Production-Grade Full Footer */}
+      <footer className="border-t border-gray-200 bg-white py-14 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 pb-12 border-b border-gray-200">
+            {/* Col 1: Brand */}
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <ClarioLogo size={32} />
+                <span className="text-base font-bold tracking-tight text-gray-900">
+                  Clario
+                </span>
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  Testnet
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 max-w-sm leading-relaxed">
+                Cryptographic expense-evidence ledger built on Monad parallel
+                EVM. Keep private invoices local while publishing tamper-proof
+                commitment proofs.
+              </p>
+              <div className="pt-2 text-xs text-gray-500">
+                Contact:{" "}
+                <a
+                  href="mailto:contact@clario.finance"
+                  className="text-gray-900 underline hover:text-[#7C6CF6]"
+                >
+                  contact@clario.finance
+                </a>
+              </div>
+            </div>
+
+            {/* Col 2: Product */}
+            <div className="space-y-2.5 text-xs">
+              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
+                Product
+              </span>
+              <div>
+                <Link
+                  href="/?mode=personal"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Personal Mode
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/?mode=freelancer"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Freelancer Mode
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/?mode=family"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Family Pool
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/?mode=business"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Business Treasury
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/proof"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Proof Center
+                </Link>
+              </div>
+            </div>
+
+            {/* Col 3: Developers */}
+            <div className="space-y-2.5 text-xs">
+              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
+                Developers
+              </span>
+              <div>
+                <Link
+                  href="https://testnet.monadexplorer.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                >
+                  Monad Explorer <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="https://github.com/clario-finance/clario"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                >
+                  GitHub Repository <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/docs"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Protocol Docs
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="https://docs.monad.xyz"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                >
+                  Monad Docs <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Col 4: Legal & Policies */}
+            <div className="space-y-2.5 text-xs">
+              <span className="font-semibold text-gray-900 uppercase tracking-wider block mb-3">
+                Legal & Security
+              </span>
+              <div>
+                <Link
+                  href="/docs?s=privacy"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/docs?s=terms"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Terms of Service
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/docs?s=security"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Security Invariants
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/docs?s=disclosure"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Responsible Disclosure
+                </Link>
+              </div>
+            </div>
           </div>
 
-          <span className="text-[10px] font-mono text-gray-500 uppercase">
-            © 2026 Clario Protocol. All rights reserved.
-          </span>
+          {/* Bottom Disclaimer */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+            <span>© 2026 Clario Protocol. All rights reserved.</span>
+            <span className="text-[11px] text-gray-500 max-w-xl text-center sm:text-right leading-relaxed">
+              Disclaimer: Clario is experimental software deployed on Monad
+              Testnet. It is not an audited financial product. Do not deposit
+              real funds or rely on it for official tax filings without offline
+              record backups.
+            </span>
+          </div>
         </div>
       </footer>
+
+      {/* Slide-Based How Clario Works Guide Modal */}
+      <HowClarioWorksModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+      />
     </div>
   );
 }

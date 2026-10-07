@@ -11,6 +11,9 @@ export function getDatabaseClient(): DatabaseClient {
   }
 
   const connectionString = process.env.DATABASE_URL;
+  if (!connectionString || connectionString.trim().length === 0) {
+    throw new Error("DATABASE_URL environment variable is not defined");
+  }
   cachedClient = createPool(connectionString);
   return cachedClient;
 }

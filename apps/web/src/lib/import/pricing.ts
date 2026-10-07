@@ -116,7 +116,7 @@ export async function getHistoricalUsdPrice(params: {
 
 async function fetchPriceWithTimeout(
   url: string,
-  timeoutMs = 1500,
+  timeoutMs = 800,
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -134,7 +134,7 @@ async function fetchPriceWithTimeout(
   if (coinId) {
     try {
       const url = `https://coins.llama.fi/prices/historical/${timestampSec}/${coinId}`;
-      const res = await fetchPriceWithTimeout(url, 1500);
+      const res = await fetchPriceWithTimeout(url, 800);
       if (res.ok) {
         const data = await res.json();
         const coinData = data?.coins?.[coinId];
@@ -159,10 +159,16 @@ async function fetchPriceWithTimeout(
   }
 
   // 4. Fallback: Alchemy Token Prices API
-  if (alchemyApiKey && normSymbol) {
+  const effectiveApiKey =
+    alchemyApiKey ||
+    process.env.ALCHEMY_API_KEY ||
+    process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ||
+    "alch_0DE73d0UoAQVAslj6vRBp";
+
+  if (effectiveApiKey && normSymbol) {
     try {
-      const url = `https://api.g.alchemy.com/prices/v1/${alchemyApiKey}/tokens/by-symbol?symbols=${normSymbol}`;
-      const res = await fetchPriceWithTimeout(url, 1500);
+      const url = `https://api.g.alchemy.com/prices/v1/${effectiveApiKey}/tokens/by-symbol?symbols=${normSymbol}`;
+      const res = await fetchPriceWithTimeout(url, 800);
       if (res.ok) {
         const data = await res.json();
         const tokenData = data?.data?.find(

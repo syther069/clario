@@ -20,10 +20,14 @@ export function createPool(
   connectionString?: string,
   config?: PoolConfig,
 ): Pool {
-  return new Pool({
+  const pool = new Pool({
     connectionString,
     ...config,
   });
+  pool.on("error", (err) => {
+    console.warn("[Database] Background connection pool error:", err.message);
+  });
+  return pool;
 }
 
 /**

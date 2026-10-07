@@ -66,6 +66,10 @@ import {
   AnimatedBackground,
   SlidingNumber,
   TextMorph,
+  ToolbarExpandable,
+  ToolbarCollapsed,
+  ToolbarExpanded,
+  ToolbarToggle,
 } from "@/components/ui/motion";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import { WatermelonAlert } from "@/components/ui/watermelon-alert";
@@ -2512,49 +2516,69 @@ export function PersonalDashboard({
               />
             </div>
 
-            {/* Sub-filters row: Payment Method, Receipt Status, Monad Verification */}
-            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 text-xs">
-              <span className="text-[10px] font-black uppercase text-slate-400">
-                Extra Filters:
-              </span>
+            {/* Sub-filters row: ToolbarExpandable genuinely reduces UI complexity */}
+            <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <ToolbarExpandable className="border-2 border-[#121212] bg-[#f9fafb]">
+                <ToolbarCollapsed className="gap-2 px-3 py-1.5">
+                  <span className="text-[10px] font-mono font-black uppercase text-slate-500 tracking-wider">
+                    Extra Filters
+                  </span>
+                  {(expensePaymentFilter !== "all" ||
+                    expenseReceiptFilter !== "all" ||
+                    expenseVerificationFilter !== "all") && (
+                    <span className="w-2 h-2 rounded-full bg-[#836EF9]" />
+                  )}
+                  <ToolbarToggle className="px-2 py-0.5 rounded bg-white border border-[#121212] text-[#121212] hover:bg-[#836EF9] hover:text-white">
+                    Configure ▾
+                  </ToolbarToggle>
+                </ToolbarCollapsed>
+                <ToolbarExpanded className="flex-wrap gap-2.5 p-2 bg-white">
+                  <span className="text-[10px] font-mono font-black uppercase text-slate-400">
+                    Filters:
+                  </span>
+                  {/* Payment Method */}
+                  <NeoSelect
+                    size="sm"
+                    value={expensePaymentFilter}
+                    onChange={setExpensePaymentFilter}
+                    options={[
+                      { value: "all", label: "All Payment Methods" },
+                      { value: "card", label: "Card" },
+                      { value: "bank", label: "Bank Transfer" },
+                      { value: "cash", label: "Cash" },
+                      { value: "crypto", label: "Crypto / Web3" },
+                    ]}
+                  />
 
-              {/* Payment Method */}
-              <NeoSelect
-                size="sm"
-                value={expensePaymentFilter}
-                onChange={setExpensePaymentFilter}
-                options={[
-                  { value: "all", label: "All Payment Methods" },
-                  { value: "card", label: "Card" },
-                  { value: "bank", label: "Bank Transfer" },
-                  { value: "cash", label: "Cash" },
-                  { value: "crypto", label: "Crypto / Web3" },
-                ]}
-              />
+                  {/* Receipt Status */}
+                  <NeoSelect
+                    size="sm"
+                    value={expenseReceiptFilter}
+                    onChange={(val) => setExpenseReceiptFilter(val as ExpenseReceiptFilter)}
+                    options={[
+                      { value: "all", label: "All Receipt Statuses" },
+                      { value: "has_receipt", label: "Has Receipt / Hash" },
+                      { value: "no_receipt", label: "Missing Receipt" },
+                    ]}
+                  />
 
-              {/* Receipt Status */}
-              <NeoSelect
-                size="sm"
-                value={expenseReceiptFilter}
-                onChange={(val) => setExpenseReceiptFilter(val as ExpenseReceiptFilter)}
-                options={[
-                  { value: "all", label: "All Receipt Statuses" },
-                  { value: "has_receipt", label: "Has Receipt / Hash" },
-                  { value: "no_receipt", label: "Missing Receipt" },
-                ]}
-              />
+                  {/* Monad Verification Status */}
+                  <NeoSelect
+                    size="sm"
+                    value={expenseVerificationFilter}
+                    onChange={(val) => setExpenseVerificationFilter(val as ExpenseVerificationFilter)}
+                    options={[
+                      { value: "all", label: "All Monad States" },
+                      { value: "verified", label: "Monad Verified (On-Chain)" },
+                      { value: "unverified", label: "Unanchored (Off-Chain)" },
+                    ]}
+                  />
 
-              {/* Monad Verification Status */}
-              <NeoSelect
-                size="sm"
-                value={expenseVerificationFilter}
-                onChange={(val) => setExpenseVerificationFilter(val as ExpenseVerificationFilter)}
-                options={[
-                  { value: "all", label: "All Monad States" },
-                  { value: "verified", label: "Monad Verified (On-Chain)" },
-                  { value: "unverified", label: "Unanchored (Off-Chain)" },
-                ]}
-              />
+                  <ToolbarToggle className="px-2 py-1 rounded bg-[#121212] text-white hover:bg-slate-800">
+                    Done ✕
+                  </ToolbarToggle>
+                </ToolbarExpanded>
+              </ToolbarExpandable>
 
               {(expenseSearch ||
                 expenseCategoryFilter !== "all" ||
@@ -2574,9 +2598,9 @@ export function PersonalDashboard({
                     setExpenseReceiptFilter("all");
                     setExpenseVerificationFilter("all");
                   }}
-                  className="text-[10px] font-bold uppercase text-[#836EF9] hover:underline ml-auto"
+                  className="text-[10px] font-bold uppercase text-[#836EF9] hover:underline"
                 >
-                  Reset Filters
+                  Reset All Filters
                 </button>
               )}
             </div>

@@ -17,3 +17,5 @@ export * from "./animated-button";
 export * from "./interactive-card";
 export * from "./text-morph";
 export * from "./dialog";
+export * from "./morphing-popover";
+export * from "./toolbar-expandable";

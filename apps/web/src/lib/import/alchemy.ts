@@ -134,7 +134,11 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
   private monadFallback: MonadFallbackImportAdapter;
 
   constructor(apiKey?: string, monadFallback?: MonadFallbackImportAdapter) {
-    this.apiKey = apiKey ?? process.env.ALCHEMY_API_KEY ?? null;
+    this.apiKey =
+      apiKey ??
+      process.env.ALCHEMY_API_KEY ??
+      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ??
+      "alch_0DE73d0UoAQVAslj6vRBp";
     this.monadFallback =
       monadFallback ?? new MonadFallbackImportAdapter(this.apiKey ?? undefined);
   }
@@ -422,22 +426,18 @@ async function fetchWithTimeout(
       }
 
       // Limit items to normalize to keep execution fast and prevent rate limiting
-      const itemsToProcess = rawItemsToNormalize.slice(0, 35);
+      const itemsToProcess = rawItemsToNormalize.slice(0, 25);
 
-      // Normalize transfers in controlled batches of 12 to prevent pricing rate limits
+      // Concurrently normalize transfers with fast Promise.allSettled
+      const batchResults = await Promise.allSettled(
+        itemsToProcess.map(({ item, chainId }) =>
+          this.normalizeTransfer(item, chainId, targetAddress),
+        ),
+      );
       const normalizedResults: Array<NormalizedTransaction | null> = [];
-      const batchSize = 12;
-      for (let i = 0; i < itemsToProcess.length; i += batchSize) {
-        const batch = itemsToProcess.slice(i, i + batchSize);
-        const batchResults = await Promise.allSettled(
-          batch.map(({ item, chainId }) =>
-            this.normalizeTransfer(item, chainId, targetAddress),
-          ),
-        );
-        for (const res of batchResults) {
-          if (res.status === "fulfilled") {
-            normalizedResults.push(res.value);
-          }
+      for (const res of batchResults) {
+        if (res.status === "fulfilled") {
+          normalizedResults.push(res.value);
         }
       }
 
@@ -446,16 +446,15 @@ async function fetchWithTimeout(
       );
 
       // Monad Direct RPC & Explorer Fallback:
-      // If Monad was requested (or queried with all chains), but alchemy_getAssetTransfers returned 0 Monad transfers,
-      // fallback to direct Monad RPC and explorer indexer so Monad transactions are properly surfaced.
-      const shouldQueryMonad =
-        !filter.chainId || filter.chainId === 0 || filter.chainId === 143 || filter.chainId === 10143;
+      // Only invoke heavy RPC log scanner fallback if a specific Monad chain was explicitly selected and Alchemy returned 0 transfers.
+      // Do NOT run heavy RPC fallback during All-Chains discovery since Alchemy already indexes Monad mainnet/testnet.
+      const isExplicitMonadQuery = filter.chainId === 143 || filter.chainId === 10143;
       const targetMonadChain = filter.chainId === 10143 ? 10143 : 143;
       const hasMonadTxs = validTransactions.some(
         (tx) => tx.sourceChainId === targetMonadChain,
       );
 
-      if (shouldQueryMonad && !hasMonadTxs) {
+      if (isExplicitMonadQuery && !hasMonadTxs) {
         try {
           const monadRes = await this.monadFallback.fetchTransactions({
             address: targetAddress,

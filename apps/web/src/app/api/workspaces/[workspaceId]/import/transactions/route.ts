@@ -7,7 +7,7 @@ import { TransactionImportService } from "@/lib/import/service";
 import { isValidAddress } from "@/lib/expense/amount";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 15;
 
 export async function GET(
   req: Request,
@@ -61,12 +61,28 @@ export async function GET(
     const cursor = url.searchParams.get("cursor") ?? undefined;
 
     const service = new TransactionImportService(db);
-    const result = await service.listCandidates(workspaceId, {
-      address: effectiveAddress.toLowerCase() as `0x${string}`,
-      chainId,
-      limit,
-      cursor,
-    });
+    
+    // Serverless execution timeout guard: Ensure route always completes well within Vercel execution bounds (8.5s)
+    const result = await Promise.race([
+      service.listCandidates(workspaceId, {
+        address: effectiveAddress.toLowerCase() as `0x${string}`,
+        chainId,
+        limit,
+        cursor,
+      }),
+      new Promise<{ items: never[]; nextCursor: null; provider: string; disclaimer: string }>((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              items: [],
+              nextCursor: null,
+              provider: "alchemy",
+              disclaimer: "Provider query timed out across networks. Please select a specific chain.",
+            }),
+          8500,
+        ),
+      ),
+    ]);
 
     return NextResponse.json({ ok: true, ...result }, { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
