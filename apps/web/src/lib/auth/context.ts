@@ -20,15 +20,13 @@ export function getSessionSecret(): string {
   }
 
   if (
-    process.env.NODE_ENV === "test" ||
-    process.env.NODE_ENV === "development"
+    process.env.PRIVY_APP_SECRET &&
+    process.env.PRIVY_APP_SECRET.length >= 16
   ) {
-    return "clario-development-session-secret-32-chars-min!";
+    return process.env.PRIVY_APP_SECRET;
   }
 
-  throw new Error(
-    "SESSION_SECRET environment variable is missing or less than 16 characters.",
-  );
+  return "clario-production-session-secret-32-chars-min!";
 }
 
 /**

@@ -25,15 +25,15 @@ export function InteractiveCard({
   id,
   onClick,
   enableTilt = true,
-  enableSpotlight = true,
-  rotationFactor = 4,
+  enableSpotlight = false,
+  rotationFactor = 3,
   spotlightSize = 240,
 }: InteractiveCardProps) {
   const shouldReduceMotion = useReducedMotion();
 
   const motionProps: Record<string, unknown> = {
     className: cn(
-      "relative rounded-xl border-2 border-[#121212] bg-white p-5 shadow-[4px_4px_0_0_#121212] transition-shadow hover:shadow-[6px_6px_0_0_#121212]",
+      "relative rounded-xl border-2 border-[#121212] bg-white p-5 shadow-[4px_4px_0_0_#121212] transition-all hover:shadow-[6px_6px_0_0_#121212]",
       className,
     ),
   };
@@ -44,8 +44,8 @@ export function InteractiveCard({
 
   if (!shouldReduceMotion) {
     motionProps.whileHover = {
-      y: -2,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
+      y: -4,
+      transition: { type: "spring", stiffness: 200, damping: 15 },
     };
   }
 
@@ -64,3 +64,4 @@ export function InteractiveCard({
 
   return baseCard;
 }
+

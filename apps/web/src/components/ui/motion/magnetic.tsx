@@ -5,34 +5,39 @@ import {
   motion,
   useMotionValue,
   useSpring,
+  useReducedMotion,
   type SpringOptions,
 } from "motion/react";
 
-const SPRING_CONFIG: SpringOptions = {
-  stiffness: 26.7,
-  damping: 4.1,
-  mass: 0.2,
+const DEFAULT_SPRING: SpringOptions = {
+  stiffness: 200,
+  damping: 15,
 };
 
 export type MagneticProps = {
   children: React.ReactNode;
   intensity?: number;
   range?: number;
+  maxTranslation?: number;
   actionArea?: "self" | "parent" | "global";
   springOptions?: SpringOptions;
   className?: string;
+  disabled?: boolean;
 };
 
 export function Magnetic({
   children,
-  intensity = 0.6,
-  range = 100,
+  intensity = 0.5,
+  range = 80,
+  maxTranslation = 8,
   actionArea = "self",
-  springOptions = SPRING_CONFIG,
+  springOptions = DEFAULT_SPRING,
   className,
+  disabled = false,
 }: MagneticProps) {
   const [isHovered, setIsHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -41,6 +46,16 @@ export function Magnetic({
   const springY = useSpring(y, springOptions);
 
   useEffect(() => {
+    // Disable on touch / coarse pointer devices
+    if (
+      typeof window === "undefined" ||
+      !window.matchMedia("(pointer: fine)").matches ||
+      disabled ||
+      shouldReduceMotion
+    ) {
+      return;
+    }
+
     const calculateDistance = (e: MouseEvent) => {
       if (ref.current) {
         const rect = ref.current.getBoundingClientRect();
@@ -53,8 +68,10 @@ export function Magnetic({
 
         if (isHovered && absoluteDistance <= range) {
           const scale = 1 - absoluteDistance / range;
-          x.set(distanceX * intensity * scale);
-          y.set(distanceY * intensity * scale);
+          const targetX = distanceX * intensity * scale;
+          const targetY = distanceY * intensity * scale;
+          x.set(Math.max(-maxTranslation, Math.min(maxTranslation, targetX)));
+          y.set(Math.max(-maxTranslation, Math.min(maxTranslation, targetY)));
         } else {
           x.set(0);
           y.set(0);
@@ -67,14 +84,20 @@ export function Magnetic({
     return () => {
       document.removeEventListener("mousemove", calculateDistance);
     };
-  }, [ref, isHovered, intensity, range, x, y]);
+  }, [ref, isHovered, intensity, range, maxTranslation, x, y, disabled, shouldReduceMotion]);
 
   useEffect(() => {
+    if (disabled || shouldReduceMotion) return;
+
     if (actionArea === "parent" && ref.current?.parentElement) {
       const parent = ref.current.parentElement;
 
       const handleParentEnter = () => setIsHovered(true);
-      const handleParentLeave = () => setIsHovered(false);
+      const handleParentLeave = () => {
+        setIsHovered(false);
+        x.set(0);
+        y.set(0);
+      };
 
       parent.addEventListener("mouseenter", handleParentEnter);
       parent.addEventListener("mouseleave", handleParentLeave);
@@ -86,7 +109,11 @@ export function Magnetic({
     } else if (actionArea === "global") {
       setIsHovered(true);
     }
-  }, [actionArea]);
+  }, [actionArea, disabled, shouldReduceMotion, x, y]);
+
+  if (shouldReduceMotion || disabled) {
+    return <div className={className}>{children}</div>;
+  }
 
   const handleMouseEnter = () => {
     if (actionArea === "self") {
@@ -117,3 +144,4 @@ export function Magnetic({
     </motion.div>
   );
 }
+

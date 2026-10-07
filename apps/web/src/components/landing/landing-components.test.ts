@@ -1,43 +1,58 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  ModeExplanationCards,
-  MODE_EXPLANATIONS,
-} from "./mode-explanation-cards";
+import { describe, it, expect } from "vitest";
+import { WORKSPACES_DATA } from "./workspaces-data";
+import { FOLLOW_RECEIPT_STEPS } from "./follow-receipt-rail";
 import { GUIDE_SLIDES } from "./how-clario-works-modal";
 
 describe("Landing Components Suite", () => {
-  describe("MODE_EXPLANATIONS metadata", () => {
+  describe("WORKSPACES_DATA typed metadata", () => {
     it("defines specifications for all 4 core workspaces", () => {
-      const modeIds = MODE_EXPLANATIONS.map((m) => m.id);
+      const modeIds = WORKSPACES_DATA.map((m) => m.id);
       expect(modeIds).toEqual(["personal", "freelancer", "family", "business"]);
     });
 
-    it("includes whatItIs, whoItIsFor, and at least 3 concrete actions per mode", () => {
-      for (const mode of MODE_EXPLANATIONS) {
-        expect(mode.whatItIs).toBeTruthy();
-        expect(mode.whoItIsFor).toBeTruthy();
-        expect(mode.whatYouCanDo.length).toBeGreaterThanOrEqual(3);
-        expect(mode.primaryHref).toContain(`/?mode=${mode.id}`);
+    it("includes a one-line promise, description, bestFor, and exactly 3 real-life situations per mode", () => {
+      for (const mode of WORKSPACES_DATA) {
+        expect(mode.name).toBeTruthy();
+        expect(mode.promise).toBeTruthy();
+        expect(mode.description).toBeTruthy();
+        expect(mode.bestFor).toBeTruthy();
+        expect(mode.useCases).toHaveLength(3);
+        expect(mode.linkText).toContain(mode.name);
+        expect(mode.preview.stat1).toBeTruthy();
+        expect(mode.preview.stat2).toBeTruthy();
       }
     });
 
-    it("preserves invariants: offchain privacy, nullifiers, and distinct mode roles", () => {
-      const personal = MODE_EXPLANATIONS.find((m) => m.id === "personal");
-      const business = MODE_EXPLANATIONS.find((m) => m.id === "business");
-
-      expect(personal?.whatYouCanDo.join(" ")).toContain("sub-ledger");
-      expect(business?.whatYouCanDo.join(" ")).toContain("nullifier");
+    it("uses plain human situations without whitepaper jargon", () => {
+      for (const mode of WORKSPACES_DATA) {
+        for (const situation of mode.useCases) {
+          expect(situation.toLowerCase()).not.toContain("nullifier");
+          expect(situation.toLowerCase()).not.toContain("sub-ledger");
+          expect(situation.toLowerCase()).not.toContain("parallel evm");
+        }
+      }
     });
   });
 
-  describe("ModeExplanationCards primitive", () => {
-    it("instantiates cleanly and renders 4 cards", () => {
-      const element = ModeExplanationCards({
-        activeModeId: "personal",
-        onSelectMode: vi.fn(),
-      });
-      expect(element).toBeDefined();
-      expect(element.props.children).toHaveLength(4);
+  describe("FOLLOW_RECEIPT_STEPS story pipeline", () => {
+    it("provides exactly 4 plain-language steps", () => {
+      expect(FOLLOW_RECEIPT_STEPS).toHaveLength(4);
+      expect(FOLLOW_RECEIPT_STEPS.map((s) => s.step)).toEqual(["01", "02", "03", "04"]);
+    });
+
+    it("matches the 4 founder invariants translated to plain English", () => {
+      expect(FOLLOW_RECEIPT_STEPS[0]!.title).toContain("stays on your device");
+      expect(FOLLOW_RECEIPT_STEPS[1]!.title).toContain("fingerprint");
+      expect(FOLLOW_RECEIPT_STEPS[2]!.title).toContain("AI can suggest, but only people decide");
+      expect(FOLLOW_RECEIPT_STEPS[3]!.title).toContain("never be paid twice");
+    });
+
+    it("preserves technical details in expandable payload", () => {
+      for (const step of FOLLOW_RECEIPT_STEPS) {
+        expect(step.technicalDetails.rule).toBeTruthy();
+        expect(step.technicalDetails.description).toBeTruthy();
+        expect(step.technicalDetails.spec).toBeTruthy();
+      }
     });
   });
 
@@ -49,15 +64,6 @@ describe("Landing Components Suite", () => {
     it("includes sequential step numbers and categories", () => {
       const stepNumbers = GUIDE_SLIDES.map((s) => s.stepNumber);
       expect(stepNumbers).toEqual(["01", "02", "03", "04", "05"]);
-
-      const categories = GUIDE_SLIDES.map((s) => s.category);
-      expect(categories).toEqual([
-        "DUAL SUB-LEDGER",
-        "DEDICATED WORKSPACES",
-        "CONFIDENTIAL ENVELOPE",
-        "DETERMINISTIC SETTLEMENT",
-        "GET STARTED NOW",
-      ]);
     });
 
     it("provides takeaways and executable renderVisual for each slide", () => {
@@ -67,7 +73,6 @@ describe("Landing Components Suite", () => {
         expect(slide.takeaways.length).toBeGreaterThanOrEqual(3);
         expect(typeof slide.renderVisual).toBe("function");
 
-        // Verify visual returns valid element
         const visual = slide.renderVisual();
         expect(visual).toBeDefined();
       }

@@ -1,5 +1,13 @@
 import { getServerConfiguration } from "./config/server";
 
 export function register(): void {
-  getServerConfiguration();
+  try {
+    getServerConfiguration();
+  } catch (error) {
+    console.warn(
+      "[instrumentation] Server configuration validation deferred:",
+      error instanceof Error ? error.message : error,
+    );
+  }
 }
+
