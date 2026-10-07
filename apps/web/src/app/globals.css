@@ -419,9 +419,11 @@ body {
   color: var(--text-primary);
 }
 
-a {
-  color: var(--link);
-  text-underline-offset: 0.18em;
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
 }
 
 :focus-visible {

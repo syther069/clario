@@ -65,8 +65,8 @@ export function WatermelonButton({
 }: WatermelonButtonProps) {
   const leadingIcon = leftIcon || icon;
   const trailingIcon = rightIcon || iconRight;
-  const isTextOnly = typeof children === "string" || typeof morphText === "string";
-  const displayMorphText = morphText || (typeof children === "string" ? children : undefined);
+  const displayMorphText =
+    morphText || (textMorph && typeof children === "string" ? children : undefined);
 
   return (
     <motion.button

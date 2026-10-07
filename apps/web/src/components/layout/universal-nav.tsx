@@ -235,7 +235,6 @@ const MODE_NAV_CONFIG: Record<PlatformMode, NavItem[]> = {
       icon: ChartNoAxesCombined,
       href: "/budgets",
     },
-    { id: "proof", label: "Proof Center", icon: ShieldCheck, href: "/proof" },
   ],
   power_user: [
     { id: "overview", label: "Overview", icon: LayoutDashboard, href: "/" },
@@ -257,7 +256,6 @@ const MODE_NAV_CONFIG: Record<PlatformMode, NavItem[]> = {
       icon: ChartNoAxesCombined,
       href: "/budgets",
     },
-    { id: "proof", label: "Proof Center", icon: ShieldCheck, href: "/proof" },
   ],
 };
 
@@ -371,14 +369,6 @@ export function UniversalNav({
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-slate-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           >
             <span>Tour</span>
-          </Link>
-
-          <Link
-            href="/proof"
-            className="hidden md:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f0fdf4] px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#166534] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#dcfce7] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-          >
-            <ShieldCheck className="h-3.5 w-3.5 text-[#16a34a]" />
-            <span>Proof</span>
           </Link>
 
           <Magnetic range={70} intensity={0.35}>

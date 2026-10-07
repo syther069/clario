@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { AlertCircle, CheckCircle2, Info, TriangleAlert, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 
 export type AlertVariant = "default" | "success" | "warning" | "error" | "info" | "monad";
 
@@ -75,7 +75,7 @@ export function WatermelonAlert({
         currentVariant.container,
         className
       )}
-      {...(props as any)}
+      {...(props as unknown as React.ComponentPropsWithoutRef<typeof motion.div>)}
     >
       <div className={cn("shrink-0 mt-0.5", currentVariant.iconColor)}>
         {icon || currentVariant.defaultIcon}

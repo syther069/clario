@@ -69,7 +69,7 @@ export const AnimatedButton = React.forwardRef<
       primary:
         "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8]",
       black:
-        "bg-[#121212] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#222222]",
+        "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8]",
       secondary:
         "bg-white text-[#121212] border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#f8f9fa]",
       outline:

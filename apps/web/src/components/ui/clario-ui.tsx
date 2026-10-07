@@ -64,7 +64,7 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
         "border-2 border-[#121212] bg-[#836EF9] text-white shadow-[3px_3px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
       secondary:
         "border-2 border-[#121212] bg-[#ffffff] text-[#121212] shadow-[3px_3px_0_0_#121212] hover:bg-[#f3f4f6] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
-      dark: "border-2 border-[#121212] bg-[#121212] text-white shadow-[3px_3px_0_0_#836EF9] hover:bg-[#262626] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+      dark: "border-2 border-[#121212] bg-[#836EF9] text-white shadow-[3px_3px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
       outline:
         "border-2 border-[#121212] bg-transparent text-[#121212] hover:bg-[#121212]/5 active:translate-x-[1px] active:translate-y-[1px]",
       ghost:
