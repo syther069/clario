@@ -384,6 +384,9 @@ const ALLOWED_CLIENT_PUBLIC_ENV = new Set([
   "NEXT_PUBLIC_PRIVY_APP_ID",
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_CLARIO_REGISTRY_ADDRESS",
+  "NEXT_PUBLIC_MONAD_CHAIN_ID",
+  "NEXT_PUBLIC_MONAD_TESTNET_RPC",
 ]);
 
 function rejectUnsafePublicEnvironment(environment: EnvironmentSource): void {

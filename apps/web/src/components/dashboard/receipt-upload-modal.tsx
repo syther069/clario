@@ -33,6 +33,7 @@ export function ReceiptUploadModal({
   const [uploadStep, setUploadStep] = useState("Step 1/3: Reading receipt & generating SHA-256 fingerprint...");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveOnChain, setSaveOnChain] = useState(false);
   const [result, setResult] = useState<{
     sha256Hash: string;
     extractedData: ExtractedReceiptData | null;
@@ -44,6 +45,7 @@ export function ReceiptUploadModal({
   async function handleFileSelect(selectedFile: File) {
     setError(null);
     setResult(null);
+    setSaveOnChain(false);
     setUploading(true);
     setUploadStep("Step 1/3: Reading receipt & generating SHA-256 fingerprint...");
 
@@ -105,8 +107,11 @@ export function ReceiptUploadModal({
       date: ext.date || new Date().toISOString().split("T")[0]!,
       timestamp: ext.date || new Date().toISOString(),
       payment_method: ext.paymentMethod || "Card",
-      verification_state: "anchored_onchain",
-      verification_status: "anchored",
+      verification_state: saveOnChain ? "pending_anchor" : "unverified",
+      verification_status: saveOnChain ? "pending_anchor" : "unverified",
+      blockchain_network: saveOnChain ? "Monad Testnet" : null,
+      blockchain_chain_id: saveOnChain ? 10143 : null,
+      blockchain_status: saveOnChain ? "unverified" : null,
       proof_hash: result.sha256Hash,
       notes: ext.rawTextSummary || "Extracted via Gemini 2.5 Flash OCR",
     };
@@ -222,20 +227,44 @@ export function ReceiptUploadModal({
             {result && (
               <div className="mt-6 space-y-4">
                 <WatermelonAlert
-                  variant="monad"
-                  title="Cryptographic Proof Anchored"
+                  variant="info"
+                  title="Receipt Fingerprinted (SHA-256)"
                   icon={<ShieldCheck className="h-5 w-5 text-[#836EF9]" />}
                   description={
                     <div className="flex items-center justify-between gap-2 mt-1">
                       <span className="font-mono text-[11px] text-slate-700 truncate max-w-[280px]">
                         SHA-256: {result.sha256Hash}
                       </span>
-                      <ClarioBadge variant="purple" size="sm">
-                        Monad Ready
+                      <ClarioBadge variant="neutral" size="sm">
+                        Off-Chain Private
                       </ClarioBadge>
                     </div>
                   }
                 />
+
+                {/* Optional Monad Onchain Save Toggle */}
+                <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition">
+                  <input
+                    type="checkbox"
+                    checked={saveOnChain}
+                    onChange={(e) => setSaveOnChain(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9]"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
+                      <span className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                        Save on chain on Monad
+                      </span>
+                      <span className="text-[9px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#836EF9]/30">
+                        Optional
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                      Posts cryptographic fingerprint to Monad Testnet for audit verification. Private receipt image remains strictly off-chain.
+                    </p>
+                  </div>
+                </label>
 
                 {result.extractedData && (
                   <div className="rounded-xl border-2 border-[#121212] bg-[#f8f9fa] p-4 space-y-3">
@@ -305,16 +334,17 @@ export function ReceiptUploadModal({
                     variant="secondary"
                     onClick={() => {
                       setResult(null);
+                      setSaveOnChain(false);
                     }}
                     morphText="Scan Another"
                   />
                   <WatermelonButton
                     type="button"
-                    variant="primary"
+                    variant={saveOnChain ? "primary" : "secondary"}
                     icon={<CheckCircle2 className="h-4 w-4" />}
                     isLoading={isSaving}
-                    loadingText="Saving to Ledger..."
-                    morphText="Save to Ledger"
+                    loadingText={saveOnChain ? "Saving & Anchoring..." : "Saving to Ledger..."}
+                    morphText={saveOnChain ? "Save on Chain (Monad)" : "Save to Private Ledger"}
                     onClick={handleSaveAsTransaction}
                   />
                 </div>
