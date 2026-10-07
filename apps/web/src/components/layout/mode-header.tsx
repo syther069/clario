@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ModeSwitcher } from "./mode-switcher";
 import { UserButton } from "../auth/user-button";
 import { MonadLogo } from "@/components/ui/crypto-icon";
-import { Bot, Compass, BookOpen, Plus, Receipt, ShieldCheck, BarChart3 } from "lucide-react";
+import { Lock } from "lucide-react";
 import type { PlatformMode } from "@/lib/supabase/types";
-import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { ClarioBadge } from "@/components/ui/clario-ui";
 import { ClarioLogo } from "@/components/ui/clario-logo";
 
 export type CorePillar = "expenses" | "vault" | "insights";
@@ -24,24 +24,18 @@ interface ModeHeaderProps {
 export function ModeHeader({
   currentMode,
   onModeChange,
-  onOpenCopilot,
-  activeTab = "expenses",
-  onTabChange,
-  onLogExpense,
 }: ModeHeaderProps) {
-  const PILLARS: Array<{ id: CorePillar; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-    { id: "expenses", label: "Expenses", icon: Receipt },
-    { id: "vault", label: "Vault & Proofs", icon: ShieldCheck },
-    { id: "insights", label: "Insights", icon: BarChart3 },
-  ];
-
   return (
-    <header className="flex flex-col gap-3.5 pb-4 border-b-2 border-[#121212]/15">
+    <header className="pb-3 border-b-2 border-[#121212]/15">
       {/* Top Bar: Brand, Mode Switcher, and User Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        {/* Left: Clario Brand + Mode Selector */}
+        {/* Left: Clario Brand (redirects to /landing) + Mode Selector */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link
+            href="/landing"
+            className="flex items-center gap-2.5 group"
+            title="Return to Clario Landing Page"
+          >
             <ClarioLogo
               size={36}
               className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
@@ -63,102 +57,20 @@ export function ModeHeader({
           <ModeSwitcher currentMode={currentMode} onModeChange={onModeChange} />
         </div>
 
-        {/* Center/Desktop Navigation: 3 Core Pillars (Hick's Law - Reduced to 3 clear pillars) */}
-        {onTabChange && (
-          <nav aria-label="Core Navigation" className="hidden md:flex items-center gap-1.5 bg-[#f5f3ff] p-1 rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-            {PILLARS.map((p) => {
-              const Icon = p.icon;
-              const isActive = activeTab === p.id;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => onTabChange(p.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                      : "text-[#121212] hover:bg-white/80"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{p.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        )}
-
-        {/* Right: Primary Action (Fitts's Law) + Secondary Tools */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          {onLogExpense && (
-            <button
-              onClick={onLogExpense}
-              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Log Expense</span>
-            </button>
-          )}
-
-          <Link href="/docs">
-            <ClarioButton
-              variant="secondary"
-              size="sm"
-              leftIcon={<BookOpen className="h-3.5 w-3.5 text-[#836EF9]" />}
-            >
-              Docs
-            </ClarioButton>
-          </Link>
-
-          <Link href="/landing">
-            <ClarioButton
-              variant="secondary"
-              size="sm"
-              leftIcon={<Compass className="h-3.5 w-3.5 text-[#836EF9]" />}
-            >
-              Tour
-            </ClarioButton>
-          </Link>
-
-          {onOpenCopilot && (
-            <ClarioButton
-              variant="secondary"
-              size="sm"
-              onClick={onOpenCopilot}
-              leftIcon={
-                <Bot className="h-3.5 w-3.5 text-[#836EF9]" aria-hidden="true" />
-              }
-            >
-              AI
-            </ClarioButton>
-          )}
+        {/* Right: Security Badge / Lock + User Authentication */}
+        <div className="flex items-center gap-2.5 self-end sm:self-auto">
+          {/* Subtle Non-Custodial Vault Indicator */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-[#121212]/20 bg-white/60 text-[#121212] text-xs font-mono text-[11px]"
+            title="Non-custodial cryptographic vault on Monad. Private keys never leave your device."
+          >
+            <Lock className="h-3 w-3 text-emerald-600" />
+            <span className="hidden md:inline text-slate-600">Vault secured</span>
+          </div>
 
           <UserButton />
         </div>
       </div>
-
-      {/* Mobile/Tablet Core Navigation: 3 Core Pillars */}
-      {onTabChange && (
-        <div className="flex md:hidden items-center justify-around gap-1 bg-[#f5f3ff] p-1 rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-          {PILLARS.map((p) => {
-            const Icon = p.icon;
-            const isActive = activeTab === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => onTabChange(p.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                    : "text-[#121212] hover:bg-white/80"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{p.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
     </header>
   );
 }
