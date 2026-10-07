@@ -196,7 +196,7 @@ function DocsMainContent() {
             </a>
             <Link
               href="/dashboard"
-              className="flex items-center gap-1 rounded-md border-2 border-[#121212] bg-[#121212] px-3 py-1.5 text-xs font-mono font-black uppercase text-white shadow-[2px_2px_0_0_#836EF9] hover:bg-black transition active:translate-x-0.5 active:translate-y-0.5"
+              className="flex items-center gap-1 rounded-md border-2 border-[#121212] bg-[#836EF9] px-3 py-1.5 text-xs font-mono font-black uppercase text-white shadow-[2px_2px_0_0_#121212] hover:bg-[#7257f8] transition active:translate-x-0.5 active:translate-y-0.5"
             >
               App <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
             </Link>

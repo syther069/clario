@@ -3075,9 +3075,9 @@ export function PersonalDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 5. RECURRING DEDICATED VIEW */}
+      {/* 3. RECURRING DEDICATED VIEW */}
       {/* ========================================================================= */}
-      {currentView === "recurring" && (
+      {currentTab === "recurring" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -3246,7 +3246,7 @@ export function PersonalDashboard({
       )}
 
       {/* 4. Universal Ledger with Dual Tabs: Transactions & Saved Receipts (Montally Neo-Brutalist Style) */}
-      {(currentView === "overview" || currentView === "receipts") && (
+      {currentTab === "budgets" && budgetSubTab === "receipts" && (
         <div className="neo-card overflow-hidden">
           {/* Ledger Header with Montally Neo-Brutalist Tabs */}
           <div className="p-5 border-b-2 border-[#121212] bg-[#f9fafb] flex flex-col md:flex-row md:items-center md:justify-between gap-4">

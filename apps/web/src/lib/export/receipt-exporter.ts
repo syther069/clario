@@ -657,9 +657,9 @@ export function triggerReceiptExport(
 // Minimal sprintf helper for aligned text formatting
 function sprintf(format: string, ...args: (string | number)[]): string {
   let argIndex = 0;
-  return format.replace(/%(-?\d+)?([sd])/g, (_, widthStr, type) => {
+  return format.replace(/%(-?\d+)?([sd])/g, (_, widthStr) => {
     const rawVal = args[argIndex++];
-    let strVal = rawVal !== undefined ? String(rawVal) : "";
+    const strVal = rawVal !== undefined ? String(rawVal) : "";
     if (!widthStr) return strVal;
 
     const width = parseInt(widthStr, 10);
