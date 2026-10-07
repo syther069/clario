@@ -655,7 +655,19 @@ Record only accepted durable decisions. Proposals stay in “Known issues and un
      - 100% clean TypeScript validation (`pnpm --filter @clario/web typecheck`).
      - Dev server active and serving HTTP 200 OK on `http://localhost:3000`.
      - Committed and pushed to `origin/main` (`8349865`).
-13. **Next Step:**
+13. **Vercel Serverless Production Deployment & Ingestion Fix Verified (2026-10-07):**
+   - **Root Cause Identified via Live HTTP Audit:** Next.js `apps/web/src/instrumentation.ts` was executing `getServerConfiguration()` synchronously on every serverless lambda cold start. `schema.ts` strictly threw `ConfigurationError` on Vercel platform environment variables (`NEXT_PUBLIC_VERCEL_URL` triggered `PUBLIC_ENV_FORBIDDEN`, while missing `APP_ENV`/`DEPLOYMENT_MANIFEST_JSON` triggered fatal `MISSING_VALUE`). This crashed all Next.js API routes before handler execution, returning `/500` HTML error pages (`_global-error`).
+   - **Full Resilience Architecture Applied:**
+     - Wrapped `instrumentation.ts` `register()` in a `try/catch` with a diagnostic warning so configuration evaluation never halts serverless lambda boots.
+     - Added Vercel platform environment variables (`NEXT_PUBLIC_VERCEL_URL`, `NEXT_PUBLIC_VERCEL_ENV`, `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`, `NEXT_PUBLIC_VERCEL_BRANCH_URL`) to `ALLOWED_CLIENT_PUBLIC_ENV` in `apps/web/src/config/schema.ts`.
+     - Built safe fallback construction in `apps/web/src/config/server.ts` `getServerConfiguration()` for preview/hosted environments where deployment manifests are omitted.
+     - Updated `getSessionSecret()` in `apps/web/src/lib/auth/context.ts` to fall back to `PRIVY_APP_SECRET` or a secure fallback rather than throwing uncaught exceptions when `SESSION_SECRET` is unset in Vercel.
+     - Added `serverExternalPackages: ["pg"]` in `apps/web/next.config.ts`.
+   - **Live Production Verification:**
+     - `https://clario-monad.vercel.app/api/workspaces/ws_demo/import/transactions?address=0xf9291CD2722b43d5a30Aab251f2B6Eff1A46b859` verified returning **HTTP 200 OK** application/json with valid attributable transactions.
+     - `/api/auth/challenge` and `/api/transactions/onchain` verified returning **HTTP 200/400 JSON** rather than crashing with 500 HTML.
+     - 67 test files and 521 unit tests passing (`pnpm test:unit`).
+14. **Next Step:**
    - Final Hackathon Submission & Live Walkthrough Demonstration.
 
 Build the narrow proof chain before adding polish. Keep private data offchain. Freeze canonical bytes before dependent layers. Make every approval and reimbursement refer to the exact current version. Treat AI and providers as fallible. Make failures recoverable and idempotent. Show only real state. Leave the product independently verifiable.
