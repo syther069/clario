@@ -17,7 +17,7 @@
  * 10. Distinct UI states: Loading, API Error, Disconnected, Invalid Address, Empty State, Pagination, and Loaded List.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   type TransactionImportCandidate,
   type NormalizedTransaction,
@@ -94,6 +94,27 @@ export function TransactionImportDialog({
     setPrevUserAddress(userAddress);
     setQueryAddress(userAddress || "");
   }
+
+  // Detect which EVM chain the wallet has used the most
+  const chainCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    for (const t of transactions) {
+      counts[t.sourceChainId] = (counts[t.sourceChainId] || 0) + 1;
+    }
+    return counts;
+  }, [transactions]);
+
+  const mostActiveChainId = useMemo(() => {
+    let topChain = 0;
+    let maxCount = 0;
+    for (const [chainIdStr, count] of Object.entries(chainCounts)) {
+      if (count > maxCount) {
+        maxCount = count;
+        topChain = Number(chainIdStr);
+      }
+    }
+    return topChain;
+  }, [chainCounts]);
 
   // Hash lookup states
   const [lookupChainId, setLookupChainId] = useState<number>(10143);
@@ -294,9 +315,14 @@ export function TransactionImportDialog({
             <span className="font-bold">ℹ</span>
             <span className="truncate">{IMPORTED_FACTS_DISCLAIMER}</span>
           </div>
-          <span className="shrink-0 text-[10px] font-black uppercase bg-white px-2 py-0.5 rounded border border-[#836EF9]">
-            MONAD &amp; MAINNETS
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+              MIN VALUE: ≥ $1.00 USD
+            </span>
+            <span className="text-[10px] font-black uppercase bg-white px-2 py-0.5 rounded border border-[#836EF9]">
+              MONAD &amp; MAINNETS
+            </span>
+          </div>
         </div>
 
         {/* Tabs & Filters */}
@@ -507,17 +533,35 @@ export function TransactionImportDialog({
                   </div>
                 </div>
               ) : loading ? (
-                /* State 3: Loading State */
-                <div className="text-center py-12 text-slate-500 font-mono text-xs flex flex-col items-center gap-3">
-                  <RefreshCw className="h-8 w-8 animate-spin text-[#836EF9]" />
-                  <div className="flex items-center gap-2 mt-1">
-                    <AlchemyLogo className="h-4 w-4" />
-                    <span className="font-bold text-[#121212]">
-                      Fetching verified transfers via Alchemy Asset Transfers API...
-                    </span>
+                /* State 3: Multi-Chain Progress State */
+                <div className="py-8 px-5 border-2 border-[#121212] rounded-2xl bg-[#faf9fe] shadow-[4px_4px_0_0_#121212] flex flex-col items-center gap-4 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] text-[#836EF9]">
+                    <RefreshCw className="h-6 w-6 animate-spin text-[#836EF9]" />
                   </div>
-                  <span className="text-[11px] text-slate-400">
-                    Querying external, erc20, erc721, and internal transfers
+                  <div className="space-y-1">
+                    <p className="font-mono text-sm font-black uppercase text-[#121212] tracking-wider">
+                      Indexing Across 10 EVM Networks
+                    </p>
+                    <p className="text-xs font-mono text-slate-600">
+                      Scanning transfers via Alchemy · Filtering dust &lt; $1.00 USD
+                    </p>
+                  </div>
+
+                  {/* 10 Chain Badges Grid */}
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-md pt-1">
+                    {SUPPORTED_IMPORT_CHAINS.map((chain) => (
+                      <span
+                        key={chain.chainId}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-[#121212] bg-white text-[10px] font-mono font-bold text-slate-700 shadow-[1px_1px_0_0_#121212] animate-pulse"
+                      >
+                        <CryptoChainIcon chain={chain.chainId} className="h-3 w-3" />
+                        {chain.shortName}
+                      </span>
+                    ))}
+                  </div>
+
+                  <span className="text-[11px] font-mono text-slate-400 mt-1">
+                    Calculating historical USD block valuation and detecting primary wallet network...
                   </span>
                 </div>
               ) : transactions.length === 0 ? (
@@ -559,9 +603,34 @@ export function TransactionImportDialog({
               ) : (
                 /* State 5: Loaded Transaction Candidates */
                 <>
+                  {/* Primary Wallet Activity Banner */}
+                  {selectedChainId === 0 && mostActiveChainId > 0 && (
+                    <div className="flex items-center justify-between p-3 rounded-xl border-2 border-[#121212] bg-[#f8f6ff] text-xs font-mono shadow-[2px_2px_0_0_#121212]">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#836EF9] text-white font-black text-[10px]">
+                          ★
+                        </span>
+                        <span className="text-slate-700">
+                          Primary wallet activity on{" "}
+                          <strong className="text-[#121212] font-black">
+                            {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.name || `Chain ${mostActiveChainId}`}
+                          </strong>{" "}
+                          ({chainCounts[mostActiveChainId]} transactions).
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedChainId(mostActiveChainId)}
+                        className="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#836EF9] shadow-[1px_1px_0_0_#121212] transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                      >
+                        Focus {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.shortName || "Chain"}
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1">
                     <span>
-                      Found <strong className="text-[#121212]">{transactions.length}</strong> attributable transactions
+                      Found <strong className="text-[#121212]">{transactions.length}</strong> attributable transactions (≥ $1.00 USD)
                     </span>
                     <span className="text-[10px] uppercase font-bold text-[#836EF9] flex items-center gap-1">
                       <AlchemyLogo className="h-3 w-3" /> Live Ingestion

@@ -364,8 +364,23 @@ export function UniversalNav({
           </AnimatedBackground>
         </nav>
 
-        {/* Right: Copilot & Auth with Magnetic Pull */}
-        <div className="flex items-center gap-3">
+        {/* Right: Tour, Proof Center, Copilot & Auth */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/landing"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-slate-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          >
+            <span>Tour</span>
+          </Link>
+
+          <Link
+            href="/proof"
+            className="hidden md:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f0fdf4] px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#166534] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#dcfce7] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          >
+            <ShieldCheck className="h-3.5 w-3.5 text-[#16a34a]" />
+            <span>Proof</span>
+          </Link>
+
           <Magnetic range={70} intensity={0.35}>
             <button
               onClick={() => onOpenCopilot && onOpenCopilot()}

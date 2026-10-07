@@ -229,6 +229,24 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
       alchemyApiKey: this.apiKey,
     });
 
+    // Dust & Micro-Transfer Filter: Enforce minimum value >= $1.00 USD
+    if (priceResult?.usdValue !== null && priceResult?.usdValue !== undefined) {
+      if (priceResult.usdValue < 1.0) {
+        return null;
+      }
+    } else {
+      // If price was unresolvable:
+      const normSym = (assetSymbol || "").toUpperCase().trim();
+      if (normSym === "USDC" || normSym === "USDT" || normSym === "DAI") {
+        const amt = parseFloat(formattedAmount);
+        if (isNaN(amt) || amt < 1.0) return null;
+      } else {
+        // Obvious dust filter for native or unpriced tokens
+        const amt = parseFloat(formattedAmount);
+        if (isNaN(amt) || amt < 0.001) return null;
+      }
+    }
+
     return {
       sourceChainId: chainId,
       sourceTransactionHash: cleanHash,
@@ -281,7 +299,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
-  timeoutMs = 4500,
+  timeoutMs = 3000,
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -327,7 +345,7 @@ async function fetchWithTimeout(
             method: "alchemy_getAssetTransfers",
             params: [fetchParams("fromAddress")],
           }),
-        }, 4000)
+        }, 3000)
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
@@ -353,7 +371,7 @@ async function fetchWithTimeout(
             method: "alchemy_getAssetTransfers",
             params: [fetchParams("toAddress")],
           }),
-        }, 4000)
+        }, 3000)
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
@@ -403,12 +421,12 @@ async function fetchWithTimeout(
         }
       }
 
-      // Limit to 50 items to normalize to keep execution fast and prevent rate limiting
-      const itemsToProcess = rawItemsToNormalize.slice(0, 50);
+      // Limit items to normalize to keep execution fast and prevent rate limiting
+      const itemsToProcess = rawItemsToNormalize.slice(0, 35);
 
-      // Normalize transfers in controlled batches of 8 to prevent pricing rate limits
+      // Normalize transfers in controlled batches of 12 to prevent pricing rate limits
       const normalizedResults: Array<NormalizedTransaction | null> = [];
-      const batchSize = 8;
+      const batchSize = 12;
       for (let i = 0; i < itemsToProcess.length; i += batchSize) {
         const batch = itemsToProcess.slice(i, i + batchSize);
         const batchResults = await Promise.allSettled(

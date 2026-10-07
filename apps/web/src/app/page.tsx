@@ -26,6 +26,7 @@ import type {
   BusinessView,
 } from "@/lib/supabase/types";
 import { VaultSecurityBanner } from "@/components/layout/vault-security-banner";
+import { LandingExplainer } from "@/components/layout/landing-explainer";
 import { LogIn } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
@@ -422,6 +423,9 @@ export default function Home() {
             setTxModalOpen(true);
           }}
         />
+
+        {/* Verifiable Workflow & Proof Chain Explainer */}
+        <LandingExplainer />
 
         {/* Vault Data Safety & Privacy Reassurance */}
         <VaultSecurityBanner />
