@@ -273,7 +273,7 @@ export function DocsSidebar({
         {/* Bottom Technical Telemetry Footer */}
         <div className="p-3 border-t-2 border-[#121212] bg-[#F4F4F0] space-y-2 shrink-0">
           <Link
-            href="/dashboard"
+            href="/"
             className="flex items-center justify-between w-full p-2 rounded-md border-2 border-[#121212] bg-white text-xs font-mono font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-slate-50 transition active:translate-x-[1px] active:translate-y-[1px]"
           >
             <div className="flex items-center gap-1.5">

@@ -5,6 +5,20 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@clario/protocol", "@clario/database"],
   serverExternalPackages: ["pg"],
+  async redirects() {
+    return [
+      {
+        source: "/dashboard",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/overview",
+        destination: "/",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

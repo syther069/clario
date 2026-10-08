@@ -141,7 +141,7 @@ function DocsMainContent() {
           </button>
 
           {/* Logo link back to dashboard */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <ClarioLogo className="h-7 w-7 transition-transform group-hover:scale-105" />
             <div className="flex items-baseline gap-1.5">
               <span className="font-mono text-base font-black tracking-tight text-[#121212]">
@@ -195,7 +195,7 @@ function DocsMainContent() {
               <ExternalLink className="h-3 w-3 opacity-60" />
             </a>
             <Link
-              href="/dashboard"
+              href="/"
               className="flex items-center gap-1 rounded-md border-2 border-[#121212] bg-[#836EF9] px-3 py-1.5 text-xs font-mono font-black uppercase text-white shadow-[2px_2px_0_0_#121212] hover:bg-[#7257f8] transition active:translate-x-0.5 active:translate-y-0.5"
             >
               App <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
