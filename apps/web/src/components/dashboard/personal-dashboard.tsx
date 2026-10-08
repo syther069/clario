@@ -2863,10 +2863,9 @@ export function PersonalDashboard({
             </div>
           </div>
         </div>
-      </div>
-    )}
-  </div>
-)}
+      )}
+    </div>
+  )}
 
       {/* ========================================================================= */}
       {/* 4. BUDGETS & RECEIPTS VIEW */}
