@@ -365,7 +365,7 @@ export function UniversalNav({
         {/* Right: Tour, Proof Center, Copilot & Auth */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            href="/landing"
+            href="/"
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-slate-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           >
             <span>Tour</span>

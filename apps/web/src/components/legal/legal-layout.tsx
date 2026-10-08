@@ -118,7 +118,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
       <header className="sticky top-0 z-40 border-b-2 border-[#121212] bg-[#FDFBF7] px-4 sm:px-8 py-3.5 shadow-[0_2px_0_0_#121212] print:hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo link */}
-          <Link href="/landing" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <ClarioLogo
               size={34}
               className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
@@ -143,7 +143,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
             className="hidden md:flex items-center gap-1 p-1 bg-[#f8f9fa] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl"
           >
             <Link
-              href="/landing"
+              href="/"
               className="px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider text-[#121212] hover:text-[#836EF9]"
             >
               Landing
@@ -232,7 +232,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
               aria-label="Breadcrumbs"
               className="mb-4 flex items-center gap-2 text-xs font-mono text-slate-500 pb-2 border-b border-[#121212]/15 print:hidden"
             >
-              <Link href="/landing" className="hover:text-[#121212] font-black uppercase">
+              <Link href="/" className="hover:text-[#121212] font-black uppercase">
                 CLARIO
               </Link>
               <span>{"//"}</span>
@@ -392,7 +392,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Col 1: Brand Info & Testnet Badge */}
             <div className="space-y-4 md:col-span-1">
-              <Link href="/landing" className="flex items-center gap-2">
+              <Link href="/" className="flex items-center gap-2">
                 <ClarioLogo size={28} />
                 <span className="font-mono text-sm font-black text-[#121212] uppercase tracking-wider">
                   Clario
@@ -417,7 +417,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
               <ul className="space-y-2.5 font-mono text-xs font-bold uppercase tracking-wider">
                 <li>
                   <Link
-                    href="/landing"
+                    href="/"
                     className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
                   >
                     Landing Overview
@@ -425,7 +425,7 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                 </li>
                 <li>
                   <Link
-                    href="/landing#modes"
+                    href="/#modes"
                     className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
                   >
                     Workspaces

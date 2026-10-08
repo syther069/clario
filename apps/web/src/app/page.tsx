@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import LandingPage from "@/app/landing/page";
 import { ModeHeader, type CorePillar } from "@/components/layout/mode-header";
 import { PersonalDashboard } from "@/components/dashboard/personal-dashboard";
 import { FreelancerDashboard } from "@/components/dashboard/freelancer-dashboard";
@@ -30,7 +32,9 @@ import { MonadLogo } from "@/components/ui/crypto-icon";
 import { TransactionShareModal } from "@/components/dashboard/transaction-share-modal";
 import { executeSaveTransaction } from "@/lib/blockchain/save-transaction";
 
-export default function Home() {
+function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const auth = useClarioAuth();
   const {
     user,
@@ -43,7 +47,7 @@ export default function Home() {
   const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
   const [savingOnChainTxId, setSavingOnChainTxId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CorePillar>("expenses");
-  const [activeMode, setActiveMode] = useState<PlatformMode>("personal");
+  const [activeMode, setActiveMode] = useState<PlatformMode>(initialMode);
   const [personalView, setPersonalView] = useState<PersonalView>("overview");
   const [freelancerView, setFreelancerView] =
     useState<FreelancerView>("overview");
@@ -51,10 +55,9 @@ export default function Home() {
   const [businessView, setBusinessView] = useState<BusinessView>("overview");
   const [copilotOpen, setCopilotOpen] = useState(false);
 
-  // Sync mode and view from searchParams or localStorage after mount (eliminates SSR hydration mismatches)
+  // Sync mode and view from searchParams
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlMode = params.get("mode") as PlatformMode | null;
+    const urlMode = searchParams.get("mode") as PlatformMode | null;
     const validModes: PlatformMode[] = [
       "personal",
       "freelancer",
@@ -64,18 +67,11 @@ export default function Home() {
       "power_user",
     ];
 
-    if (urlMode && validModes.includes(urlMode)) {
+    if (urlMode && validModes.includes(urlMode) && urlMode !== activeMode) {
       setActiveMode(urlMode);
-    } else {
-      const savedMode = localStorage.getItem(
-        "clario_active_mode",
-      ) as PlatformMode | null;
-      if (savedMode && validModes.includes(savedMode)) {
-        setActiveMode(savedMode);
-      }
     }
 
-    const urlView = params.get("view");
+    const urlView = searchParams.get("view");
     if (urlView) {
       const personalViews: PersonalView[] = [
         "overview",
@@ -130,7 +126,7 @@ export default function Home() {
       }
     }
 
-    const urlTxId = params.get("txId");
+    const urlTxId = searchParams.get("txId");
     if (urlTxId) {
       const supabase = getSupabaseClient();
       supabase
@@ -142,7 +138,7 @@ export default function Home() {
           if (data) setSelectedProofTx(data as Transaction);
         });
     }
-  }, []);
+  }, [searchParams, activeMode]);
 
   const handleModeChange = (mode: PlatformMode) => {
     setActiveMode(mode);
@@ -151,7 +147,7 @@ export default function Home() {
       const url = new URL(window.location.href);
       url.searchParams.set("mode", mode);
       url.searchParams.delete("view");
-      window.history.replaceState({}, "", url.toString());
+      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
     }
   };
 
@@ -160,7 +156,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      window.history.replaceState({}, "", url.toString());
+      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
     }
   };
 
@@ -169,7 +165,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      window.history.replaceState({}, "", url.toString());
+      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
     }
   };
 
@@ -178,7 +174,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      window.history.replaceState({}, "", url.toString());
+      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
     }
   };
 
@@ -187,7 +183,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      window.history.replaceState({}, "", url.toString());
+      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
     }
   };
 
@@ -632,5 +628,47 @@ export default function Home() {
         transaction={selectedProofTx}
       />
     </div>
+  );
+}
+
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const urlMode = searchParams.get("mode") as PlatformMode | null;
+  const urlTxId = searchParams.get("txId");
+
+  const validModes: PlatformMode[] = [
+    "personal",
+    "freelancer",
+    "family",
+    "business",
+    "crypto",
+    "power_user",
+  ];
+
+  const isDashboard = (!!urlMode && validModes.includes(urlMode)) || !!urlTxId;
+
+  if (!isDashboard) {
+    return <LandingPage />;
+  }
+
+  const effectiveInitialMode: PlatformMode =
+    urlMode && validModes.includes(urlMode) ? urlMode : "personal";
+
+  return <DashboardContent initialMode={effectiveInitialMode} />;
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-grid flex items-center justify-center font-mono text-xs uppercase tracking-wider text-gray-700">
+          <div className="bg-white px-4 py-2 border-2 border-black shadow-[2px_2px_0px_#000]">
+            Loading Clario...
+          </div>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

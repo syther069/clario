@@ -32,7 +32,7 @@ export function ModeHeader({
       {/* Left: Clario Brand (Navigates to Landing Page) + Mode Selector */}
       <div className="flex items-center gap-3">
         <Link
-          href="/landing"
+          href="/"
           className="flex items-center gap-2.5 group cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0"
           title="Go to Clario Landing Page"
         >
