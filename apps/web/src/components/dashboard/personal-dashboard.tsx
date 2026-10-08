@@ -269,13 +269,14 @@ export function PersonalDashboard({
     setQuickAmount("");
   };
 
-  const displayedTransactions = activeTransactions.slice(0, 10);
+  const displayedTransactions = transactions;
   const isAllSelected =
     displayedTransactions.length > 0 &&
     displayedTransactions.every((t) => selectedTxIds.has(t.id));
 
-  const selectedTransactions = activeTransactions.filter((t) =>
-    selectedTxIds.has(t.id),
+  const selectedTransactions = useMemo(
+    () => transactions.filter((t) => selectedTxIds.has(t.id)),
+    [transactions, selectedTxIds],
   );
   const selectedTransactionsTotal = selectedTransactions.reduce(
     (sum, t) => sum + Number(t.amount || 0),
@@ -299,6 +300,32 @@ export function PersonalDashboard({
       setSelectedTxIds(new Set());
     } else {
       setSelectedTxIds(new Set(displayedTransactions.map((t) => t.id)));
+    }
+  };
+
+  const handleCreateReceiptForSelected = () => {
+    if (selectedTxIds.size === 0) return;
+    if (selectedTransactions.length === 1 && selectedTransactions[0]) {
+      setSelectedProofTx(selectedTransactions[0]);
+    } else {
+      setIsPreviewOpen(true);
+    }
+  };
+
+  const handleBatchSaveOnChain = async () => {
+    if (selectedTxIds.size === 0) return;
+    if (
+      !isWalletConnected ||
+      !effectiveConnectedAddress ||
+      !/^0x[a-fA-F0-9]{40}$/.test(effectiveConnectedAddress)
+    ) {
+      setIsNoWalletPopupOpen(true);
+      return;
+    }
+    if (selectedTransactions.length === 1 && selectedTransactions[0]) {
+      await handleSaveReceipt(selectedTransactions[0]);
+    } else {
+      setIsPreviewOpen(true);
     }
   };
 
@@ -2376,14 +2403,24 @@ export function PersonalDashboard({
             {/* Actions: Add Expense, Import, Create Receipt, Export */}
             <div className="flex flex-wrap items-center gap-2.5">
               {selectedTxIds.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setIsPreviewOpen(true)}
-                  className="neo-btn bg-[#836EF9] text-white hover:bg-[#7257f8]"
-                >
-                  <Receipt className="h-4 w-4" />
-                  <span>Create Receipt ({selectedTxIds.size})</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCreateReceiptForSelected}
+                    className="neo-btn neo-btn-secondary !py-2 !px-3 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                  >
+                    <Receipt className="h-4 w-4 text-[#836EF9]" />
+                    <span>Create Receipt ({selectedTxIds.size})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBatchSaveOnChain}
+                    className="neo-btn neo-btn-primary !py-2 !px-3 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                  >
+                    <MonadLogo className="h-4 w-4" />
+                    <span>Save on Chain ({selectedTxIds.size})</span>
+                  </button>
+                </div>
               )}
 
               <button
@@ -3470,47 +3507,68 @@ export function PersonalDashboard({
             <>
               {hasData ? (
                 <div className="overflow-x-auto">
-                  {/* Contextual Action Bar when >= 1 transactions selected */}
-                  {selectedTxIds.size > 0 && (
-                    <div className="mx-5 my-3 p-3 bg-[#fbf9fe] border-2 border-[#121212] rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0_0_#121212] animate-in fade-in slide-in-from-top-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#836EF9] text-white text-xs font-mono font-black border border-[#121212] shadow-[1px_1px_0_0_#121212]">
-                          {selectedTxIds.size}
+                  {/* Ledger Toolbar with ALL button & actions */}
+                  <div className="px-5 py-3 border-b-2 border-[#121212] bg-[#fbf9fe] flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTxIds(new Set())}
+                        className="neo-btn bg-white text-[#121212] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-[#faf5ff] active:translate-x-[1px] active:translate-y-[1px] !py-1.5 !px-3.5 text-xs font-mono font-black uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Layers className="h-3.5 w-3.5 text-[#836EF9]" />
+                        <span>ALL</span>
+                        <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1 text-[10px] font-mono font-black rounded-md bg-[#836EF9]/10 text-[#836EF9] border border-[#836EF9]/30">
+                          {transactions.length}
                         </span>
-                        <span className="text-xs font-mono font-black uppercase text-[#121212]">
-                          {selectedTxIds.size} selected
-                        </span>
-                        <span className="text-xs font-mono font-bold text-slate-400">
-                          •
-                        </span>
-                        <span className="text-xs font-mono font-black text-[#121212]">
-                          Total {currencySymbol}
-                          {selectedTransactionsTotal.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                      </div>
+                      </button>
+                    </div>
 
-                      <div className="flex items-center gap-2">
+                    {selectedTxIds.size > 0 ? (
+                      <div className="flex flex-wrap items-center gap-2.5 animate-in fade-in">
+                        <div className="flex items-center gap-2 px-2.5 py-1 bg-white border border-[#121212] rounded-md shadow-[1px_1px_0_0_#121212]">
+                          <span className="flex h-5 w-5 items-center justify-center rounded bg-[#836EF9] text-white text-[11px] font-mono font-black">
+                            {selectedTxIds.size}
+                          </span>
+                          <span className="text-xs font-mono font-black text-[#121212]">
+                            Total {currencySymbol}
+                            {selectedTransactionsTotal.toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+
                         <button
                           type="button"
                           onClick={() => setSelectedTxIds(new Set())}
-                          className="neo-btn neo-btn-secondary !py-1 !px-3 text-xs font-mono font-bold uppercase"
+                          className="neo-btn neo-btn-secondary !py-1 !px-2.5 text-xs font-mono font-bold uppercase"
                         >
                           Clear
                         </button>
                         <button
                           type="button"
-                          onClick={handleOpenCreateReceipt}
-                          className="neo-btn neo-btn-primary !py-1.5 !px-3.5 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                          onClick={handleCreateReceiptForSelected}
+                          className="neo-btn neo-btn-secondary !py-1.5 !px-3.5 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
                         >
-                          <Receipt className="h-3.5 w-3.5" />
+                          <Receipt className="h-3.5 w-3.5 text-[#836EF9]" />
                           <span>Create Receipt</span>
                         </button>
+                        <button
+                          type="button"
+                          onClick={handleBatchSaveOnChain}
+                          className="neo-btn neo-btn-primary !py-1.5 !px-3.5 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                        >
+                          <MonadLogo className="h-3.5 w-3.5" />
+                          <span>Save on Chain</span>
+                        </button>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                        {transactions.length}{" "}
+                        {transactions.length === 1 ? "Record" : "Records"} Indexed
+                      </span>
+                    )}
+                  </div>
 
                   <table className="w-full text-left border-collapse">
                     <thead>

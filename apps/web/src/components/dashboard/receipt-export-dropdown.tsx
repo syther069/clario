@@ -22,6 +22,7 @@ interface ReceiptExportDropdownProps {
   receiptData: NormalizedReceiptData;
   className?: string;
   size?: "sm" | "md";
+  align?: "left" | "right" | "auto";
 }
 
 interface FormatOption {
@@ -86,6 +87,7 @@ export function ReceiptExportDropdown({
   receiptData,
   className = "",
   size = "md",
+  align = "auto",
 }: ReceiptExportDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeFormat, setActiveFormat] = useState<ExportFormat | null>(null);
@@ -93,6 +95,7 @@ export function ReceiptExportDropdown({
     null,
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [computedAlign, setComputedAlign] = useState<"left" | "right">("right");
   const menuId = useId();
 
   useEffect(() => {
@@ -111,6 +114,72 @@ export function ReceiptExportDropdown({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !dropdownRef.current) return;
+
+    const calculateAlignment = () => {
+      if (!dropdownRef.current) return;
+      const rect = dropdownRef.current.getBoundingClientRect();
+
+      // Find nearest containing card / modal / dialog
+      const container = dropdownRef.current.closest(
+        ".neo-card, [role='dialog'], .fixed",
+      );
+      const containerRect = container ? container.getBoundingClientRect() : null;
+
+      const boundLeft = containerRect ? containerRect.left : 0;
+      const boundRight = containerRect ? containerRect.right : window.innerWidth;
+
+      const menuWidth = 288; // w-72 is 18rem = 288px
+
+      if (align === "left") {
+        if (
+          rect.left + menuWidth > boundRight - 8 &&
+          rect.right - menuWidth >= boundLeft + 8
+        ) {
+          setComputedAlign("right");
+        } else {
+          setComputedAlign("left");
+        }
+      } else if (align === "right") {
+        if (
+          rect.right - menuWidth < boundLeft + 8 &&
+          rect.left + menuWidth <= boundRight - 8
+        ) {
+          setComputedAlign("left");
+        } else {
+          setComputedAlign("right");
+        }
+      } else {
+        // "auto": determine best fit inside container
+        const spaceRight = boundRight - rect.left;
+        const spaceLeft = rect.right - boundLeft;
+        const containerMid = boundLeft + (boundRight - boundLeft) / 2;
+        const buttonCenter = rect.left + rect.width / 2;
+
+        if (buttonCenter > containerMid) {
+          // Button is on right side of modal/card: right-align so menu expands leftwards
+          if (spaceLeft >= menuWidth || spaceLeft >= spaceRight) {
+            setComputedAlign("right");
+          } else {
+            setComputedAlign("left");
+          }
+        } else {
+          // Button is on left side of modal/card: left-align so menu expands rightwards
+          if (spaceRight >= menuWidth || spaceRight >= spaceLeft) {
+            setComputedAlign("left");
+          } else {
+            setComputedAlign("right");
+          }
+        }
+      }
+    };
+
+    calculateAlignment();
+    window.addEventListener("resize", calculateAlignment);
+    return () => window.removeEventListener("resize", calculateAlignment);
+  }, [isOpen, align]);
 
   const handleSelectFormat = async (fmt: ExportFormat) => {
     setActiveFormat(fmt);
@@ -143,7 +212,7 @@ export function ReceiptExportDropdown({
         aria-controls={menuId}
         className={`neo-btn neo-btn-secondary ${
           isSmall ? "!py-1.5 !px-2.5 text-[11px]" : "!py-2 !px-3 text-xs"
-        } font-mono font-black uppercase flex items-center gap-2 shadow-[2px_2px_0_0_#121212] select-none cursor-pointer transition-all hover:bg-[#faf5ff] active:translate-x-[1px] active:translate-y-[1px]`}
+        } font-mono font-black uppercase flex items-center justify-center gap-2 shadow-[2px_2px_0_0_#121212] select-none cursor-pointer transition-all hover:bg-[#faf5ff] active:translate-x-[1px] active:translate-y-[1px] w-full`}
       >
         <Download className="h-3.5 w-3.5 text-[#836EF9] shrink-0" />
         <span>Export Receipt</span>
@@ -165,7 +234,9 @@ export function ReceiptExportDropdown({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
             transition={{ type: "spring", stiffness: 450, damping: 26 }}
-            className="absolute left-0 bottom-full mb-2 z-50 w-72 rounded-xl border-2 border-[#121212] bg-white p-2 shadow-[4px_4px_0_0_#121212]"
+            className={`absolute ${
+              computedAlign === "left" ? "left-0" : "right-0"
+            } bottom-full mb-2 z-50 w-72 max-w-[calc(100vw-32px)] rounded-xl border-2 border-[#121212] bg-white p-2 shadow-[4px_4px_0_0_#121212]`}
           >
             {/* Menu Header */}
             <div className="px-2.5 py-1.5 pb-2 border-b border-slate-200 mb-1 flex items-center justify-between">
@@ -173,7 +244,7 @@ export function ReceiptExportDropdown({
                 Choose Format
               </span>
               <span className="text-[9px] font-mono font-bold text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.5 rounded border border-[#836EF9]/30">
-                4 Available
+                {FORMAT_OPTIONS.length} Available
               </span>
             </div>
 

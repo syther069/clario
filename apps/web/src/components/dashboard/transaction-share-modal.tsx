@@ -399,12 +399,16 @@ export function TransactionShareModal({
                   )}
                 </button>
 
-                <ReceiptExportDropdown
-                  receiptData={extractTransactionReceiptData(
-                    transaction,
-                    contractAddress,
-                  )}
-                />
+                <div className="flex-1">
+                  <ReceiptExportDropdown
+                    receiptData={extractTransactionReceiptData(
+                      transaction,
+                      contractAddress,
+                    )}
+                    className="w-full"
+                    align="right"
+                  />
+                </div>
               </div>
 
               {/* Monad Explorer link button if verified on chain */}

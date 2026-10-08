@@ -587,6 +587,7 @@ export function ReceiptBundleModal({
         {/* Footer Actions */}
         <div className="p-4 border-t-2 border-[#121212] bg-[#fbf9fe] flex flex-wrap items-center justify-between gap-2">
           <ReceiptExportDropdown
+            align="left"
             receiptData={extractCanonicalReceiptData(
               activeBundle,
               bundledTxs,
