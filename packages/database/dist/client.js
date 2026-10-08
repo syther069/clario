@@ -4,10 +4,14 @@ import { Pool } from "pg";
  * Does not initiate connections until queried.
  */
 export function createPool(connectionString, config) {
-    return new Pool({
+    const pool = new Pool({
         connectionString,
         ...config,
     });
+    pool.on("error", (err) => {
+        console.warn("[Database] Background connection pool error:", err.message);
+    });
+    return pool;
 }
 /**
  * Executes a callback within a database transaction.
