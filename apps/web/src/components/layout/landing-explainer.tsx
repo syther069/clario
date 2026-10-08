@@ -24,7 +24,7 @@ interface LandingExplainerProps {
   onExploreClick?: () => void;
 }
 
-export function LandingExplainer() {
+export function LandingExplainer({ onExploreClick }: LandingExplainerProps) {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [isDismissed, setIsDismissed] = useState(false);
 

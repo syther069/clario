@@ -5,6 +5,7 @@ import {
   X,
   Check,
   Copy,
+  Download,
   ExternalLink,
   ShieldCheck,
   AlertTriangle,
@@ -102,6 +103,40 @@ export function ReceiptBundleModal({
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleDownloadReceiptFile = () => {
+    const payload = activeBundle.receipt_data || {
+      receiptId: activeBundle.id,
+      receiptNumber: activeBundle.receipt_number,
+      receiptName: receiptName,
+      createdAt: activeBundle.created_at,
+      owner: activeBundle.user_id,
+      transactionCount: activeBundle.transaction_count,
+      totalAmount: activeBundle.total_amount,
+      currency: activeBundle.currency,
+      transactionIds: activeBundle.transaction_ids,
+      transactions: bundledTxs,
+      blockchain: {
+        network: "Monad Testnet",
+        chainId: MONAD_TESTNET_CHAIN_ID,
+        contract: contractAddress,
+        txHash,
+        receiptHash,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `clario-receipt-${activeBundle.receipt_number || activeBundle.id.slice(0, 8)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleConfirmRename = async () => {
@@ -444,7 +479,7 @@ export function ReceiptBundleModal({
             {/* Contract Address */}
             <div>
               <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
-                <span>Registry Contract (Monad Testnet)</span>
+                <span>Registry Contract (Monad Testnet 10143)</span>
                 <button
                   type="button"
                   onClick={() => handleCopy(contractAddress, "contract")}

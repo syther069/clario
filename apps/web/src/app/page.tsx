@@ -27,8 +27,11 @@ import type {
 } from "@/lib/supabase/types";
 import { LogIn } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
+import { TransactionShareModal } from "@/components/dashboard/transaction-share-modal";
+import { executeSaveTransaction } from "@/lib/blockchain/save-transaction";
 
 export default function Home() {
+  const auth = useClarioAuth();
   const {
     user,
     isAuthenticated,
@@ -36,7 +39,9 @@ export default function Home() {
     hasConnectedEvmWallet,
     connectedEvmAddress,
     connectEvmWallet,
-  } = useClarioAuth();
+  } = auth;
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
+  const [savingOnChainTxId, setSavingOnChainTxId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CorePillar>("expenses");
   const [activeMode, setActiveMode] = useState<PlatformMode>("personal");
   const [personalView, setPersonalView] = useState<PersonalView>("overview");
@@ -123,6 +128,19 @@ export default function Home() {
       if (businessViews.includes(urlView as BusinessView)) {
         setBusinessView(urlView as BusinessView);
       }
+    }
+
+    const urlTxId = params.get("txId");
+    if (urlTxId) {
+      const supabase = getSupabaseClient();
+      supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", urlTxId)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedProofTx(data as Transaction);
+        });
     }
   }, []);
 
@@ -341,6 +359,46 @@ export default function Home() {
       .then(() => {});
   }
 
+  const handleSaveTransactionOnChain = async (tx: Transaction) => {
+    if (savingOnChainTxId === tx.id) return;
+    if (!hasConnectedEvmWallet || !connectedEvmAddress) {
+      connectEvmWallet();
+      return;
+    }
+
+    setSavingOnChainTxId(tx.id);
+    const activeWallet =
+      auth.activeWallet ||
+      auth.externalEvmWallet ||
+      auth.embeddedWallet ||
+      auth.wallets.find(
+        (w) =>
+          w.address.toLowerCase() === (connectedEvmAddress || "").toLowerCase(),
+      );
+
+    try {
+      const result = await executeSaveTransaction({
+        transactionData: {
+          ...tx,
+          amount: Number(tx.amount),
+          merchant: tx.merchant,
+          type: (tx.type as "expense" | "income" | "transfer") || "expense",
+        },
+        userId,
+        userAddress: connectedEvmAddress,
+        connectedWallet: activeWallet,
+      });
+
+      if (result.success && result.transaction) {
+        handleAddTransaction(result.transaction);
+      }
+    } catch (err) {
+      console.error("Failed to save transaction on Monad:", err);
+    } finally {
+      setSavingOnChainTxId(null);
+    }
+  };
+
   const copilotContext = useMemo<CopilotContext>(() => {
     let clients;
     let invoices;
@@ -409,10 +467,13 @@ export default function Home() {
     <div className="min-h-screen bg-grid text-[#121212] flex flex-col font-sans">
       {/* Main Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Page-Level Header: Mode Selector & Primary CTA */}
+        {/* Page-Level Header: Mode Selector, 3 Core Pillars & Primary CTA */}
         <ModeHeader
           currentMode={activeMode}
           onModeChange={handleModeChange}
+          onOpenCopilot={() => setCopilotOpen(true)}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
           onLogExpense={() => {
             setTxModalSubLedger(activeMode === "crypto" ? "onchain" : "fiat");
             setTxModalOpen(true);
@@ -456,6 +517,8 @@ export default function Home() {
             onAddTransaction={() => setTxModalOpen(true)}
             onUploadReceipt={() => setReceiptModalOpen(true)}
             onUpdateTransaction={handleAddTransaction}
+            onViewReceipt={setSelectedProofTx}
+            onSaveOnChain={handleSaveTransactionOnChain}
             userId={userId}
             userAddress={connectedEvmAddress || undefined}
             hasConnectedWallet={hasConnectedEvmWallet}
@@ -474,7 +537,12 @@ export default function Home() {
             onAddTransaction={() => setTxModalOpen(true)}
             onUploadReceipt={() => setReceiptModalOpen(true)}
             onUpdateTransaction={handleAddTransaction}
+            onViewReceipt={setSelectedProofTx}
+            onSaveOnChain={handleSaveTransactionOnChain}
             userId={userId}
+            userAddress={connectedEvmAddress || undefined}
+            hasConnectedWallet={hasConnectedEvmWallet}
+            onConnectWallet={connectEvmWallet}
             currencySymbol="$"
           />
         )}
@@ -487,6 +555,8 @@ export default function Home() {
             onAddTransaction={() => setTxModalOpen(true)}
             onUploadReceipt={() => setReceiptModalOpen(true)}
             onUpdateTransaction={handleAddTransaction}
+            onViewReceipt={setSelectedProofTx}
+            onSaveOnChain={handleSaveTransactionOnChain}
             userId={userId}
             userAddress={connectedEvmAddress || undefined}
             hasConnectedWallet={hasConnectedEvmWallet}
@@ -547,11 +617,19 @@ export default function Home() {
         onClose={() => setTxModalOpen(false)}
         onSave={handleAddTransaction}
         onScanReceipt={() => setReceiptModalOpen(true)}
+        onViewReceipt={setSelectedProofTx}
         userId={userId}
         userAddress={connectedEvmAddress || undefined}
         hasConnectedWallet={hasConnectedEvmWallet}
         onConnectWallet={connectEvmWallet}
         initialSubLedger={txModalSubLedger}
+      />
+
+      {/* Shareable & Downloadable Receipt Modal */}
+      <TransactionShareModal
+        isOpen={!!selectedProofTx}
+        onClose={() => setSelectedProofTx(null)}
+        transaction={selectedProofTx}
       />
     </div>
   );

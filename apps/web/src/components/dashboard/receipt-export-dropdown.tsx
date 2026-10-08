@@ -9,6 +9,7 @@ import {
   FileText,
   FileCheck2,
   Check,
+  Image as ImageIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -53,6 +54,15 @@ const FORMAT_OPTIONS: FormatOption[] = [
     badgeColor: "text-emerald-700 border-emerald-200",
   },
   {
+    format: "png",
+    label: "PNG Image",
+    extension: ".PNG",
+    description: "Visual high-DPI receipt card image",
+    icon: <ImageIcon className="h-4 w-4 text-[#836EF9]" />,
+    badgeBg: "bg-purple-50",
+    badgeColor: "text-[#836EF9] border-[#836EF9]/30",
+  },
+  {
     format: "json",
     label: "JSON Canonical Data",
     extension: ".JSON",
@@ -66,7 +76,7 @@ const FORMAT_OPTIONS: FormatOption[] = [
     label: "Plain Text Document",
     extension: ".TXT",
     description: "Clean readable text proof ledger",
-    icon: <FileText className="h-4 w-4 text-slate-700]" />,
+    icon: <FileText className="h-4 w-4 text-slate-700" />,
     badgeBg: "bg-slate-100",
     badgeColor: "text-slate-700 border-slate-300",
   },
@@ -102,14 +112,19 @@ export function ReceiptExportDropdown({
     };
   }, [isOpen]);
 
-  const handleSelectFormat = (fmt: ExportFormat) => {
+  const handleSelectFormat = async (fmt: ExportFormat) => {
     setActiveFormat(fmt);
-    triggerReceiptExport(receiptData, fmt);
-    setDownloadSuccess(fmt);
-    setIsOpen(false);
-    setTimeout(() => {
-      setDownloadSuccess(null);
-    }, 2500);
+    try {
+      await triggerReceiptExport(receiptData, fmt);
+      setDownloadSuccess(fmt);
+    } catch (err) {
+      console.error("Export error:", err);
+    } finally {
+      setIsOpen(false);
+      setTimeout(() => {
+        setDownloadSuccess(null);
+      }, 2500);
+    }
   };
 
   const isSmall = size === "sm";

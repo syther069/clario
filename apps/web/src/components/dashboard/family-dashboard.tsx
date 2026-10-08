@@ -33,6 +33,7 @@ import {
   BadgeCheck,
   HandCoins,
   X,
+  ShieldCheck,
   Search,
   Trash2,
   Download,
@@ -56,6 +57,9 @@ import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 import { AnimatedBackground, Magnetic } from "@/components/ui/motion";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import { motion, AnimatePresence } from "motion/react";
+import { MonadLogo } from "@/components/ui/crypto-icon";
+import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
+import { TransactionShareModal } from "./transaction-share-modal";
 
 interface FamilyDashboardProps {
   transactions: Transaction[];
@@ -66,6 +70,8 @@ interface FamilyDashboardProps {
   onAddTransaction?: (() => void) | undefined;
   onUploadReceipt?: (() => void) | undefined;
   onUpdateTransaction?: ((tx: Partial<Transaction>) => void) | undefined;
+  onViewReceipt?: ((tx: Transaction) => void) | undefined;
+  onSaveOnChain?: ((tx: Transaction) => void) | undefined;
   userId?: string | undefined;
   userAddress?: string | null | undefined;
   hasConnectedWallet?: boolean | undefined;
@@ -80,12 +86,32 @@ export function FamilyDashboard({
   activeView: propActiveView,
   onViewChange,
   onAddTransaction,
-  onUploadReceipt: _onUploadReceipt,
+  onUploadReceipt,
   onUpdateTransaction,
+  onViewReceipt,
+  onSaveOnChain,
   userId = "demo_user",
+  userAddress,
+  hasConnectedWallet,
+  onConnectWallet,
   currencySymbol = "$",
 }: FamilyDashboardProps) {
   const householdId = `household_${userId}`;
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
+
+  const handleViewReceipt = (tx: Transaction) => {
+    if (onViewReceipt) {
+      onViewReceipt(tx);
+    } else {
+      setSelectedProofTx(tx);
+    }
+  };
+
+  const handleSaveOnChain = (tx: Transaction) => {
+    if (onSaveOnChain) {
+      onSaveOnChain(tx);
+    }
+  };
 
   // View state sync
   const [internalView, setInternalView] = useState<FamilyView>("overview");
@@ -104,7 +130,7 @@ export function FamilyDashboard({
 
   // Budget & Goal reactive state (Rule 40: Zero mock data, reactive to props and local changes)
   const [createdBudgets, setCreatedBudgets] = useState<Budget[]>([]);
-  const [deletedBudgetIds] = useState<Set<string>>(
+  const [deletedBudgetIds, setDeletedBudgetIds] = useState<Set<string>>(
     () => new Set(),
   );
   const localBudgets = useMemo(() => {
@@ -316,6 +342,30 @@ export function FamilyDashboard({
     });
   }, [localBudgets, householdExpenses]);
 
+  const overallBudgetHealthPct = useMemo(() => {
+    if (budgetStatusList.length === 0) return 0;
+    const totalLimit = budgetStatusList.reduce((sum, b) => sum + b.limit, 0);
+    const totalSpent = budgetStatusList.reduce((sum, b) => sum + b.spent, 0);
+    return totalLimit > 0
+      ? Math.min(100, Math.round((totalSpent / totalLimit) * 100))
+      : 0;
+  }, [budgetStatusList]);
+
+  // Goals progress computation
+  const goalsProgressPct = useMemo(() => {
+    if (localGoals.length === 0) return 0;
+    const totalTarget = localGoals.reduce(
+      (sum, g) => sum + Number(g.target_amount || 0),
+      0,
+    );
+    const totalCurrent = localGoals.reduce(
+      (sum, g) => sum + Number(g.current_amount || 0),
+      0,
+    );
+    return totalTarget > 0
+      ? Math.min(100, Math.round((totalCurrent / totalTarget) * 100))
+      : 0;
+  }, [localGoals]);
 
   // Member balance balances ("who owes whom")
   const memberBalances = useMemo(() => {
@@ -670,6 +720,17 @@ export function FamilyDashboard({
     setBudgetForm({ name: "", category: "Groceries", limit: "" });
   }
 
+  async function handleDeleteBudget(budgetId: string) {
+    if (confirm("Delete this household budget category?")) {
+      setDeletedBudgetIds((prev) => new Set(prev).add(budgetId));
+      try {
+        const supabase = getSupabaseClient();
+        await supabase.from("budgets").delete().eq("id", budgetId);
+      } catch {
+        // offline fallback
+      }
+    }
+  }
 
   // Create Goal Handler
   async function handleCreateGoal(e: React.FormEvent) {
@@ -839,46 +900,48 @@ export function FamilyDashboard({
   }
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header & Montally Simplified Navigation */}
+    <div className="space-y-8">
+      {/* 1. Header & Montally Neo-Brutalist Sub-Navigation */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#121212] tracking-tight">
-              Household
+            <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212] font-mono">
+              Household Financial Hub
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
-              Shared household expenses, bill scheduling, and who owes whom.
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 font-mono">
+              Shared household expenses, bill scheduling, split calculations,
+              and non-custodial settlements.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {onAddTransaction && (
-              <Magnetic range={60} intensity={0.35}>
-                <WatermelonButton
-                  onClick={onAddTransaction}
-                  variant="primary"
-                  icon={<Plus className="h-4 w-4" />}
-                  morphText="Add expense"
-                />
-              </Magnetic>
-            )}
+          <div className="flex flex-wrap items-center gap-3">
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsMemberModalOpen(true)}
+                variant="secondary"
+                icon={<UsersRound className="h-4 w-4 text-[#836EF9]" />}
+                morphText="Add Member"
+              />
+            </Magnetic>
+
+            <Magnetic range={70} intensity={0.4}>
+              <WatermelonButton
+                onClick={() => setIsBillModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Schedule Bill"
+              />
+            </Magnetic>
           </div>
         </div>
 
-        {/* Primary Mode Navigation Bar: Fixed 4 tabs that fit on screen without scrolling */}
+        {/* Primary Mode Navigation Bar with AnimatedBackground */}
         <nav
-          aria-label="Household navigation"
-          className="p-1 bg-white border border-[#121212]/20 shadow-sm rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-1 w-full max-w-2xl"
+          aria-label="Family Navigation"
+          className="p-1.5 bg-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
         >
           <AnimatedBackground
-            defaultValue={
-              activeView === "budgets"
-                ? "expenses"
-                : activeView === "settlements" || activeView === "goals"
-                  ? "members"
-                  : activeView
-            }
+            defaultValue={activeView}
             className="bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg"
             transition={{
               type: "spring",
@@ -887,54 +950,71 @@ export function FamilyDashboard({
             }}
           >
             {[
-              { id: "overview", label: "Home", icon: House },
-              { id: "expenses", label: "Expenses", icon: Receipt },
+              { id: "overview", label: "Overview", icon: House },
+              {
+                id: "members",
+                label: "Household Members",
+                icon: UsersRound,
+                count: members.length,
+              },
+              {
+                id: "expenses",
+                label: "Shared Expenses",
+                icon: Receipt,
+                count: householdExpenses.length,
+              },
+              {
+                id: "budgets",
+                label: "Household Budgets",
+                icon: ChartNoAxesCombined,
+                count: budgetStatusList.length,
+              },
               {
                 id: "bills",
-                label: "Bills",
+                label: "Bills & Utilities",
                 icon: CalendarDays,
                 count: bills.filter((b) => b.status === "unpaid").length,
               },
               {
-                id: "members",
-                label: "People & settle up",
-                icon: UsersRound,
+                id: "goals",
+                label: "Family Goals",
+                icon: Target,
+                count: localGoals.length,
+              },
+              {
+                id: "settlements",
+                label: "Settlements",
+                icon: ArrowLeftRight,
                 count: settlements.filter((s) => s.status === "pending").length,
               },
             ].map((tab) => {
               const Icon = tab.icon;
-              const normalizedActive =
-                activeView === "budgets"
-                  ? "expenses"
-                  : activeView === "settlements" || activeView === "goals"
-                    ? "members"
-                    : activeView;
-              const isActive = normalizedActive === tab.id;
+              const isActive = activeView === tab.id;
               return (
                 <button
                   key={tab.id}
                   data-id={tab.id}
                   type="button"
                   onClick={() => handleViewChange(tab.id as FamilyView)}
-                  className={`group inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all shrink-0 cursor-pointer ${
                     isActive
-                      ? "text-white font-bold"
-                      : "text-[#121212] hover:bg-slate-50"
+                      ? "text-white"
+                      : "text-[#121212] hover:bg-[#faf5ff]"
                   }`}
                 >
                   <Icon
                     className={`h-4 w-4 shrink-0 transition-colors ${
-                      isActive ? "text-white" : "text-[#836EF9]"
+                      isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
                     }`}
                     aria-hidden="true"
                   />
-                  <span className="truncate">{tab.label}</span>
-                  {tab.count !== undefined && tab.count > 0 && (
+                  <span className="shrink-0">{tab.label}</span>
+                  {tab.count !== undefined && (
                     <span
-                      className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-bold rounded-full leading-none shrink-0 ${
+                      className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
                         isActive
                           ? "bg-white text-[#121212]"
-                          : "bg-[#836EF9]/10 text-[#836EF9] border border-[#836EF9]/30"
+                          : "bg-[#f3f0ff] text-[#836EF9]"
                       }`}
                     >
                       {tab.count}
@@ -948,199 +1028,351 @@ export function FamilyDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. HOME (OVERVIEW) SUBVIEW */}
+      {/* 2. OVERVIEW SUBVIEW */}
       {/* ========================================================================= */}
       {activeView === "overview" && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          {/* 3-Card Household Overview */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm">
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* 6-Grid Household KPIs */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="neo-card p-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-600">
-                  This month&apos;s spending
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Total Spend
                 </span>
-                <div className="rounded-lg p-1.5 bg-[#fee2e2] text-[#b91c1c]">
-                  <HandCoins className="h-4 w-4" />
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#fee2e2] text-[#b91c1c] shadow-[2px_2px_0_0_#121212]">
+                  <HandCoins className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-[#121212] tracking-tight">
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
                   {currencySymbol}
                   {totalHouseholdSpend.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                   })}
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Combined household expenses
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                  Combined monthly expenses
                 </p>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm">
+            <div className="neo-card p-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-600">
-                  Bills due soon
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Upcoming Bills
                 </span>
-                <div className="rounded-lg p-1.5 bg-[#fef9c3] text-[#854d0e]">
-                  <CalendarDays className="h-4 w-4" />
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#fef9c3] text-[#854d0e] shadow-[2px_2px_0_0_#121212]">
+                  <CalendarDays className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-[#121212] tracking-tight">
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#121212] tracking-tight">
                   {currencySymbol}
                   {unpaidBillsTotal.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                   })}
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  {bills.filter((b) => b.status === "unpaid").length} unpaid bills
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                  {bills.filter((b) => b.status === "unpaid").length} unpaid
+                  scheduled
                 </p>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm">
+            <div className="neo-card p-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-600">
-                  Who owes whom
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Household Members
                 </span>
-                <div className="rounded-lg p-1.5 bg-[#f3f0ff] text-[#836EF9]">
-                  <ArrowLeftRight className="h-4 w-4" />
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#f3f0ff] text-[#836EF9] shadow-[2px_2px_0_0_#121212]">
+                  <UsersRound className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-[#836EF9] tracking-tight">
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#836EF9] tracking-tight">
+                  {members.length}
+                </div>
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                  Active in family budget
+                </p>
+              </div>
+            </div>
+
+            <div className="neo-card p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Pending IOUs
+                </span>
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#e0e7ff] text-[#3730a3] shadow-[2px_2px_0_0_#121212]">
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#3730a3] tracking-tight">
                   {currencySymbol}
                   {pendingSettlementsTotal.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                   })}
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
                   {settlements.filter((s) => s.status === "pending").length}{" "}
                   balances to settle
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Recent Household Expenses List */}
-          <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-base font-bold text-[#121212]">
-                  Recent expenses
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Latest shared purchases across members
+            <div className="neo-card p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Budget Health
+                </span>
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#dcfce7] text-[#15803d] shadow-[2px_2px_0_0_#121212]">
+                  <ChartNoAxesCombined className="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#15803d] tracking-tight">
+                  {overallBudgetHealthPct}%
+                </div>
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                  {budgetStatusList.length} active categories
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => handleViewChange("expenses")}
-                className="text-xs font-semibold text-[#836EF9] hover:underline"
-              >
-                View all expenses →
-              </button>
             </div>
 
-            {householdExpenses.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center bg-slate-50/50">
-                <Receipt className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-slate-700">
-                  No expenses yet. Add your first shared expense.
-                </p>
-                {onAddTransaction && (
-                  <button
-                    type="button"
-                    onClick={onAddTransaction}
-                    className="mt-3 px-3 py-1.5 bg-[#836EF9] text-white text-xs font-medium rounded-lg shadow-[2px_2px_0_0_#121212] border border-[#121212]"
-                  >
-                    Add expense
-                  </button>
-                )}
+            <div className="neo-card p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                  Goals Funded
+                </span>
+                <div className="rounded-lg p-1.5 border-2 border-[#121212] bg-[#ccfbf1] text-[#0f766e] shadow-[2px_2px_0_0_#121212]">
+                  <Target className="h-3.5 w-3.5" />
+                </div>
               </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {householdExpenses.slice(0, 5).map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="py-3 flex items-center justify-between gap-3"
-                  >
-                    <div>
-                      <div className="text-sm font-semibold text-[#121212]">
-                        {tx.merchant}
+              <div className="mt-3">
+                <div className="text-2xl font-black font-mono text-[#0f766e] tracking-tight">
+                  {goalsProgressPct}%
+                </div>
+                <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                  {localGoals.length} savings goals
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Action Toolbar */}
+          <div className="p-4 rounded-xl border-2 border-[#121212] bg-white shadow-[4px_4px_0_0_#121212] flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
+              Quick Household Actions:
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {onAddTransaction && (
+                <Magnetic range={50} intensity={0.3}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    size="sm"
+                    icon={<Plus className="h-3.5 w-3.5" />}
+                    morphText="Log Expense"
+                  />
+                </Magnetic>
+              )}
+              {onUploadReceipt && (
+                <Magnetic range={50} intensity={0.3}>
+                  <WatermelonButton
+                    onClick={onUploadReceipt}
+                    variant="secondary"
+                    size="sm"
+                    icon={<Receipt className="h-3.5 w-3.5 text-[#836EF9]" />}
+                    morphText="Scan Receipt"
+                  />
+                </Magnetic>
+              )}
+              <Magnetic range={50} intensity={0.3}>
+                <WatermelonButton
+                  onClick={() => setIsBillModalOpen(true)}
+                  variant="secondary"
+                  size="sm"
+                  icon={<CalendarDays className="h-3.5 w-3.5 text-[#836EF9]" />}
+                  morphText="Schedule Bill"
+                />
+              </Magnetic>
+              <Magnetic range={50} intensity={0.3}>
+                <WatermelonButton
+                  onClick={() => setIsManualSettlementModalOpen(true)}
+                  variant="secondary"
+                  size="sm"
+                  icon={<ArrowLeftRight className="h-3.5 w-3.5 text-[#836EF9]" />}
+                  morphText="Record IOU"
+                />
+              </Magnetic>
+            </div>
+          </div>
+
+          {/* Bills & Members Overview Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Upcoming Bills Box */}
+            <div className="neo-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                    Upcoming Bills
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Recurring utilities, rent, and subscriptions
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsBillModalOpen(true)}
+                  className="text-xs font-black uppercase tracking-wider text-[#836EF9] hover:underline"
+                >
+                  + Add Bill
+                </button>
+              </div>
+
+              {bills.length === 0 ? (
+                <div className="rounded-xl border-2 border-dashed border-[#121212] p-8 text-center bg-[#fafafa]">
+                  <CalendarDays className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-black uppercase text-[#121212]">
+                    No Bills Registered
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Schedule rent, internet, water, and power bills to ensure
+                    on-time household payments.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {bills.slice(0, 4).map((bill) => (
+                    <div
+                      key={bill.id}
+                      className="p-3 rounded-lg border-2 border-[#121212] bg-white flex items-center justify-between shadow-[2px_2px_0_0_#121212]"
+                    >
+                      <div>
+                        <div className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                          {bill.name}
+                        </div>
+                        <div className="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
+                          <span>Due: {bill.due_date}</span>
+                          <span>•</span>
+                          <span className="capitalize">{bill.category}</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                        <span>{tx.date || tx.timestamp?.split("T")[0]}</span>
-                        <span>•</span>
-                        <span className="capitalize">{String(tx.category || "General")}</span>
+
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono font-black text-sm text-[#121212]">
+                          {currencySymbol}
+                          {bill.amount.toFixed(2)}
+                        </span>
+                        {bill.status === "unpaid" ? (
+                          <button
+                            onClick={() => handleMarkBillPaid(bill)}
+                            className="px-2.5 py-1 bg-[#121212] text-white text-[10px] font-black uppercase tracking-wider rounded hover:bg-[#836EF9] transition"
+                          >
+                            Mark Paid
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-[#15803d]">
+                            <BadgeCheck className="w-3 h-3 shrink-0" />
+                            <span>Paid</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Household Members Box */}
+            <div className="neo-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                    Household Members
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Who is contributing to household finances
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsMemberModalOpen(true)}
+                  className="text-xs font-black uppercase tracking-wider text-[#836EF9] hover:underline"
+                >
+                  + Add Member
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="p-3 rounded-lg border-2 border-[#121212] bg-white flex items-center justify-between shadow-[2px_2px_0_0_#121212]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-full border-2 border-[#121212] flex items-center justify-center text-xs font-black text-white"
+                        style={{
+                          backgroundColor: member.avatar_color || "#836EF9",
+                        }}
+                      >
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                          {member.name}
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          {member.email || "No email assigned"}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono font-bold text-sm text-[#121212]">
-                        -{currencySymbol}
-                        {Number(tx.amount).toFixed(2)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSplitModal(tx)}
-                        className="px-2 py-1 text-xs font-medium rounded border border-slate-300 hover:bg-slate-50 text-slate-700"
-                      >
-                        Split
-                      </button>
-                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[#f3f0ff] text-[#836EF9] border border-[#121212]">
+                      {member.role}
+                    </span>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 3. PEOPLE & SETTLE UP SUBVIEW (MERGED MEMBERS + SETTLEMENTS + GOALS) */}
+      {/* 3. MEMBERS SUBVIEW */}
       {/* ========================================================================= */}
-      {(activeView === "members" || activeView === "settlements" || activeView === "goals") && (
+      {activeView === "members" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-[#121212]">
-                People & settle up
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                Household Members & Roles
               </h2>
               <p className="text-xs text-slate-500">
-                Household members, who owes whom, and balances.
+                Manage roles (Owner, Member, Viewer) and split participants.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsManualSettlementModalOpen(true)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 inline-flex items-center gap-1.5"
-              >
-                <ArrowLeftRight className="h-3.5 w-3.5 text-[#836EF9]" />
-                <span>Record IOU</span>
-              </button>
-              <button
-                type="button"
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
                 onClick={() => setIsMemberModalOpen(true)}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212] border border-[#121212] inline-flex items-center gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add member</span>
-              </button>
-            </div>
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Add Member"
+              />
+            </Magnetic>
           </div>
 
-          {/* Members List */}
           {isLoading ? (
-            <div className="rounded-xl border border-slate-200 p-8 text-center bg-white shadow-sm animate-pulse">
-              <UsersRound className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs text-slate-500">
+            <div className="rounded-xl border-2 border-dashed border-[#121212] p-12 text-center bg-white shadow-[2px_2px_0_0_#121212] animate-pulse">
+              <UsersRound className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+              <p className="text-xs font-mono uppercase tracking-wider text-slate-500">
                 Loading household members...
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {members.map((member) => {
                 const balanceInfo = memberBalances.find(
                   (b) => b.member.id === member.id,
@@ -1148,13 +1380,13 @@ export function FamilyDashboard({
                 return (
                   <div
                     key={member.id}
-                    className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm flex flex-col justify-between"
+                    className="neo-card p-5 flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-10 h-10 rounded-full border border-[#121212] flex items-center justify-center text-sm font-bold text-white shadow-sm"
+                            className="w-10 h-10 rounded-full border-2 border-[#121212] flex items-center justify-center text-sm font-black text-white shadow-[2px_2px_0_0_#121212]"
                             style={{
                               backgroundColor: member.avatar_color || "#836EF9",
                             }}
@@ -1162,34 +1394,34 @@ export function FamilyDashboard({
                             {member.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className="text-sm font-bold text-[#121212]">
+                            <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
                               {member.name}
                             </h3>
                             <p className="text-xs text-slate-500">
-                              {member.email || "Household member"}
+                              {member.email || "Household participant"}
                             </p>
                           </div>
                         </div>
 
                         {member.role !== "owner" && (
                           <button
-                            type="button"
                             onClick={() => handleDeleteMember(member.id)}
-                            title="Remove member"
-                            className="p-1 rounded text-slate-400 hover:text-[#b91c1c] hover:bg-red-50"
+                            title="Remove Member"
+                            className="p-1 rounded text-slate-400 hover:text-[#b91c1c] hover:bg-red-50 border border-transparent hover:border-[#121212]"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </div>
 
-                      <div className="mt-4 p-3 rounded-lg border border-slate-200 bg-slate-50/60">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-600 font-medium">
-                            Net balance:
+                      {/* Member Balance Card */}
+                      <div className="mt-4 p-3 rounded-lg border border-[#121212] bg-[#f9fafb]">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-600 font-bold uppercase">
+                            Net Balance:
                           </span>
                           <span
-                            className={`font-mono font-bold ${
+                            className={`font-mono font-black ${
                               (balanceInfo?.net || 0) > 0
                                 ? "text-[#15803d]"
                                 : (balanceInfo?.net || 0) < 0
@@ -1202,21 +1434,21 @@ export function FamilyDashboard({
                             {(balanceInfo?.net || 0).toFixed(2)}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
+                        <p className="text-[10px] text-slate-500 mt-0.5">
                           {(balanceInfo?.net || 0) > 0
-                            ? "Is owed by others"
+                            ? "Is owed by household members"
                             : (balanceInfo?.net || 0) < 0
                               ? "Owes household members"
-                              : "Even (all settled)"}
+                              : "Even (no pending debts)"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-xs text-slate-500">
-                        Role:
+                    <div className="mt-4 pt-3 border-t-2 border-[#121212] flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-slate-500">
+                        Permission:
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#f3f0ff] text-[#836EF9] border border-[#836EF9]/30 capitalize">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[#f3f0ff] text-[#836EF9] border border-[#121212]">
                         {member.role}
                       </span>
                     </div>
@@ -1225,273 +1457,43 @@ export function FamilyDashboard({
               })}
             </div>
           )}
-
-          {/* Settle up balances & IOUs */}
-          <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-[#121212]">
-                  Who owes whom
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Shared balances to settle up
-                </p>
-              </div>
-            </div>
-
-            {settlements.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center bg-slate-50/50">
-                <BadgeCheck className="h-8 w-8 text-[#15803d] mx-auto mb-2" />
-                <p className="text-sm font-medium text-slate-700">
-                  All settled up! No outstanding balances.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {settlements.map((s) => (
-                  <div
-                    key={s.id}
-                    className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-[#f3f0ff] text-[#836EF9]">
-                        <ArrowLeftRight className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[#121212]">
-                          {s.from_member_name} owes {s.to_member_name}
-                        </div>
-                        <span className="text-xs text-slate-500">
-                          {s.status === "settled" ? "Settled" : "Pending settlement"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="text-base font-bold font-mono text-[#121212]">
-                        {currencySymbol}
-                        {Number(s.amount).toFixed(2)}
-                      </div>
-                      {s.status === "pending" ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSettleUp(s)}
-                          className="px-3 py-1 bg-[#836EF9] text-white text-xs font-medium rounded-lg shadow-[2px_2px_0_0_#121212] border border-[#121212]"
-                        >
-                          Settle up
-                        </button>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#15803d]">
-                          <BadgeCheck className="w-3.5 h-3.5" />
-                          <span>Settled</span>
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteSettlement(s.id)}
-                        className="p-1 text-slate-400 hover:text-[#b91c1c]"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Optional Family Goals (Only shown if user has goals or wants to add one) */}
-          {localGoals.length > 0 && (
-            <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-bold text-[#121212]">
-                    Family savings goals
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Shared targets for trips and big purchases
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsGoalModalOpen(true)}
-                  className="text-xs font-semibold text-[#836EF9] hover:underline"
-                >
-                  + Add goal
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {localGoals.map((g) => {
-                  const target = Number(g.target_amount || 0);
-                  const current = Number(g.current_amount || 0);
-                  const pct =
-                    target > 0
-                      ? Math.min(100, Math.round((current / target) * 100))
-                      : 0;
-                  return (
-                    <div
-                      key={g.id || g.title}
-                      className="p-4 rounded-lg border border-slate-200 bg-slate-50/50 flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-start justify-between">
-                          <h4 className="text-sm font-semibold text-[#121212]">
-                            {g.title || g.name}
-                          </h4>
-                          <span className="text-xs font-mono text-slate-500">
-                            {pct}%
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-baseline gap-1 text-sm font-bold text-[#121212]">
-                          <span>{currencySymbol}{current.toLocaleString()}</span>
-                          <span className="text-xs font-normal text-slate-500">
-                            of {currencySymbol}{target.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden mt-2">
-                          <div
-                            className="h-full bg-[#836EF9] transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-2 border-t border-slate-200 flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedGoalForContribute(g);
-                            setIsContributeModalOpen(true);
-                          }}
-                          className="text-xs font-semibold text-[#836EF9] hover:underline"
-                        >
-                          + Contribute
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteGoal(g.id)}
-                          className="text-slate-400 hover:text-[#b91c1c]"
-                          title="Delete goal"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 4. EXPENSES SUBVIEW (SHARED EXPENSES + MONTHLY LIMITS BAR AT TOP) */}
+      {/* 4. SHARED EXPENSES SUBVIEW */}
       {/* ========================================================================= */}
-      {(activeView === "expenses" || activeView === "budgets") && (
+      {activeView === "expenses" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-[#121212]">
-                Expenses
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                Shared Household Expenses
               </h2>
               <p className="text-xs text-slate-500">
-                Shared household spending and category monthly limits.
+                Ledger of grocery runs, utility payments, and shared household
+                purchases.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
-                type="button"
                 onClick={handleExportCsv}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 inline-flex items-center gap-1.5"
+                className="neo-btn neo-btn-secondary"
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download className="h-4 w-4" />
                 <span>Export CSV</span>
               </button>
               {onAddTransaction && (
-                <button
-                  type="button"
-                  onClick={onAddTransaction}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212] border border-[#121212] inline-flex items-center gap-1.5"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Add expense</span>
-                </button>
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={onAddTransaction}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Log Shared Expense"
+                  />
+                </Magnetic>
               )}
             </div>
-          </div>
-
-          {/* Monthly Limits Strip at Top */}
-          <div className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-[#121212]">
-                  Monthly limits
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Spending caps per category
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsBudgetModalOpen(true)}
-                className="text-xs font-semibold text-[#836EF9] hover:underline"
-              >
-                + Set limit
-              </button>
-            </div>
-
-            {budgetStatusList.length === 0 ? (
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                <p className="text-xs text-slate-600">
-                  No monthly limits set yet. Set a spending limit for groceries or utilities.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {budgetStatusList.map((b) => (
-                  <div
-                    key={b.id || b.displayName}
-                    className="p-3 rounded-lg border border-slate-200 bg-slate-50/50"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-[#121212]">
-                        {b.displayName}
-                      </span>
-                      <span
-                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                          b.isOver
-                            ? "bg-red-100 text-red-700"
-                            : b.pct > 80
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
-                        }`}
-                      >
-                        {b.pct}%
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden mt-2">
-                      <div
-                        className={`h-full transition-all ${
-                          b.isOver
-                            ? "bg-[#b91c1c]"
-                            : b.pct > 80
-                              ? "bg-[#f59e0b]"
-                              : "bg-[#836EF9]"
-                        }`}
-                        style={{ width: `${Math.min(100, b.pct)}%` }}
-                      />
-                    </div>
-                    <div className="mt-1.5 flex justify-between text-[11px] font-mono text-slate-500">
-                      <span>{currencySymbol}{b.spent.toFixed(0)}</span>
-                      <span>of {currencySymbol}{b.limit.toFixed(0)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Search & Filter Bar */}
@@ -1500,50 +1502,50 @@ export function FamilyDashboard({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search shared expenses..."
+                placeholder="Search shared expenses by merchant or description..."
                 value={expenseSearch}
                 onChange={(e) => setExpenseSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white"
+                className="w-full pl-9 pr-4 py-2 border-2 border-[#121212] rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#836EF9] bg-white shadow-[2px_2px_0_0_#121212]"
               />
             </div>
             <NeoSelect
               value={expenseCategoryFilter}
               onChange={setExpenseCategoryFilter}
               options={[
-                { value: "all", label: "All categories" },
+                { value: "all", label: "All Categories" },
                 { value: "groceries", label: "Groceries" },
                 { value: "utilities", label: "Utilities" },
-                { value: "rent", label: "Rent & housing" },
-                { value: "dining", label: "Dining & takeout" },
+                { value: "rent", label: "Rent / Housing" },
+                { value: "dining", label: "Dining & Takeout" },
                 { value: "entertainment", label: "Entertainment" },
                 { value: "childcare", label: "Childcare" },
               ]}
             />
           </div>
 
-          <div className="bg-white rounded-xl border border-[#121212]/15 shadow-sm overflow-hidden">
+          <div className="neo-card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80">
-                    <th className="py-3 px-4 font-semibold text-slate-600">
+                  <tr className="border-b-2 border-[#121212] bg-[#f9fafb]">
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600">
                       Date
                     </th>
-                    <th className="py-3 px-4 font-semibold text-slate-600">
-                      Item / Merchant
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600">
+                      Merchant / Item
                     </th>
-                    <th className="py-3 px-4 font-semibold text-slate-600">
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600">
                       Category
                     </th>
-                    <th className="py-3 px-4 font-semibold text-slate-600 text-right">
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600 text-right">
                       Amount
                     </th>
-                    <th className="py-3 px-4 font-semibold text-slate-600 text-center">
-                      Action
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600 text-right">
+                      Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y border-b border-[#121212]">
                   {filteredHouseholdExpenses.length === 0 ? (
                     <tr>
                       <td
@@ -1551,50 +1553,84 @@ export function FamilyDashboard({
                         className="py-12 text-center text-slate-500"
                       >
                         <Receipt className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                        <p className="font-medium text-slate-700">
-                          No shared expenses found.
+                        <p className="font-bold text-[#121212]">
+                          No shared household expenses found.
                         </p>
-                        {onAddTransaction && (
-                          <button
-                            type="button"
-                            onClick={onAddTransaction}
-                            className="mt-3 px-3 py-1.5 bg-[#836EF9] text-white text-xs font-medium rounded-lg shadow-[2px_2px_0_0_#121212] border border-[#121212]"
-                          >
-                            Add expense
-                          </button>
-                        )}
+                        <p className="text-xs text-slate-500 mt-1">
+                          Log shared purchases or scan family receipts.
+                        </p>
                       </td>
                     </tr>
                   ) : (
                     filteredHouseholdExpenses.map((tx) => (
                       <tr
                         key={tx.id}
-                        className="hover:bg-slate-50/80 transition"
+                        className="hover:bg-[#f3f0ff]/30 transition"
                       >
                         <td className="py-3 px-4 font-mono text-slate-600">
                           {tx.date || tx.timestamp?.split("T")[0]}
                         </td>
-                        <td className="py-3 px-4 font-medium text-[#121212]">
+                        <td className="py-3 px-4 font-bold text-[#121212]">
                           {tx.merchant}
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200 capitalize">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[#f3f0ff] text-[#836EF9] border border-[#121212]">
                             {String(tx.category || "General")}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-mono font-bold text-[#b91c1c] text-right">
+                        <td className="py-3 px-4 font-mono font-black text-[#b91c1c] text-right">
                           -{currencySymbol}
                           {Number(tx.amount).toFixed(2)}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenSplitModal(tx)}
-                            className="px-2 py-1 text-xs font-medium rounded border border-slate-300 hover:bg-slate-50 text-slate-700 inline-flex items-center gap-1"
-                          >
-                            <ArrowLeftRight className="h-3 w-3 text-[#836EF9]" />
-                            <span>Split</span>
-                          </button>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleViewReceipt(tx)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] bg-white text-[#121212] hover:bg-[#fbf9fe] shadow-[1.5px_1.5px_0_0_#121212] transition cursor-pointer"
+                              title="Create / View Receipt"
+                            >
+                              <Receipt className="h-3 w-3 text-[#836EF9]" />
+                              <span>Receipt</span>
+                            </button>
+                            {tx.blockchain_tx_hash ||
+                            tx.monad_tx_hash ||
+                            tx.verification_state === "verified" ||
+                            tx.blockchain_status === "confirmed" ? (
+                              <a
+                                href={getMonadExplorerTxUrl(
+                                  tx.blockchain_tx_hash ||
+                                    tx.monad_tx_hash ||
+                                    "",
+                                )}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold rounded-lg border border-[#836EF9] bg-[#f3f0ff] text-[#836EF9] hover:underline"
+                                title="Verified on Monad Testnet"
+                              >
+                                <MonadLogo className="h-2.5 w-2.5" />
+                                <span>Verified</span>
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSaveOnChain(tx)}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold rounded-lg border border-[#121212] bg-[#836EF9] text-white hover:bg-[#7257f8] shadow-[1.5px_1.5px_0_0_#121212] transition cursor-pointer"
+                                title="Save on Monad Testnet (optional)"
+                              >
+                                <MonadLogo className="h-2.5 w-2.5 text-white" />
+                                <span>Save on Chain</span>
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenSplitModal(tx)}
+                              className="neo-btn neo-btn-secondary py-0.5 px-2 text-[10px] cursor-pointer"
+                            >
+                              <ArrowLeftRight className="h-3 w-3 text-[#836EF9]" />
+                              <span>Split</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1607,26 +1643,157 @@ export function FamilyDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 5. BILLS SUBVIEW */}
+      {/* 5. HOUSEHOLD BUDGETS SUBVIEW (STRICT RULE 40 ENFORCEMENT) */}
+      {/* ========================================================================= */}
+      {activeView === "budgets" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                Household Category Budgets
+              </h2>
+              <p className="text-xs text-slate-500">
+                Live spending limits on groceries, utilities, rent, and
+                childcare.
+              </p>
+            </div>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsBudgetModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Create Budget"
+              />
+            </Magnetic>
+          </div>
+
+          {budgetStatusList.length === 0 ? (
+            <div className="relative overflow-hidden rounded-2xl border-2 border-[#121212] bg-white p-12 text-center shadow-[6px_6px_0_0_#121212]">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[#121212] bg-[#f3f0ff] shadow-[3px_3px_0_0_#121212]">
+                <ChartNoAxesCombined className="h-8 w-8 text-[#836EF9]" />
+              </div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#121212] bg-[#fef9c3] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider text-[#854d0e] shadow-[2px_2px_0_0_#121212]">
+                  [HOUSEHOLD BUDGETS : 0]
+                </span>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-wider text-[#121212] font-mono">
+                No Household Budgets Established
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-xs font-mono text-slate-600 leading-relaxed">
+                Set monthly spending targets for household categories like
+                Groceries, Energy, Rent, or Dining.
+              </p>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsBudgetModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Establish First Budget"
+                  />
+                </Magnetic>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {budgetStatusList.map((b) => (
+                <div key={b.id || b.displayName} className="neo-card p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
+                        {b.displayName}
+                      </h3>
+                      <span className="text-[10px] font-black uppercase text-slate-500">
+                        {b.period || "Monthly"} Allowance
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] ${
+                          b.isOver
+                            ? "bg-[#fee2e2] text-[#b91c1c]"
+                            : b.pct > 80
+                              ? "bg-[#fef9c3] text-[#854d0e]"
+                              : "bg-[#dcfce7] text-[#15803d]"
+                        }`}
+                      >
+                        {b.isOver
+                          ? "Exceeded"
+                          : b.pct > 80
+                            ? "Warning"
+                            : "On Track"}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteBudget(b.id)}
+                        className="p-1 text-slate-400 hover:text-[#b91c1c]"
+                        title="Delete Budget"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-baseline justify-between">
+                    <span className="text-2xl font-black font-mono text-[#121212]">
+                      {currencySymbol}
+                      {b.spent.toFixed(2)}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-500">
+                      Limit: {currencySymbol}
+                      {b.limit.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-3 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden mt-3">
+                    <div
+                      className={`h-full transition-all ${
+                        b.pct > 90
+                          ? "bg-[#b91c1c]"
+                          : b.pct > 75
+                            ? "bg-[#f59e0b]"
+                            : "bg-[#836EF9]"
+                      }`}
+                      style={{ width: `${b.pct}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-slate-200 flex justify-between text-[11px] font-semibold text-slate-500">
+                    <span>{b.pct}% utilized</span>
+                    <span>
+                      Remaining: {currencySymbol}
+                      {b.remaining.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. BILLS & UTILITIES SUBVIEW */}
       {/* ========================================================================= */}
       {activeView === "bills" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-[#121212]">
-                Bills & utilities
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212] font-mono">
+                Household Bills & Subscriptions
               </h2>
-              <p className="text-xs text-slate-500">
-                Upcoming and recurring household bills in one place.
+              <p className="text-xs text-slate-500 font-mono mt-0.5">
+                Schedule of shared rent, internet, energy, water, and insurance
+                payments.
               </p>
             </div>
             <button
-              type="button"
               onClick={() => setIsBillModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212] border border-[#121212] inline-flex items-center gap-1.5"
+              className="neo-btn neo-btn-primary shadow-[3px_3px_0_0_#121212] hover:shadow-[1px_1px_0_0_#121212] hover:translate-x-[1px] hover:translate-y-[1px] font-mono font-black uppercase tracking-wider"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add bill</span>
+              <Plus className="h-4 w-4" />
+              <span>Schedule New Bill</span>
             </button>
           </div>
 
@@ -1636,25 +1803,24 @@ export function FamilyDashboard({
               value={billCategoryFilter}
               onChange={setBillCategoryFilter}
               options={[
-                { value: "all", label: "All categories" },
-                { value: "utilities", label: "Utilities" },
-                { value: "rent", label: "Rent & housing" },
-                { value: "internet", label: "Internet" },
-                { value: "streaming", label: "Streaming" },
+                { value: "all", label: "All Categories" },
+                { value: "utilities", label: "Utilities & Energy" },
+                { value: "rent", label: "Rent / Housing" },
+                { value: "internet", label: "Internet & Tech" },
+                { value: "streaming", label: "Streaming & Subs" },
                 { value: "insurance", label: "Insurance" },
               ]}
             />
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {(["all", "unpaid", "paid"] as const).map((st) => (
                 <button
                   key={st}
-                  type="button"
                   onClick={() => setBillStatusFilter(st)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors capitalize ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-black uppercase tracking-wider border-2 border-[#121212] transition-all duration-100 cursor-pointer ${
                     billStatusFilter === st
-                      ? "bg-[#836EF9] text-white border-[#121212]"
-                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                      ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
+                      : "bg-white text-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-[#faf5ff] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                   }`}
                 >
                   {st}
@@ -1664,83 +1830,388 @@ export function FamilyDashboard({
           </div>
 
           {filteredBills.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-              <CalendarDays className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-slate-700">
-                No bills yet. Add your first bill.
+            <div className="relative overflow-hidden rounded-2xl border-2 border-[#121212] bg-white p-12 text-center shadow-[6px_6px_0_0_#121212]">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[#121212] bg-[#f3f0ff] shadow-[3px_3px_0_0_#121212]">
+                <CalendarDays className="h-8 w-8 text-[#836EF9]" />
+              </div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#121212] bg-[#fef9c3] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider text-[#854d0e] shadow-[2px_2px_0_0_#121212]">
+                  [SCHEDULED BILLS : 0]
+                </span>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-wider text-[#121212] font-mono">
+                No Bills Scheduled
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-xs font-mono text-slate-600 leading-relaxed">
+                Schedule your monthly rent, power, water, or WiFi to keep
+                payments on track. Track household payment status and settle
+                splits non-custodially on Monad.
               </p>
-              <button
-                type="button"
-                onClick={() => setIsBillModalOpen(true)}
-                className="mt-3 px-3 py-1.5 bg-[#836EF9] text-white text-xs font-medium rounded-lg shadow-[2px_2px_0_0_#121212] border border-[#121212]"
-              >
-                Add bill
-              </button>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsBillModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Schedule First Bill"
+                  />
+                </Magnetic>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredBills.map((bill) => (
                 <div
                   key={bill.id}
-                  className="bg-white p-5 rounded-xl border border-[#121212]/15 shadow-sm flex flex-col justify-between"
+                  className="neo-card p-5 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-sm font-bold text-[#121212]">
+                        <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
                           {bill.name}
                         </h3>
-                        <span className="text-xs text-slate-500 capitalize">
+                        <span className="text-[10px] font-black uppercase text-slate-500">
                           {bill.frequency} • {bill.category}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium capitalize ${
+                          className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-[#121212] ${
                             bill.status === "paid"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
+                              ? "bg-[#dcfce7] text-[#15803d]"
+                              : "bg-[#fee2e2] text-[#b91c1c]"
                           }`}
                         >
                           {bill.status}
                         </span>
                         <button
-                          type="button"
                           onClick={() => handleDeleteBill(bill.id)}
                           className="p-1 text-slate-400 hover:text-[#b91c1c]"
-                          title="Delete bill"
+                          title="Delete Bill"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </div>
 
-                    <div className="mt-3">
-                      <div className="text-xl font-bold font-mono text-[#121212]">
+                    <div className="mt-4">
+                      <span className="text-[10px] font-black uppercase text-slate-500">
+                        Amount Due
+                      </span>
+                      <div className="text-2xl font-black font-mono text-[#121212]">
                         {currencySymbol}
                         {bill.amount.toFixed(2)}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Due: {bill.due_date}
+                      <p className="text-xs text-slate-500 mt-1">
+                        Due date: {bill.due_date}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="mt-5 pt-3 border-t-2 border-[#121212]">
                     {bill.status === "unpaid" ? (
                       <button
-                        type="button"
                         onClick={() => handleMarkBillPaid(bill)}
-                        className="w-full px-3 py-1.5 bg-[#836EF9] text-white text-xs font-medium rounded-lg shadow-[2px_2px_0_0_#121212] border border-[#121212]"
+                        className="w-full neo-btn neo-btn-primary text-center justify-center text-xs"
                       >
-                        Mark paid
+                        <span>Mark Bill Paid</span>
                       </button>
                     ) : (
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#15803d]">
-                        <BadgeCheck className="w-3.5 h-3.5" />
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-mono font-bold text-[#15803d]">
+                        <BadgeCheck className="w-3.5 h-3.5 shrink-0" />
                         <span>Paid by {bill.paid_by_name || "Household"}</span>
                       </div>
                     )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. FAMILY GOALS SUBVIEW (STRICT RULE 40 ENFORCEMENT) */}
+      {/* ========================================================================= */}
+      {activeView === "goals" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                Shared Family Goals
+              </h2>
+              <p className="text-xs text-slate-500">
+                Save together for vacations, emergency funds, and major
+                household purchases.
+              </p>
+            </div>
+            <Magnetic range={60} intensity={0.35}>
+              <WatermelonButton
+                onClick={() => setIsGoalModalOpen(true)}
+                variant="primary"
+                icon={<Plus className="h-4 w-4" />}
+                morphText="Create Goal"
+              />
+            </Magnetic>
+          </div>
+
+          {localGoals.length === 0 ? (
+            <div className="relative overflow-hidden rounded-2xl border-2 border-[#121212] bg-white p-12 text-center shadow-[6px_6px_0_0_#121212]">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[#121212] bg-[#f3f0ff] shadow-[3px_3px_0_0_#121212]">
+                <Target className="h-8 w-8 text-[#836EF9]" />
+              </div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#121212] bg-[#fef9c3] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider text-[#854d0e] shadow-[2px_2px_0_0_#121212]">
+                  [SAVINGS TARGETS : 0]
+                </span>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-wider text-[#121212] font-mono">
+                No Savings Goals Active
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-xs font-mono text-slate-600 leading-relaxed">
+                Set a collective target for vacation funds, emergency reserves,
+                or major household milestones.
+              </p>
+              <div className="mt-6 flex justify-center">
+                <Magnetic range={60} intensity={0.35}>
+                  <WatermelonButton
+                    onClick={() => setIsGoalModalOpen(true)}
+                    variant="primary"
+                    icon={<Plus className="h-4 w-4" />}
+                    morphText="Create First Goal"
+                  />
+                </Magnetic>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {localGoals.map((g) => {
+                const target = Number(g.target_amount || 0);
+                const current = Number(g.current_amount || 0);
+                const pct =
+                  target > 0
+                    ? Math.min(100, Math.round((current / target) * 100))
+                    : 0;
+                return (
+                  <div
+                    key={g.id || g.title}
+                    className="neo-card p-5 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
+                          {g.title || g.name}
+                        </h3>
+                        <span className="text-[10px] font-black uppercase bg-[#f3f0ff] text-[#836EF9] px-2 py-0.5 rounded border border-[#121212]">
+                          {g.status === "reached"
+                            ? "Goal Reached"
+                            : "Active Target"}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 flex items-baseline gap-2">
+                        <span className="text-2xl font-black font-mono text-[#836EF9]">
+                          {currencySymbol}
+                          {current.toLocaleString()}
+                        </span>
+                        <span className="text-xs font-mono text-slate-500">
+                          / {currencySymbol}
+                          {target.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="w-full h-3 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden mt-3">
+                        <div
+                          className="h-full bg-[#836EF9] transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+
+                      <div className="mt-2 flex justify-between text-[11px] font-semibold text-slate-500">
+                        <span>{pct}% funded</span>
+                        <span>
+                          Target: {g.deadline || g.target_date || "2026-12-31"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t-2 border-[#121212] flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setSelectedGoalForContribute(g);
+                          setIsContributeModalOpen(true);
+                        }}
+                        className="flex-1 neo-btn neo-btn-secondary text-center justify-center text-xs py-1"
+                      >
+                        <Plus className="h-3.5 w-3.5 text-[#836EF9]" />
+                        <span>Contribute</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGoal(g.id)}
+                        title="Delete Goal"
+                        className="p-1.5 border-2 border-[#121212] bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded transition-colors"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. SETTLEMENTS SUBVIEW ("WHO OWES WHOM") */}
+      {/* ========================================================================= */}
+      {activeView === "settlements" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-wider text-[#121212]">
+                Household Settlements & Balances
+              </h2>
+              <p className="text-xs text-slate-500">
+                Non-custodial ledger tracking IOUs and balances between family
+                members.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsManualSettlementModalOpen(true)}
+              className="neo-btn neo-btn-primary"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Record Manual IOU</span>
+            </button>
+          </div>
+
+          {/* Non-custodial reassurance banner */}
+          <div className="p-4 rounded-xl border-2 border-[#121212] bg-[#f3f0ff] shadow-[2px_2px_0_0_#121212] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-[#836EF9] shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold text-[#121212] uppercase">
+                  Non-Custodial Balance Accounting:{" "}
+                </span>
+                <span className="text-slate-700">
+                  Clario computes net balances offchain without taking custody
+                  of your money. Settle up in cash, bank transfer, or onchain
+                  USDC via Monad Testnet (10143).
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Member Balance Roster */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {memberBalances.map(({ member, net, owedToMe, iOwe }) => (
+              <div key={member.id} className="neo-card p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-6 h-6 rounded-full border border-[#121212] flex items-center justify-center text-[10px] font-black text-white"
+                    style={{
+                      backgroundColor: member.avatar_color || "#836EF9",
+                    }}
+                  >
+                    {member.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs font-black uppercase text-[#121212]">
+                    {member.name}
+                  </span>
+                </div>
+                <div className="text-xl font-black font-mono">
+                  <span
+                    className={
+                      net > 0
+                        ? "text-[#15803d]"
+                        : net < 0
+                          ? "text-[#b91c1c]"
+                          : "text-slate-600"
+                    }
+                  >
+                    {net > 0 ? "+" : ""}
+                    {currencySymbol}
+                    {net.toFixed(2)}
+                  </span>
+                </div>
+                <div className="mt-2 text-[10px] text-slate-500 flex justify-between border-t border-slate-200 pt-1">
+                  <span>
+                    Is owed: {currencySymbol}
+                    {owedToMe.toFixed(2)}
+                  </span>
+                  <span>
+                    Owes: {currencySymbol}
+                    {iOwe.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {settlements.length === 0 ? (
+            <div className="relative overflow-hidden rounded-2xl border-2 border-[#121212] bg-white p-12 text-center shadow-[6px_6px_0_0_#121212]">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-[#121212] bg-[#dcfce7] shadow-[3px_3px_0_0_#121212]">
+                <BadgeCheck className="h-8 w-8 text-[#15803d]" />
+              </div>
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#121212] bg-[#dcfce7] px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider text-[#15803d] shadow-[2px_2px_0_0_#121212]">
+                  [SETTLEMENT STATUS : BALANCED]
+                </span>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-wider text-[#121212] font-mono">
+                All Settled Up!
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-xs font-mono text-slate-600 leading-relaxed">
+                No outstanding balances between household members. Everyone is
+                square on shared purchases.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {settlements.map((s) => (
+                <div
+                  key={s.id}
+                  className="neo-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <ArrowLeftRight className="h-5 w-5 text-[#836EF9] shrink-0" />
+                    <div>
+                      <div className="text-sm font-black uppercase text-[#121212]">
+                        {s.from_member_name} owes {s.to_member_name}
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        Household split balance record
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-xl font-black font-mono text-[#121212]">
+                      {currencySymbol}
+                      {Number(s.amount).toFixed(2)}
+                    </div>
+                    {s.status === "pending" ? (
+                      <button
+                        onClick={() => handleSettleUp(s)}
+                        className="neo-btn neo-btn-primary py-1 px-3 text-xs"
+                      >
+                        <span>Mark Settled</span>
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-mono font-bold text-[#15803d]">
+                        <BadgeCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span>Settled</span>
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleDeleteSettlement(s.id)}
+                      className="p-1 text-slate-400 hover:text-[#b91c1c]"
+                      title="Delete Record"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -2620,6 +3091,13 @@ export function FamilyDashboard({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Shareable Receipt Modal */}
+      <TransactionShareModal
+        isOpen={!!selectedProofTx}
+        onClose={() => setSelectedProofTx(null)}
+        transaction={selectedProofTx}
+      />
     </div>
   );
 }

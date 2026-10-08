@@ -20,7 +20,7 @@ import type {
 } from "@/lib/supabase/types";
 import { MONAD_TESTNET_CHAIN_ID, CLARIO_REGISTRY_ADDRESS } from "@/lib/blockchain/registry";
 
-export type ExportFormat = "json" | "csv" | "txt" | "pdf";
+export type ExportFormat = "json" | "csv" | "txt" | "pdf" | "png";
 
 export interface NormalizedReceiptData {
   receiptId: string;
@@ -608,9 +608,251 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
 }
 
 /**
+ * Renders a high-resolution visual receipt card as a PNG image using native Canvas.
+ */
+export async function generatePngReceipt(
+  data: NormalizedReceiptData,
+): Promise<Blob> {
+  if (typeof document === "undefined") {
+    throw new Error("generatePngReceipt must be called in a browser environment");
+  }
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Failed to get 2D canvas context");
+  }
+
+  const isVerified =
+    data.blockchain.verificationStatus === "VERIFIED ON MONAD" &&
+    Boolean(data.blockchain.txHash);
+
+  // High-DPI canvas dimensions
+  const width = 800;
+  const txRowCount = Math.min(data.transactions.length, 10);
+  const baseHeight = 520 + txRowCount * 36 + (isVerified ? 200 : 40);
+  const height = Math.max(700, baseHeight);
+  const scale = 2;
+
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  ctx.scale(scale, scale);
+
+  // Background
+  ctx.fillStyle = "#fafafa";
+  ctx.fillRect(0, 0, width, height);
+
+  // Outer Neo-brutalist card container
+  const cardX = 32;
+  const cardY = 32;
+  const cardW = width - 64;
+  const cardH = height - 64;
+
+  // 6px offset shadow
+  ctx.fillStyle = "#121212";
+  ctx.fillRect(cardX + 6, cardY + 6, cardW, cardH);
+
+  // Card body
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(cardX, cardY, cardW, cardH);
+
+  // 3px black border
+  ctx.strokeStyle = "#121212";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(cardX, cardY, cardW, cardH);
+
+  // Header Banner
+  const headerHeight = 60;
+  ctx.fillStyle = isVerified ? "#836EF9" : "#121212";
+  ctx.fillRect(cardX, cardY, cardW, headerHeight);
+
+  // Header Title
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 15px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(
+    isVerified ? "CLARIO • MONAD VERIFIED PROOF" : "CLARIO • FINANCIAL RECEIPT",
+    cardX + 24,
+    cardY + 36,
+  );
+
+  // Header Right Badge
+  ctx.font = "bold 11px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText(
+    isVerified ? "MONAD TESTNET (10143)" : "SOVEREIGN RECORD",
+    cardX + cardW - 24,
+    cardY + 36,
+  );
+
+  // Receipt Meta (Name & Date)
+  let currY = cardY + headerHeight + 36;
+  ctx.fillStyle = "#64748b";
+  ctx.font = "bold 10px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("RECEIPT / TRANSACTION", cardX + 24, currY);
+  ctx.textAlign = "right";
+  ctx.fillText("DATE & TIME", cardX + cardW - 24, currY);
+
+  currY += 24;
+  ctx.fillStyle = "#121212";
+  ctx.font = "bold 20px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(data.receiptName.slice(0, 32), cardX + 24, currY);
+  ctx.font = "12px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText(
+    data.createdAt.split("T")[0] || data.createdAt,
+    cardX + cardW - 24,
+    currY,
+  );
+
+  // Amount Box
+  currY += 28;
+  const amountBoxH = 68;
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillRect(cardX + 24, currY, cardW - 48, amountBoxH);
+  ctx.strokeStyle = "#121212";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cardX + 24, currY, cardW - 48, amountBoxH);
+
+  ctx.fillStyle = "#64748b";
+  ctx.font = "bold 10px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("TOTAL RECORDED AMOUNT", cardX + 36, currY + 24);
+
+  ctx.fillStyle = isVerified ? "#836EF9" : "#121212";
+  ctx.font = "bold 26px 'Courier New', monospace, sans-serif";
+  ctx.fillText(
+    `${data.currency} ${Number(data.totalAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    cardX + 36,
+    currY + 52,
+  );
+
+  // Status Badge inside amount box
+  ctx.font = "bold 11px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillStyle = isVerified ? "#836EF9" : "#059669";
+  ctx.fillText(
+    isVerified ? "• VERIFIED ON MONAD" : "• PERMANENT RECORD",
+    cardX + cardW - 36,
+    currY + 42,
+  );
+
+  // Itemized transactions table
+  currY += amountBoxH + 34;
+  ctx.fillStyle = "#121212";
+  ctx.font = "bold 12px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("ITEMIZED TRANSACTIONS", cardX + 24, currY);
+
+  currY += 12;
+  ctx.fillStyle = "#e2e8f0";
+  ctx.fillRect(cardX + 24, currY, cardW - 48, 1);
+
+  // Table header
+  currY += 18;
+  ctx.fillStyle = "#64748b";
+  ctx.font = "bold 10px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("MERCHANT / ITEM", cardX + 24, currY);
+  ctx.fillText("CATEGORY", cardX + 260, currY);
+  ctx.fillText("TYPE", cardX + 420, currY);
+  ctx.textAlign = "right";
+  ctx.fillText("AMOUNT", cardX + cardW - 24, currY);
+
+  currY += 8;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fillRect(cardX + 24, currY, cardW - 48, 1);
+
+  // Table rows
+  ctx.font = "11px 'Courier New', monospace, sans-serif";
+  const displayTxs = data.transactions.slice(0, 10);
+  for (const t of displayTxs) {
+    currY += 26;
+    ctx.fillStyle = "#121212";
+    ctx.textAlign = "left";
+    ctx.fillText(t.merchant.slice(0, 24), cardX + 24, currY);
+    ctx.fillStyle = "#475569";
+    ctx.fillText(t.category.slice(0, 16), cardX + 260, currY);
+    ctx.fillText(t.type.toUpperCase(), cardX + 420, currY);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#121212";
+    ctx.fillText(
+      `${t.currency || data.currency} ${Number(t.amount).toFixed(2)}`,
+      cardX + cardW - 24,
+      currY,
+    );
+  }
+
+  // Verification Box (if on-chain verified)
+  if (isVerified && data.blockchain.txHash) {
+    currY += 32;
+    const proofH = 130;
+    ctx.fillStyle = "#fbf9fe";
+    ctx.fillRect(cardX + 24, currY, cardW - 48, proofH);
+    ctx.strokeStyle = "#836EF9";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(cardX + 24, currY, cardW - 48, proofH);
+
+    ctx.fillStyle = "#836EF9";
+    ctx.font = "bold 11px 'Courier New', monospace, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("MONAD CRYPTOGRAPHIC PROOF ANCHOR", cardX + 36, currY + 22);
+
+    ctx.fillStyle = "#475569";
+    ctx.font = "9px 'Courier New', monospace, sans-serif";
+    ctx.fillText("TRANSACTION HASH:", cardX + 36, currY + 44);
+    ctx.fillStyle = "#121212";
+    ctx.fillText(data.blockchain.txHash, cardX + 36, currY + 58);
+
+    ctx.fillStyle = "#475569";
+    ctx.fillText("DATA COMMITMENT (KECCAK256):", cardX + 36, currY + 78);
+    ctx.fillStyle = "#121212";
+    ctx.fillText(
+      data.blockchain.receiptHash || data.blockchain.contract,
+      cardX + 36,
+      currY + 92,
+    );
+
+    ctx.fillStyle = "#836EF9";
+    ctx.fillText(
+      `EXPLORER: https://testnet.monadexplorer.com/tx/${data.blockchain.txHash.slice(0, 14)}...`,
+      cardX + 36,
+      currY + 114,
+    );
+  }
+
+  // Footer Note
+  const footerY = cardY + cardH - 20;
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "9px 'Courier New', monospace, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(
+    "CLARIO FINANCIAL INTELLIGENCE • NON-CUSTODIAL PERMANENT RECORD • POWERED BY MONAD",
+    width / 2,
+    footerY,
+  );
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Canvas toBlob returned null"));
+        }
+      },
+      "image/png",
+      1.0,
+    );
+  });
+}
+
+/**
  * Triggers browser download for a specific format using the canonical normalized data.
  */
-export function triggerReceiptExport(
+export async function triggerReceiptExport(
   data: NormalizedReceiptData,
   format: ExportFormat,
 ) {
@@ -640,6 +882,11 @@ export function triggerReceiptExport(
     case "pdf": {
       blob = generatePdfReceipt(data);
       filename = `${filePrefix}.pdf`;
+      break;
+    }
+    case "png": {
+      blob = await generatePngReceipt(data);
+      filename = `${filePrefix}.png`;
       break;
     }
   }

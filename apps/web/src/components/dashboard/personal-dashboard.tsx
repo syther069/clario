@@ -65,6 +65,7 @@ import {
   TextScramble,
   AnimatedBackground,
   SlidingNumber,
+  TextMorph,
   ToolbarExpandable,
   ToolbarCollapsed,
   ToolbarExpanded,
@@ -189,19 +190,6 @@ export function PersonalDashboard({
   const [savingProgressLabel, setSavingProgressLabel] = useState<string>("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
-
-  // Sub-tab toggles for merged views
-  const [expenseSubTab, setExpenseSubTab] = useState<"all" | "expenses" | "income">("all");
-  const [budgetSubTab, setBudgetSubTab] = useState<"budgets" | "receipts">("budgets");
-
-  const currentTab = useMemo<"overview" | "expenses" | "recurring" | "budgets">(() => {
-    if (currentView === "income") return "expenses";
-    if (currentView === "receipts") return "budgets";
-    if (currentView === "expenses" || currentView === "recurring" || currentView === "budgets") {
-      return currentView;
-    }
-    return "overview";
-  }, [currentView]);
 
   // Sub-ledger state (Personal Finance / Fiat vs On-Chain / Web3)
   const [subLedger, setSubLedger] = useState<"fiat" | "onchain">("fiat");
@@ -1374,20 +1362,20 @@ export function PersonalDashboard({
                 </span>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
                   <MonadLogo className="h-3 w-3" />
-                  Monad Testnet
+                  Monad Testnet (10143)
                 </span>
               </>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#121212]">
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
             {subLedger === "fiat"
-              ? "Personal finance"
-              : "On-chain activity"}
+              ? "Personal Finance & Daily Living"
+              : "On-Chain & Web3 Activity"}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             {subLedger === "fiat"
-              ? "Daily spending, cards, recurring bills, and budgets."
-              : "Multi-chain transaction indexing and Monad notarizations."}
+              ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
+              : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
           </p>
         </div>
 
@@ -1428,7 +1416,7 @@ export function PersonalDashboard({
                   onClick={() => onAddTransaction?.("onchain")}
                   variant="primary"
                   icon={<Plus className="h-4 w-4" />}
-                  morphText="Add Transaction"
+                  morphText="Add On-Chain TX"
                 />
               </Magnetic>
             </>
@@ -1437,8 +1425,8 @@ export function PersonalDashboard({
       </div>
 
       {/* 2. Two-Tier Sub-Ledger Switcher: Personal Finance (Fiat) vs On-Chain (Web3) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-[#121212]/15 shadow-sm rounded-xl">
-        <div className="flex items-center gap-2 p-1 bg-[#f3f4f6] border border-[#121212]/15 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] rounded-2xl">
+        <div className="flex items-center gap-2 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl">
           <motion.button
             type="button"
             whileHover={{ y: -1 }}
@@ -1446,14 +1434,23 @@ export function PersonalDashboard({
             onClick={() => {
               setSubLedger("fiat");
             }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
               subLedger === "fiat"
-                ? "bg-[#836EF9] text-white border border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                : "bg-white text-slate-700 border border-transparent hover:border-[#121212]/20"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
-            <CreditCard className="h-3.5 w-3.5" />
-            <span>Personal finance</span>
+            <CreditCard className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`} />
+            <span>Personal Finance</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                subLedger === "fiat"
+                  ? "bg-white/20 text-white border-white/40"
+                  : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              }`}
+            >
+              Fiat
+            </span>
           </motion.button>
           <motion.button
             type="button"
@@ -1470,14 +1467,23 @@ export function PersonalDashboard({
                 if (onViewChange) onViewChange("overview");
               }
             }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
               subLedger === "onchain"
-                ? "bg-[#836EF9] text-white border border-[#121212] shadow-[2px_2px_0_0_#121212]"
-                : "bg-white text-slate-700 border border-transparent hover:border-[#121212]/20"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
             <MonadLogo className="h-3.5 w-3.5" />
-            <span>On-chain</span>
+            <span>On-Chain</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                subLedger === "onchain"
+                  ? "bg-white/20 text-white border-white/40"
+                  : "bg-purple-100 text-[#836EF9] border-purple-300"
+              }`}
+            >
+              Web3
+            </span>
           </motion.button>
         </div>
 
@@ -1485,7 +1491,7 @@ export function PersonalDashboard({
         <div className="flex items-center gap-2.5">
           {subLedger === "fiat" ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500">
                 Currency:
               </span>
               <div className="flex items-center gap-1.5">
@@ -1501,10 +1507,10 @@ export function PersonalDashboard({
                     whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => setFiatCurrency(cur)}
-                    className={`px-2 py-0.5 rounded text-xs font-mono font-bold border transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-black uppercase border-2 transition-all cursor-pointer ${
                       fiatCurrency.code === cur.code
-                        ? "bg-[#836EF9] text-white border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                        : "bg-white text-slate-700 border-[#121212]/20 hover:bg-[#f3f4f6]"
+                        ? "bg-[#836EF9] text-white border-[#121212] shadow-[2px_2px_0_0_#121212]"
+                        : "bg-white text-slate-700 border-[#121212] shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
                     }`}
                   >
                     {cur.code} ({cur.symbol})
@@ -1514,166 +1520,308 @@ export function PersonalDashboard({
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-[#836EF9] bg-[#f3f0ff] px-2.5 py-1 rounded border border-[#836EF9]/30 flex items-center gap-1.5">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-3 py-1.5 rounded-lg border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5">
                 <MonadLogo className="h-3.5 w-3.5" />
-                <span>Monad Testnet</span>
+                <span>Monad Testnet (10143)</span>
               </span>
             </div>
           )}
         </div>
       </div>
 
-      {/* 3. Primary Mode Navigation Bar: Fixed 4 Tabs */}
-      <div className="w-full bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl p-1.5">
-        <nav
-          aria-label="Personal Navigation"
-          className="grid grid-cols-4 w-full gap-1.5"
+      {/* 3. Primary Mode Navigation Bar */}
+      <nav
+        aria-label="Personal Navigation"
+        className="p-1.5 bg-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] rounded-xl flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none w-fit max-w-full"
+      >
+        <AnimatedBackground
+          defaultValue={currentView}
+          className="bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg"
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 30,
+          }}
         >
-          <AnimatedBackground
-            defaultValue={currentTab}
-            className="bg-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-lg"
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-            }}
-          >
-            {[
-              { id: "overview", label: "Overview", icon: LayoutDashboard },
-              { id: "expenses", label: "Expenses", icon: TrendingDown },
-              { id: "recurring", label: "Recurring & bills", icon: RotateCcw },
-              { id: "budgets", label: "Budgets & receipts", icon: ChartNoAxesCombined },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  data-id={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setCurrentView(tab.id as PersonalView);
-                    if (onViewChange) onViewChange(tab.id as PersonalView);
-                  }}
-                  className={`group inline-flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer text-center ${
-                    isActive ? "text-white" : "text-[#121212] hover:bg-[#f3f4f6]"
+          {(subLedger === "fiat"
+            ? [
+                { id: "overview", label: "Overview", icon: LayoutDashboard },
+                {
+                  id: "expenses",
+                  label: "Expenses",
+                  icon: TrendingDown,
+                  count: fiatTransactions.filter((t) => t.type === "expense").length,
+                },
+                {
+                  id: "income",
+                  label: "Income",
+                  icon: TrendingUp,
+                  count: fiatTransactions.filter((t) => t.type === "income").length,
+                },
+                {
+                  id: "budgets",
+                  label: "Budgets",
+                  icon: ChartNoAxesCombined,
+                  count: budgets.length,
+                },
+                {
+                  id: "recurring",
+                  label: "Recurring",
+                  icon: RotateCcw,
+                  count: subscriptions.length,
+                },
+                {
+                  id: "receipts",
+                  label: "Saved Receipts",
+                  icon: Receipt,
+                  count: verifiedReceipts.length,
+                },
+              ]
+            : [
+                { id: "overview", label: "Web3 Overview", icon: LayoutDashboard },
+                {
+                  id: "expenses",
+                  label: "On-Chain Activity",
+                  icon: ArrowLeftRight,
+                  count: onChainTransactions.length,
+                },
+                {
+                  id: "receipts",
+                  label: "Monad Proofs",
+                  icon: ShieldCheck,
+                  count: verifiedReceipts.length,
+                },
+              ]
+          ).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentView === tab.id;
+            return (
+              <button
+                key={tab.id}
+                data-id={tab.id}
+                onClick={() => {
+                  setCurrentView(tab.id as PersonalView);
+                  if (tab.id === "receipts") {
+                    setActiveLedgerTab("receipts");
+                  }
+                  if (onViewChange) onViewChange(tab.id as PersonalView);
+                }}
+                className={`group inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-colors shrink-0 cursor-pointer ${
+                  isActive ? "text-white" : "text-[#121212] hover:bg-[#f3f4f6]"
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-colors ${
+                    isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
                   }`}
-                >
-                  <Icon
-                    className={`h-4 w-4 shrink-0 transition-colors ${
-                      isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+                  aria-hidden="true"
+                />
+                <span className="shrink-0">{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span
+                    className={`inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[10px] font-mono font-black rounded-full border border-[#121212] leading-none shrink-0 transition-colors ${
+                      isActive
+                        ? "bg-white text-[#121212]"
+                        : "bg-[#f3f0ff] text-[#836EF9]"
                     }`}
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{tab.label}</span>
-                </button>
-              );
-            })}
-          </AnimatedBackground>
-        </nav>
-      </div>
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </AnimatedBackground>
+      </nav>
 
       {/* ========================================================================= */}
-      {/* 1. OVERVIEW VIEW: Exactly 4 Stat Cards */}
+      {/* 1. OVERVIEW VIEW */}
       {/* ========================================================================= */}
-      {currentTab === "overview" && (
+      {currentView === "overview" && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 1. Spent this month */}
-            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  Spent this month
-                </span>
-                <div className="p-1 rounded-md bg-rose-50 text-rose-600 border border-[#121212]/10">
-                  <TrendingDown className="h-3.5 w-3.5" />
+          {/* Top-Level KPIs (Hierarchical Anchor + Vitals Grid) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Dominant Hero Card: Net Position & Inflow/Outflow (lg:col-span-7) */}
+            <div className="lg:col-span-7 neo-card p-6 flex flex-col justify-between relative overflow-hidden bg-white">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500 bg-[#f8f9fa] px-2.5 py-1 rounded-md border-1.5 border-[#121212]">
+                      {subLedger === "fiat" ? "Personal Net Cashflow" : "Web3 Net Position"}
+                    </span>
+                    <span
+                      className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded border border-[#121212] ${
+                        netCashFlow >= 0
+                          ? "bg-[#dcfce7] text-[#15803d]"
+                          : "bg-[#fee2e2] text-[#b91c1c]"
+                      }`}
+                    >
+                      {netCashFlow >= 0 ? "Surplus" : "Deficit"}
+                    </span>
+                  </div>
+                  {subLedger === "fiat" ? (
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-[#121212]">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span>Private Ledger</span>
+                    </div>
+                  ) : (
+                    <div className="relative overflow-hidden flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 bg-[#f3f4f6] px-2.5 py-1 rounded border border-[#121212]">
+                      <MonadLogo className="h-3.5 w-3.5" />
+                      <span>Monad Ledger</span>
+                      <BorderTrail
+                        size={30}
+                        className="bg-[#836EF9]"
+                        transition={{
+                          repeat: Infinity,
+                          duration: 4,
+                          ease: "linear",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* The Undisputed Hero Number */}
+                <div className="my-2">
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-[#121212] flex items-center">
+                    <span>{netCashFlow >= 0 ? "+" : "-"}</span>
+                    <span>{activeCurrencySymbol}</span>
+                    <SlidingNumber
+                      value={Math.round(Math.abs(netCashFlow) * 100) / 100}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500 font-medium">
+                    {subLedger === "fiat"
+                      ? "Net recorded personal cashflow across cash, cards & bank accounts"
+                      : "Net crypto balance across Monad, Base, Ethereum & Arbitrum"}
+                  </p>
                 </div>
               </div>
-              <div className="text-2xl font-bold font-mono text-[#121212] mt-2">
-                {activeCurrencySymbol}
-                {monthlySpending.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Current month expenses
-              </p>
-            </div>
 
-            {/* 2. Monthly income */}
-            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  Monthly income
-                </span>
-                <div className="p-1 rounded-md bg-emerald-50 text-emerald-600 border border-[#121212]/10">
-                  <TrendingUp className="h-3.5 w-3.5" />
+              {/* Integrated Inflow vs Outflow Dual Rail */}
+              <div className="grid grid-cols-2 gap-3 pt-4 mt-3 border-t-2 border-[#121212]">
+                <div className="p-3 rounded-lg bg-[#f0fdf4] border-1.5 border-[#121212]">
+                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-[#15803d]">
+                    <span>Monthly Inflow</span>
+                    <TrendingUp className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-[#15803d] mt-1 flex items-center">
+                    <span>+{activeCurrencySymbol}</span>
+                    <SlidingNumber
+                      value={Math.round(monthlyIncome * 100) / 100}
+                    />
+                  </div>
+                  <p className="text-[10px] text-[#166534] font-medium mt-0.5">
+                    Current month income
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-[#fef2f2] border-1.5 border-[#121212]">
+                  <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-[#b91c1c]">
+                    <span>Monthly Outflow</span>
+                    <TrendingDown className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-black font-mono text-[#b91c1c] mt-1 flex items-center">
+                    <span>-{activeCurrencySymbol}</span>
+                    <SlidingNumber
+                      value={Math.round(monthlySpending * 100) / 100}
+                    />
+                  </div>
+                  <p className="text-[10px] text-[#991b1b] font-medium mt-0.5">
+                    Current month expenses
+                  </p>
                 </div>
               </div>
-              <div className="text-2xl font-bold font-mono text-[#15803d] mt-2">
-                +{activeCurrencySymbol}
-                {monthlyIncome.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Current month inflow
-              </p>
             </div>
 
-            {/* 3. Net cash flow */}
-            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  Net cash flow
-                </span>
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
-                    netCashFlow >= 0
-                      ? "bg-[#dcfce7] text-[#15803d] border-emerald-300"
-                      : "bg-[#fee2e2] text-[#b91c1c] border-rose-300"
-                  }`}
-                >
-                  {netCashFlow >= 0 ? "Surplus" : "Deficit"}
-                </span>
-              </div>
-              <div className="text-2xl font-bold font-mono text-[#121212] mt-2">
-                {netCashFlow >= 0 ? "+" : "-"}
-                {activeCurrencySymbol}
-                {Math.abs(netCashFlow).toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                {netCashFlow >= 0 ? "Net positive balance" : "Net negative outflow"}
-              </p>
-            </div>
-
-            {/* 4. Budget remaining */}
-            <div className="border border-[#121212]/15 shadow-sm rounded-xl p-5 bg-white">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  Budget remaining
-                </span>
-                <div className="p-1 rounded-md bg-[#f3f0ff] text-[#836EF9] border border-[#121212]/10">
-                  <ChartNoAxesCombined className="h-3.5 w-3.5" />
+            {/* Supporting Operational Vitals (lg:col-span-5) */}
+            <div className="lg:col-span-5 flex flex-col gap-4">
+              {/* 1. Available Budget */}
+              <div className="neo-card p-5 flex-1 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                    Available Budget
+                  </span>
+                  <div className="rounded-lg bg-[#f3f0ff] p-1.5 text-[#836EF9] border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+                    <ChartNoAxesCombined
+                      className="h-3.5 w-3.5"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="text-2xl font-black font-mono text-[#836EF9] flex items-center">
+                    <span>{currencySymbol}</span>
+                    <SlidingNumber
+                      value={Math.round(availableBudget * 100) / 100}
+                    />
+                  </div>
+                  <div className="mt-2 w-full h-2 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden">
+                    <div
+                      className="h-full bg-[#836EF9] transition-all"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          totalBudgetLimit > 0
+                            ? (monthlySpending / totalBudgetLimit) * 100
+                            : 0,
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-between text-[10px] text-slate-500 font-semibold">
+                    <span>
+                      {totalBudgetLimit > 0
+                        ? ((monthlySpending / totalBudgetLimit) * 100).toFixed(
+                            0,
+                          )
+                        : 0}
+                      % used
+                    </span>
+                    <span>
+                      Limit: {currencySymbol}
+                      {totalBudgetLimit.toFixed(0)}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="text-2xl font-bold font-mono text-[#836EF9] mt-2">
-                {activeCurrencySymbol}
-                {Math.max(0, availableBudget).toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+
+              {/* 2. Upcoming Bills & Savings Rate */}
+              <div className="neo-card p-5 flex-1 flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                    Upcoming Obligations
+                  </span>
+                  <div className="rounded-lg bg-[#fef3c7] p-1.5 text-[#d97706] border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+                    <Calendar className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <div>
+                    <div className="text-2xl font-black font-mono text-[#121212]">
+                      {currencySymbol}
+                      {upcomingBillsTotal.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                      {
+                        localSubscriptions.filter((s) => s.status === "active")
+                          .length
+                      }{" "}
+                      active bills & subscriptions
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      Savings Rate
+                    </span>
+                    <div className="text-xl font-black font-mono text-[#059669]">
+                      {savingsRate}%
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                {totalBudgetLimit > 0
-                  ? `${((monthlySpending / totalBudgetLimit) * 100).toFixed(0)}% of limit used`
-                  : "No limit set"}
-              </p>
             </div>
           </div>
 
@@ -2209,48 +2357,10 @@ export function PersonalDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 2. EXPENSES & INCOME VIEW */}
+      {/* 2. EXPENSES DEDICATED VIEW */}
       {/* ========================================================================= */}
-      {currentTab === "expenses" && (
+      {currentView === "expenses" && (
         <div className="space-y-6 animate-in fade-in duration-200">
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-[#121212]/15 rounded-lg shadow-sm w-fit">
-            <button
-              type="button"
-              onClick={() => setExpenseSubTab("all")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-                expenseSubTab === "all"
-                  ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              All transactions
-            </button>
-            <button
-              type="button"
-              onClick={() => setExpenseSubTab("expenses")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-                expenseSubTab === "expenses"
-                  ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              Expenses
-            </button>
-            <button
-              type="button"
-              onClick={() => setExpenseSubTab("income")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-                expenseSubTab === "income"
-                  ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              Income
-            </button>
-          </div>
-
-          {expenseSubTab !== "income" ? (
-            <div className="space-y-6">
           {/* Header & Primary Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -2476,7 +2586,7 @@ export function PersonalDashboard({
                     ]}
                   />
 
-                  <ToolbarToggle className="px-2 py-1 rounded bg-[#836EF9] text-white hover:bg-[#7257f8] border border-[#121212]">
+                  <ToolbarToggle className="px-2 py-1 rounded bg-[#121212] text-white hover:bg-slate-800">
                     Done ✕
                   </ToolbarToggle>
                 </ToolbarExpanded>
@@ -2640,8 +2750,13 @@ export function PersonalDashboard({
             </div>
           </div>
         </div>
-      ) : (
-        <div className="space-y-6">
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. INCOME DEDICATED VIEW */}
+      {/* ========================================================================= */}
+      {currentView === "income" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -2813,13 +2928,16 @@ export function PersonalDashboard({
                     <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600">
                       Status
                     </th>
+                    <th className="py-3 px-4 font-black uppercase tracking-wider text-slate-600 text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y border-b border-[#121212]">
                   {filteredIncome.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="py-8 text-center text-slate-500 font-semibold"
                       >
                         No income transactions logged yet.
@@ -2855,6 +2973,49 @@ export function PersonalDashboard({
                             <span>Cleared</span>
                           </span>
                         </td>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProofTx(tx)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] bg-white text-[#121212] hover:bg-[#fbf9fe] shadow-[1.5px_1.5px_0_0_#121212] transition cursor-pointer"
+                              title="Create / View Receipt"
+                            >
+                              <Receipt className="h-3 w-3 text-[#836EF9]" />
+                              <span>Receipt</span>
+                            </button>
+                            {tx.blockchain_tx_hash ||
+                            tx.monad_tx_hash ||
+                            tx.verification_state === "verified" ||
+                            tx.blockchain_status === "confirmed" ? (
+                              <a
+                                href={getMonadExplorerTxUrl(
+                                  tx.blockchain_tx_hash ||
+                                    tx.monad_tx_hash ||
+                                    "",
+                                )}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold rounded-lg border border-[#836EF9] bg-[#f3f0ff] text-[#836EF9] hover:underline"
+                                title="Verified on Monad Testnet"
+                              >
+                                <MonadLogo className="h-2.5 w-2.5" />
+                                <span>Verified</span>
+                              </a>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSaveReceipt(tx)}
+                                disabled={savingTxId === tx.id}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono font-bold rounded-lg border border-[#121212] bg-[#836EF9] text-white hover:bg-[#7257f8] shadow-[1.5px_1.5px_0_0_#121212] transition cursor-pointer disabled:opacity-50"
+                                title="Save on Monad Testnet (optional)"
+                              >
+                                <MonadLogo className="h-2.5 w-2.5 text-white" />
+                                <span>Save on Chain</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -2864,43 +3025,11 @@ export function PersonalDashboard({
           </div>
         </div>
       )}
-    </div>
-  )}
 
       {/* ========================================================================= */}
-      {/* 4. BUDGETS & RECEIPTS VIEW */}
+      {/* 4. BUDGETS DEDICATED VIEW */}
       {/* ========================================================================= */}
-      {currentTab === "budgets" && (
-        <div className="flex items-center gap-1.5 p-1 bg-white border border-[#121212]/15 rounded-lg shadow-sm w-fit mb-6">
-          <button
-            type="button"
-            onClick={() => setBudgetSubTab("budgets")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-              budgetSubTab === "budgets"
-                ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                : "text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            Budgets
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setBudgetSubTab("receipts");
-              setActiveLedgerTab("receipts");
-            }}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition ${
-              budgetSubTab === "receipts"
-                ? "bg-[#836EF9] text-white border border-[#121212] shadow-[1px_1px_0_0_#121212]"
-                : "text-slate-700 hover:bg-slate-100"
-            }`}
-          >
-            Saved receipts ({verifiedReceipts.length})
-          </button>
-        </div>
-      )}
-
-      {currentTab === "budgets" && budgetSubTab === "budgets" && (
+      {currentView === "budgets" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -3074,9 +3203,9 @@ export function PersonalDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 3. RECURRING DEDICATED VIEW */}
+      {/* 5. RECURRING DEDICATED VIEW */}
       {/* ========================================================================= */}
-      {currentTab === "recurring" && (
+      {currentView === "recurring" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -3245,14 +3374,14 @@ export function PersonalDashboard({
       )}
 
       {/* 4. Universal Ledger with Dual Tabs: Transactions & Saved Receipts (Montally Neo-Brutalist Style) */}
-      {currentTab === "budgets" && budgetSubTab === "receipts" && (
+      {(currentView === "overview" || currentView === "receipts") && (
         <div className="neo-card overflow-hidden">
           {/* Ledger Header with Montally Neo-Brutalist Tabs */}
           <div className="p-5 border-b-2 border-[#121212] bg-[#f9fafb] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="neo-badge neo-badge-purple">
-                  • MONAD TESTNET
+                  • MONAD TESTNET (10143)
                 </span>
               </div>
               <h2 className="text-base font-black uppercase tracking-wider text-[#121212]">
@@ -3598,37 +3727,50 @@ export function PersonalDashboard({
                               })()
                             ) : t.verification_state === "verified" ||
                               t.blockchain_status === "confirmed" ? (
-                              <button
-                                type="button"
-                                onClick={() => setSelectedProofTx(t)}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] bg-[#f3f0ff] text-[#836EF9] shadow-[2px_2px_0_0_#121212] hover:bg-[#e7e1fe] transition active:translate-x-[1px] active:translate-y-[1px]"
-                                title="Click to view Monad on-chain proof receipt"
-                              >
-                                <MonadLogo className="h-3 w-3" />
-                                <span>View Proof</span>
-                              </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedProofTx(t)}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] bg-[#f3f0ff] text-[#836EF9] shadow-[2px_2px_0_0_#121212] hover:bg-[#e7e1fe] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                                  title="Click to view Monad on-chain proof receipt"
+                                >
+                                  <MonadLogo className="h-3 w-3" />
+                                  <span>View Proof</span>
+                                </button>
+                              </div>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleSaveReceipt(t)}
-                                disabled={savingTxId === t.id}
-                                className="neo-btn neo-btn-primary !py-1 !px-2.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 ml-auto"
-                                title="Create transaction on Monad Testnet and permanently save receipt"
-                              >
-                                {savingTxId === t.id ? (
-                                  <>
-                                    <Loader2 className="h-3 w-3 animate-spin text-white" />
-                                    <TextShimmer className="text-white font-mono text-[10px]">
-                                      {savingProgressLabel || "Saving..."}
-                                    </TextShimmer>
-                                  </>
-                                ) : (
-                                  <>
-                                    <MonadLogo className="h-3 w-3" />
-                                    <span>Save receipt</span>
-                                  </>
-                                )}
-                              </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedProofTx(t)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] bg-white text-[#121212] hover:bg-[#fbf9fe] shadow-[1.5px_1.5px_0_0_#121212] transition cursor-pointer"
+                                  title="Create Receipt"
+                                >
+                                  <Receipt className="h-3 w-3 text-[#836EF9]" />
+                                  <span>Receipt</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveReceipt(t)}
+                                  disabled={savingTxId === t.id}
+                                  className="neo-btn neo-btn-primary !py-1 !px-2.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+                                  title="Create transaction on Monad Testnet and permanently save receipt (optional)"
+                                >
+                                  {savingTxId === t.id ? (
+                                    <>
+                                      <Loader2 className="h-3 w-3 animate-spin text-white" />
+                                      <TextShimmer className="text-white font-mono text-[10px]">
+                                        {savingProgressLabel || "Saving..."}
+                                      </TextShimmer>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <MonadLogo className="h-3 w-3" />
+                                      <span>Save on Chain</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             )}
                           </td>
                         </tr>
@@ -4009,7 +4151,8 @@ export function PersonalDashboard({
                 <p className="text-xs text-slate-600 leading-relaxed">
                   Your Clario account remains the permanent owner of all your data
                   and receipts. Connecting an EVM wallet allows you to anchor the
-                  cryptographic receipt commitment directly to Monad Testnet.
+                  cryptographic receipt commitment directly to Monad Testnet
+                  (Chain ID 10143).
                 </p>
               </div>
 

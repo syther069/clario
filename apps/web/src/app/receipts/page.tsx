@@ -35,6 +35,7 @@ import { Magnetic } from "@/components/ui/motion/magnetic";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { motion, AnimatePresence } from "motion/react";
+import { TransactionShareModal } from "@/components/dashboard/transaction-share-modal";
 
 export default function ReceiptsPage() {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function ReceiptsPage() {
   const [selectedBundle, setSelectedBundle] = useState<ReceiptBundle | null>(
     null,
   );
+  const [selectedShareTx, setSelectedShareTx] = useState<Transaction | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -203,6 +205,24 @@ export default function ReceiptsPage() {
       ignore = true;
     };
   }, [userId, connectedEvmAddress]);
+
+  // Deep-link check for shared individual transaction receipt (?txId=...)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const txId = params.get("txId");
+    if (txId) {
+      const supabaseClient = getSupabaseClient(connectedEvmAddress || userId);
+      supabaseClient
+        .from("transactions")
+        .select("*")
+        .eq("id", txId)
+        .single()
+        .then(({ data }) => {
+          if (data) setSelectedShareTx(data as Transaction);
+        });
+    }
+  }, [connectedEvmAddress, userId]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return receiptBundles;
@@ -474,6 +494,13 @@ export default function ReceiptsPage() {
           bundle={selectedBundle}
         />
       )}
+
+      {/* Shareable Receipt Modal for single deep-linked transactions */}
+      <TransactionShareModal
+        isOpen={!!selectedShareTx}
+        onClose={() => setSelectedShareTx(null)}
+        transaction={selectedShareTx}
+      />
     </div>
   );
 }

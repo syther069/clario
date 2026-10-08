@@ -49,6 +49,7 @@ const MODES: Array<{
 ];
 
 import { motion, AnimatePresence } from "motion/react";
+import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 
 export function ModeSwitcher({ currentMode, onModeChange }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);

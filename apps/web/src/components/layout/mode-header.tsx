@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ModeSwitcher } from "./mode-switcher";
 import { UserButton } from "../auth/user-button";
 import { MonadLogo } from "@/components/ui/crypto-icon";
-import { Lock } from "lucide-react";
+import { BookOpen, Plus } from "lucide-react";
 import type { PlatformMode } from "@/lib/supabase/types";
-import { ClarioBadge } from "@/components/ui/clario-ui";
+import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
 import { ClarioLogo } from "@/components/ui/clario-logo";
 
 export type CorePillar = "expenses" | "vault" | "insights";
@@ -24,52 +24,62 @@ interface ModeHeaderProps {
 export function ModeHeader({
   currentMode,
   onModeChange,
+  onOpenCopilot,
+  onLogExpense,
 }: ModeHeaderProps) {
   return (
-    <header className="pb-3 border-b-2 border-[#121212]/15">
-      {/* Top Bar: Brand, Mode Switcher, and User Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        {/* Left: Clario Brand (redirects to /landing) + Mode Selector */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/landing"
-            className="flex items-center gap-2.5 group"
-            title="Return to Clario Landing Page"
-          >
-            <ClarioLogo
-              size={36}
-              className="transition group-hover:translate-x-[1px] group-hover:translate-y-[1px]"
-            />
-            <div className="flex flex-col">
-              <span className="text-base font-black tracking-wider text-[#121212] uppercase flex items-center gap-1.5 font-sans">
-                Clario
-                <ClarioBadge variant="purple" size="sm" className="gap-1">
-                  <MonadLogo className="h-2.5 w-2.5" />
-                  Monad
-                </ClarioBadge>
-              </span>
-            </div>
-          </Link>
-
-          <div className="h-5 w-[2px] bg-[#121212]/20 mx-1" />
-
-          {/* Page-Level Mode Selector */}
-          <ModeSwitcher currentMode={currentMode} onModeChange={onModeChange} />
-        </div>
-
-        {/* Right: Security Badge / Lock + User Authentication */}
-        <div className="flex items-center gap-2.5 self-end sm:self-auto">
-          {/* Subtle Non-Custodial Vault Indicator */}
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-[#121212]/20 bg-white/60 text-[#121212] text-xs font-mono text-[11px]"
-            title="Non-custodial cryptographic vault on Monad. Private keys never leave your device."
-          >
-            <Lock className="h-3 w-3 text-emerald-600" />
-            <span className="hidden md:inline text-slate-600">Vault secured</span>
+    <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3.5 border-b-2 border-[#121212]/15">
+      {/* Left: Clario Brand (Navigates to Landing Page) + Mode Selector */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/landing"
+          className="flex items-center gap-2.5 group cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          title="Go to Clario Landing Page"
+        >
+          <ClarioLogo
+            size={36}
+            className="transition group-hover:scale-105"
+          />
+          <div className="flex flex-col">
+            <span className="text-base font-black tracking-wider text-[#121212] uppercase flex items-center gap-1.5 font-sans">
+              Clario
+              <ClarioBadge variant="purple" size="sm" className="gap-1">
+                <MonadLogo className="h-2.5 w-2.5" />
+                Monad
+              </ClarioBadge>
+            </span>
           </div>
+        </Link>
 
-          <UserButton />
-        </div>
+        <div className="h-5 w-[2px] bg-[#121212]/20 mx-1" />
+
+        {/* Page-Level Mode Selector */}
+        <ModeSwitcher currentMode={currentMode} onModeChange={onModeChange} />
+      </div>
+
+      {/* Right: Primary Action + Docs + AI Assistant + Wallet Profile */}
+      <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+        {onLogExpense && (
+          <button
+            onClick={onLogExpense}
+            className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
+          >
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span>Log Expense</span>
+          </button>
+        )}
+
+        <Link href="/docs">
+          <ClarioButton
+            variant="secondary"
+            size="sm"
+            leftIcon={<BookOpen className="h-3.5 w-3.5 text-[#836EF9]" />}
+          >
+            Docs
+          </ClarioButton>
+        </Link>
+
+        <UserButton />
       </div>
     </header>
   );

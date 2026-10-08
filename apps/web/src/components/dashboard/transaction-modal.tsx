@@ -14,6 +14,11 @@ import {
   Smartphone,
   Building2,
   ShieldCheck,
+  Check,
+  Loader2,
+  Receipt,
+  ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
 import type { Transaction } from "@/lib/supabase/types";
 import { TransactionImportDialog } from "@/components/transaction-import-dialog";
@@ -26,20 +31,38 @@ import {
   UsdcLogo,
   UsdtLogo,
   AlchemyLogo,
+  detectCryptoIdentity,
+  CryptoChainIcon,
+  CryptoCoinIcon,
 } from "@/components/ui/crypto-icon";
-import { ClarioButton } from "@/components/ui/clario-ui";
+import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";
 import { NeoDatePicker } from "@/components/ui/neo-date-picker";
+import { executeSaveTransaction } from "@/lib/blockchain/save-transaction";
+import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
+import { TransactionShareModal } from "./transaction-share-modal";
 
 export type SubLedgerMode = "fiat" | "onchain";
+
+function formatCategoryLabel(category?: unknown): string {
+  if (!category) return "General";
+  if (typeof category === "string") {
+    return category.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  if (typeof category === "object" && category !== null && "name" in category) {
+    return String((category as { name: string }).name);
+  }
+  return "General";
+}
 
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (tx: Partial<Transaction>) => void;
   onScanReceipt?: () => void;
+  onViewReceipt?: ((tx: Transaction) => void) | undefined;
   userId?: string | undefined;
   userAddress?: string | undefined;
   workspaceId?: string | undefined;
@@ -60,6 +83,7 @@ export function TransactionModal({
   onClose,
   onSave,
   onScanReceipt,
+  onViewReceipt,
   userId = "user_default",
   userAddress,
   workspaceId = "00000000-0000-0000-0000-000000000001",
@@ -74,7 +98,13 @@ export function TransactionModal({
   const handleConnectWallet = onConnectWallet || auth.connectEvmWallet;
 
   const [subLedger, setSubLedger] = useState<SubLedgerMode>(initialSubLedger);
-  const [view, setView] = useState<"selection" | "manual">("selection");
+  const [view, setView] = useState<"selection" | "manual" | "saved_action">("selection");
+  const [savedTransaction, setSavedTransaction] = useState<Transaction | null>(null);
+  const [isOnChainSaving, setIsOnChainSaving] = useState(false);
+  const [onChainStepLabel, setOnChainStepLabel] = useState("");
+  const [onChainError, setOnChainError] = useState<string | null>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [type, setType] = useState<"expense" | "income">("expense");
@@ -94,6 +124,11 @@ export function TransactionModal({
       const mode = initialSubLedger || "fiat";
       setSubLedger(mode);
       setView("selection");
+      setSavedTransaction(null);
+      setIsOnChainSaving(false);
+      setOnChainStepLabel("");
+      setOnChainError(null);
+      setIsReceiptModalOpen(false);
       setIsNoWalletPopupOpen(false);
       setIsImportOpen(false);
       if (mode === "fiat") {
@@ -123,6 +158,57 @@ export function TransactionModal({
     }
   };
 
+  async function handleSaveOnChain() {
+    if (!savedTransaction) return;
+    if (!isWalletConnected || !effectiveConnectedAddress) {
+      handleConnectWallet();
+      return;
+    }
+
+    setIsOnChainSaving(true);
+    setOnChainError(null);
+    setOnChainStepLabel("Preparing Monad Testnet anchor...");
+
+    try {
+      const userWallet =
+        auth.wallets.find(
+          (w) =>
+            w.address.toLowerCase() ===
+            (effectiveConnectedAddress || "").toLowerCase(),
+        ) || auth.wallets[0] || null;
+
+      const res = await executeSaveTransaction({
+        transactionData: savedTransaction,
+        userId,
+        userAddress: effectiveConnectedAddress,
+        connectedWallet: userWallet,
+        onStepChange: (_step, label) => setOnChainStepLabel(label),
+      });
+
+      if (res.success && res.transaction) {
+        setSavedTransaction(res.transaction);
+        onSave(res.transaction);
+      } else if (res.error) {
+        setOnChainError(res.error);
+      }
+    } catch (err: unknown) {
+      console.error("Save on chain error:", err);
+      setOnChainError(err instanceof Error ? err.message : "Failed to record on Monad Testnet");
+    } finally {
+      setIsOnChainSaving(false);
+    }
+  }
+
+  function handleCreateReceipt() {
+    if (!savedTransaction) return;
+    if (onViewReceipt) {
+      onViewReceipt(savedTransaction);
+      onClose();
+    } else {
+      setIsReceiptModalOpen(true);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!amount || !description) return;
@@ -130,9 +216,10 @@ export function TransactionModal({
     if (isNaN(numericAmount) || numericAmount <= 0) return;
 
     const isCrypto = subLedger === "onchain";
+    const transactionId = crypto.randomUUID();
 
-    onSave({
-      id: crypto.randomUUID(),
+    const newTx: Transaction = {
+      id: transactionId,
       user_id: userId,
       type,
       amount: numericAmount,
@@ -151,12 +238,19 @@ export function TransactionModal({
       blockchain_chain_id: anchorToMonad || isCrypto ? 10143 : null,
       source: isCrypto ? "onchain_monad" : "manual",
       version: 1,
-    });
+      status: "cleared",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
+    // 1. Immediately save to Clario (normal saving is permanently preserved)
+    onSave(newTx);
+    setSavedTransaction(newTx);
+
+    // 2. Clear inputs and transition to post-save options
     setAmount("");
     setDescription("");
-    setView("selection");
-    onClose();
+    setView("saved_action");
   }
 
   // Transaction Import Dialog View (Full Screen Modal)
@@ -304,35 +398,50 @@ export function TransactionModal({
                 Back
               </ClarioButton>
             )}
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-              <PlusCircle className="h-5 w-5" />
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] ${
+                view === "saved_action"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-[#f3f0ff] text-[#836EF9]"
+              }`}
+            >
+              {view === "saved_action" ? (
+                <Check className="h-5 w-5 stroke-[2.5]" />
+              ) : (
+                <PlusCircle className="h-5 w-5" />
+              )}
             </div>
             <div>
               <h3 className="text-base font-black uppercase tracking-wider text-[#121212]">
-                Record Transaction
+                {view === "saved_action"
+                  ? "Entry Recorded"
+                  : "Record Transaction"}
               </h3>
               <p className="text-[11px] text-slate-500">
-                {view === "selection"
-                  ? "Choose how you want to add an entry"
-                  : subLedger === "fiat"
-                    ? "Personal Finance Ledger Entry"
-                    : "Web3 On-Chain Activity Entry"}
+                {view === "saved_action"
+                  ? "Permanently saved to your Clario account"
+                  : view === "selection"
+                    ? "Choose how you want to add an entry"
+                    : subLedger === "fiat"
+                      ? "Personal Finance Ledger Entry"
+                      : "Web3 On-Chain Activity Entry"}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition cursor-pointer"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Top-Level Rail Switcher (Personal Finance vs On-Chain) */}
-        <div className="mt-4 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-2">
-          <motion.button
+        {/* Top-Level Rail Switcher (Personal Finance vs On-Chain) - only for entry creation */}
+        {view !== "saved_action" && (
+          <div className="mt-4 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-2">
+            <motion.button
             type="button"
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
@@ -347,9 +456,15 @@ export function TransactionModal({
                 : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
             }`}
           >
-            <CreditCard className="h-3.5 w-3.5 text-white" />
+            <CreditCard className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`} />
             <span>Personal Finance</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                subLedger === "fiat"
+                  ? "bg-white/20 text-white border-white/40"
+                  : "bg-emerald-100 text-emerald-800 border-emerald-300"
+              }`}
+            >
               Fiat
             </span>
           </motion.button>
@@ -371,11 +486,18 @@ export function TransactionModal({
           >
             <MonadLogo className="h-3.5 w-3.5" />
             <span>On-Chain</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-[#836EF9] font-bold border border-purple-300">
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                subLedger === "onchain"
+                  ? "bg-white/20 text-white border-white/40"
+                  : "bg-purple-100 text-[#836EF9] border-purple-300"
+              }`}
+            >
               Web3
             </span>
           </motion.button>
         </div>
+        )}
 
         {/* VIEW 1: SELECTION SCREEN */}
         {view === "selection" ? (
@@ -793,7 +915,207 @@ export function TransactionModal({
             </div>
           </form>
         )}
+
+        {/* VIEW 3: POST-SAVE ACTIONS (Save on Chain & Create Receipt) */}
+        {view === "saved_action" && savedTransaction && (
+          <div className="mt-4 space-y-4">
+            {/* Success Banner */}
+            <div className="p-3 bg-emerald-50 border-2 border-[#121212] rounded-xl flex items-center justify-between shadow-[2px_2px_0_0_#121212]">
+              <div className="flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+                  <Check className="h-4 w-4 stroke-[3]" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-emerald-950">
+                    Entry Saved to Clario
+                  </h4>
+                  <p className="text-[10px] font-mono text-emerald-800">
+                    Permanently stored in your connected account
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-white text-emerald-800 border border-emerald-300 shadow-[1px_1px_0_0_#121212]">
+                Permanent
+              </span>
+            </div>
+
+            {/* Entry Summary Card */}
+            <div className="p-4 bg-[#f8f9fa] border-2 border-[#121212] rounded-xl space-y-3 shadow-[2.5px_2.5px_0_0_#121212]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                    Merchant / Description
+                  </p>
+                  <h3 className="text-base font-black uppercase text-[#121212] mt-0.5">
+                    {savedTransaction.merchant}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">
+                    {savedTransaction.date}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-800 border border-[#121212]">
+                    {savedTransaction.type.toUpperCase()}
+                  </span>
+                  <div className="text-xl font-black font-mono text-[#121212] mt-1.5">
+                    {savedTransaction.currency === "USD" || !savedTransaction.currency
+                      ? "$"
+                      : `${savedTransaction.currency} `}
+                    {Number(savedTransaction.amount).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2.5 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs font-mono">
+                <div>
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Category</span>
+                  <span className="font-bold text-[#121212]">{formatCategoryLabel(savedTransaction.category)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Payment Method</span>
+                  <span className="font-bold text-[#121212] truncate block">{savedTransaction.payment_method || "Recorded"}</span>
+                </div>
+              </div>
+
+              {/* Status indicator */}
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-mono">
+                <span className="text-[10px] text-slate-500 uppercase font-bold">Verification State:</span>
+                {savedTransaction.blockchain_tx_hash || savedTransaction.monad_tx_hash ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="neo-badge neo-badge-purple text-[10px]">
+                      • VERIFIED ON MONAD
+                    </span>
+                    <a
+                      href={getMonadExplorerTxUrl(
+                        savedTransaction.blockchain_tx_hash ||
+                          savedTransaction.monad_tx_hash ||
+                          "",
+                      )}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#836EF9] hover:underline flex items-center gap-0.5 text-[10px] font-bold"
+                    >
+                      <span>Explorer</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  </div>
+                ) : (
+                  <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                    Saved in Clario (Off-chain)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Error notice if on-chain failed */}
+            {onChainError && (
+              <div className="p-3 bg-red-50 border-2 border-red-500 rounded-xl text-xs font-mono text-red-800 flex items-start gap-2 shadow-[2px_2px_0_0_#121212]">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-bold">On-chain recording notice:</p>
+                  <p className="text-[11px] text-red-700 mt-0.5">{onChainError}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Dual Primary Actions: Save on Chain + Create Receipt */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              {/* Action 1: Save on Chain (optional) */}
+              {savedTransaction.blockchain_tx_hash || savedTransaction.monad_tx_hash ? (
+                <div className="p-3 rounded-xl border-2 border-[#836EF9] bg-[#fbf9fe] flex items-center justify-between text-xs font-mono shadow-[2.5px_2.5px_0_0_#121212]">
+                  <div className="flex items-center gap-1.5 text-[#836EF9] font-black">
+                    <MonadLogo className="h-4 w-4" />
+                    <span>Anchored on Monad</span>
+                  </div>
+                  <a
+                    href={getMonadExplorerTxUrl(
+                      savedTransaction.blockchain_tx_hash ||
+                        savedTransaction.monad_tx_hash ||
+                        "",
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] font-bold text-[#836EF9] hover:underline flex items-center gap-0.5"
+                  >
+                    <span>Explorer</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isOnChainSaving}
+                  onClick={handleSaveOnChain}
+                  className="rounded-xl border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] text-white p-3 font-mono font-black uppercase text-xs tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0_0_#121212] transition-all active:translate-x-[1px] active:translate-y-[1px] cursor-pointer disabled:opacity-70"
+                >
+                  {isOnChainSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-white" />
+                      <span className="text-[11px]">{onChainStepLabel || "Submitting to Monad..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <MonadLogo className="h-4 w-4 text-white" />
+                      <span>Save on Chain</span>
+                      <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-normal lowercase">
+                        optional
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              {/* Action 2: Create Receipt */}
+              <button
+                type="button"
+                onClick={handleCreateReceipt}
+                className="rounded-xl border-2 border-[#121212] bg-white hover:bg-[#fbf9fe] text-[#121212] p-3 font-mono font-black uppercase text-xs tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0_0_#121212] transition-all active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+              >
+                <Receipt className="h-4 w-4 text-[#836EF9]" />
+                <span>Create Receipt</span>
+              </button>
+            </div>
+
+            {/* Invariant Note */}
+            <p className="text-[11px] text-slate-500 font-mono text-center">
+              On-chain saving is always optional. Every receipt and entry is permanently tied to your connected account.
+            </p>
+
+            {/* Bottom Actions */}
+            <div className="pt-2 border-t-2 border-[#121212] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setView("manual")}
+                className="text-xs font-mono font-bold text-slate-600 hover:text-[#121212] transition cursor-pointer"
+              >
+                + Add Another Entry
+              </button>
+
+              <WatermelonButton
+                type="button"
+                variant="primary"
+                size="sm"
+                textMorph
+                onClick={() => {
+                  setView("selection");
+                  onClose();
+                }}
+              >
+                Done / Continue
+              </WatermelonButton>
+            </div>
+          </div>
+        )}
       </motion.div>
+
+      <TransactionShareModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => {
+          setIsReceiptModalOpen(false);
+          onClose();
+        }}
+        transaction={savedTransaction}
+      />
     </div>
   );
 }
