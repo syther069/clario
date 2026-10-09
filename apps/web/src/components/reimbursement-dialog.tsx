@@ -34,6 +34,7 @@ import {
   X,
   Info,
 } from "lucide-react";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 export type SettlementLifecycleStatus =
   | "idle"
@@ -1062,11 +1063,14 @@ function IntentRow({
             onClick={onCopy}
             aria-label={`Copy ${label}`}
           >
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-600 inline" />
-            ) : (
-              <Copy className="w-3.5 h-3.5 text-gray-500 inline" />
-            )}
+            <ContextualIconSwap
+              isActive={Boolean(copied)}
+              ActiveIcon={Check}
+              InactiveIcon={Copy}
+              className="w-3.5 h-3.5"
+              activeClassName="text-emerald-600 inline"
+              inactiveClassName="text-gray-500 inline"
+            />
           </button>
         )}
       </span>
@@ -1147,9 +1151,11 @@ const settlementDialogStyles = `
     font-size: 12px;
     color: rgba(255,255,255,0.45);
     margin: 2px 0 0;
+    text-wrap: pretty;
   }
 
   .settlement-close-btn {
+    position: relative;
     background: none;
     border: none;
     color: rgba(255,255,255,0.5);
@@ -1161,8 +1167,18 @@ const settlementDialogStyles = `
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
+  }
+
+  .settlement-close-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 
   .settlement-close-btn:hover {
@@ -1284,22 +1300,35 @@ const settlementDialogStyles = `
     font-weight: 700;
     color: #a5f3fc;
     letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
   .settlement-mono {
     font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
     font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
   }
 
   .settlement-inline-copy {
+    position: relative;
     background: none;
     border: none;
     cursor: pointer;
     color: rgba(255,255,255,0.35);
     font-size: 12px;
     padding: 0 2px;
-    transition: color 0.15s;
+    transition: color 0.15s ease-out;
     line-height: 1;
+  }
+
+  .settlement-inline-copy::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 
   .settlement-inline-copy:hover {
@@ -1415,7 +1444,7 @@ const settlementDialogStyles = `
     font-size: 11px;
     padding: 4px 10px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     align-self: flex-start;
   }
 
@@ -1529,7 +1558,7 @@ const settlementDialogStyles = `
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
     display: flex;
     align-items: center;
     gap: 7px;

@@ -8,7 +8,8 @@ import { DecisionDialog } from "./decision-dialog";
 import { ProofSpineTimeline } from "./proof-spine-timeline";
 import { ReimbursementDialog } from "./reimbursement-dialog";
 import { ExpenseWarningPanel } from "./expense-warning-panel";
-import { AlertTriangle, Eye, X } from "lucide-react";
+import { AlertTriangle, Eye, X, Copy, Check } from "lucide-react";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 export interface ReviewDetailViewProps {
   workspaceId: string;
@@ -432,6 +433,7 @@ export function ReviewDetailView({
                     fontSize: "1.25rem",
                     fontWeight: 700,
                     margin: "var(--space-1) 0 0",
+                    textWrap: "balance",
                   }}
                 >
                   {detail.title}
@@ -536,6 +538,7 @@ export function ReviewDetailView({
                     fontSize: "1.125rem",
                     fontWeight: 700,
                     color: "var(--accent-primary)",
+                    fontVariantNumeric: "tabular-nums",
                   }}
                 >
                   {detail.claimAmount}{" "}
@@ -622,7 +625,14 @@ export function ReviewDetailView({
                   marginBottom: "var(--space-3)",
                 }}
               >
-                <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    textWrap: "balance",
+                  }}
+                >
                   Predecessor Changes (v{detail.materialDiff.predecessorVersion}{" "}
                   → v{detail.version})
                 </h3>
@@ -709,6 +719,7 @@ export function ReviewDetailView({
                             padding: "var(--space-3)",
                             fontFamily: "var(--font-mono)",
                             color: "var(--text-secondary)",
+                            fontVariantNumeric: "tabular-nums",
                           }}
                         >
                           {String(ch.oldValue ?? "—")}
@@ -718,6 +729,7 @@ export function ReviewDetailView({
                             padding: "var(--space-3)",
                             fontFamily: "var(--font-mono)",
                             fontWeight: 600,
+                            fontVariantNumeric: "tabular-nums",
                           }}
                         >
                           {String(ch.newValue ?? "—")}
@@ -763,7 +775,14 @@ export function ReviewDetailView({
                 marginBottom: "var(--space-3)",
               }}
             >
-              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  textWrap: "balance",
+                }}
+              >
                 Attached Private Evidence ({detail.evidence.length})
               </h3>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
@@ -806,6 +825,7 @@ export function ReviewDetailView({
                           fontSize: "0.75rem",
                           color: "var(--text-muted)",
                           marginTop: "2px",
+                          fontVariantNumeric: "tabular-nums",
                         }}
                       >
                         {(ev.byteSize / 1024).toFixed(1)} KB • {ev.mimeType} •
@@ -882,6 +902,7 @@ export function ReviewDetailView({
                   padding: "var(--space-2) var(--space-3)",
                   borderRadius: "var(--radius-sm)",
                   margin: "0 0 var(--space-3)",
+                  textWrap: "pretty",
                 }}
               >
                 <em>
@@ -953,14 +974,21 @@ export function ReviewDetailView({
                   onClick={() =>
                     copyToClipboard(detail.commitment, "commitment")
                   }
-                  className="btn btn-secondary"
+                  className="btn btn-secondary relative flex items-center gap-1 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-[''] transition-colors duration-150 ease-out"
                   style={{
                     height: "26px",
                     fontSize: "0.6875rem",
                     padding: "0 8px",
                   }}
+                  title="Copy commitment hash"
+                  aria-label="Copy commitment hash"
                 >
-                  {copiedField === "commitment" ? "Copied!" : "Copy"}
+                  <ContextualIconSwap
+                    isActive={copiedField === "commitment"}
+                    initialIcon={<Copy className="h-3 w-3" />}
+                    activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                  />
+                  <span>{copiedField === "commitment" ? "Copied!" : "Copy"}</span>
                 </button>
               </div>
             </div>
@@ -1009,6 +1037,7 @@ export function ReviewDetailView({
                   margin: 0,
                   fontSize: "1rem",
                   fontWeight: 600,
+                  textWrap: "balance",
                 }}
               >
                 Proof Spine · Workflow Chain
@@ -1098,6 +1127,7 @@ export function ReviewDetailView({
                           fontSize: "0.75rem",
                           color: "var(--text-secondary)",
                           marginTop: "2px",
+                          textWrap: "pretty",
                         }}
                       >
                         {step.description}
@@ -1108,6 +1138,7 @@ export function ReviewDetailView({
                             fontSize: "0.6875rem",
                             color: "var(--text-muted)",
                             marginTop: "2px",
+                            fontVariantNumeric: "tabular-nums",
                           }}
                         >
                           {new Date(step.timestamp).toLocaleString()}
@@ -1127,6 +1158,7 @@ export function ReviewDetailView({
                 margin: "0 0 var(--space-3)",
                 fontSize: "1rem",
                 fontWeight: 600,
+                textWrap: "balance",
               }}
             >
               Review Decision
@@ -1136,6 +1168,7 @@ export function ReviewDetailView({
                 fontSize: "0.8125rem",
                 color: "var(--text-secondary)",
                 margin: "0 0 var(--space-4)",
+                textWrap: "pretty",
               }}
             >
               Human decisions bind to the exact commitment of version{" "}

@@ -20,7 +20,6 @@ import {
   ExternalLink,
   Cpu,
   Layers,
-  Sparkles,
   Lock,
   ArrowRight,
   Database,
@@ -44,7 +43,7 @@ export function DocSectionContent({ sectionId }: SectionContentProps) {
         <div className="space-y-10">
           <div>
             <div className="inline-flex items-center gap-2 rounded border-2 border-[#121212] bg-[#836EF9] text-white px-2.5 py-1 font-mono text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0_0_#121212]">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Layers className="h-3.5 w-3.5" />
               <span>Executive Overview</span>
             </div>
             <h1 className="mt-3 text-3xl sm:text-4xl font-black font-sans tracking-tight text-[#121212]">
@@ -289,9 +288,6 @@ pnpm install`}
               code={`# Privy Authentication
 NEXT_PUBLIC_PRIVY_APP_ID="your-privy-app-id"
 
-# Alchemy Multi-Chain Indexing
-NEXT_PUBLIC_ALCHEMY_API_KEY="your-alchemy-api-key"
-
 # Supabase Storage & Database
 NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -445,14 +441,14 @@ pnpm --filter @clario/web exec tsc --noEmit`}
         <div className="space-y-10">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#121212] bg-purple-100 px-3 py-1 font-mono text-xs font-black uppercase text-purple-800 shadow-[2px_2px_0_0_#121212]">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Cpu className="h-3.5 w-3.5" />
               <span>Advisory Intelligence</span>
             </div>
             <h1 className="mt-3 text-3xl sm:text-4xl font-black font-sans tracking-tight text-[#121212]">
               AI & Multimodal OCR
             </h1>
             <p className="mt-3 text-base text-slate-600 font-medium leading-relaxed max-w-3xl">
-              How Clario harnesses Google Gemini 2.5 Flash for multimodal receipt extraction and Copilot financial anomaly detection while preserving strict non-authoritative boundaries.
+              How Clario uses Google Gemini 2.5 Flash for multimodal receipt extraction and Copilot financial anomaly detection while preserving strict non-authoritative boundaries.
             </p>
           </div>
 
@@ -1020,7 +1016,6 @@ WITH CHECK (auth.uid() = user_id);`}
               headers={["Variable Name", "Required", "Example / Default", "Purpose"]}
               rows={[
                 ["NEXT_PUBLIC_PRIVY_APP_ID", "Yes", "clx...", "Privy project ID for non-custodial auth"],
-                ["NEXT_PUBLIC_ALCHEMY_API_KEY", "Yes", "alch_...", "Alchemy API key for multi-chain transfer indexing"],
                 ["NEXT_PUBLIC_SUPABASE_URL", "Yes", "https://xyz.supabase.co", "Supabase project REST & storage endpoint"],
                 ["NEXT_PUBLIC_SUPABASE_ANON_KEY", "Yes", "eyJhbGci...", "Supabase anonymous public key (protected by RLS)"],
                 ["NEXT_PUBLIC_MONAD_CHAIN_ID", "Yes", "10143", "Monad Testnet Chain ID"],
@@ -1037,6 +1032,7 @@ WITH CHECK (auth.uid() = user_id);`}
             <DocTable
               headers={["Variable Name", "Required", "Purpose"]}
               rows={[
+                ["ALCHEMY_API_KEY", "Yes", "Alchemy API key for multi-chain transfer indexing (server-only secret)."],
                 ["SUPABASE_SERVICE_ROLE_KEY", "Yes", "Bypasses RLS for secure backend administrative tasks and webhook processing."],
                 ["GEMINI_API_KEY", "Yes", "Google AI API key for Gemini 2.5 Flash multimodal vision receipt OCR."],
               ]}

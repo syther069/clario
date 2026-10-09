@@ -275,4 +275,26 @@ describe("PRO-001 Canonical Expense Schema v1 Specification", () => {
       expect(primary).toBe(secondary);
     });
   });
+
+  describe("cryptographic commitment hardening", () => {
+    it("rejects insecure all-zero salt in computeExpenseCommitmentV1", async () => {
+      const { computeExpenseCommitmentV1 } = await import("../../index.js");
+      expect(() =>
+        computeExpenseCommitmentV1({
+          monadChainId: 10143,
+          registryAddress: "0x00000000000000000000000000000000000000aa",
+          workspaceId:
+            "0x1111111111111111111111111111111111111111111111111111111111111111",
+          expenseId:
+            "0x2222222222222222222222222222222222222222222222222222222222222222",
+          version: 1,
+          privateRecordHash:
+            "0x3333333333333333333333333333333333333333333333333333333333333333",
+          evidenceManifestHash:
+            "0x4444444444444444444444444444444444444444444444444444444444444444",
+          salt: `0x${"00".repeat(32)}` as `0x${string}`,
+        }),
+      ).toThrow(/salt must not be all zeros/);
+    });
+  });
 });

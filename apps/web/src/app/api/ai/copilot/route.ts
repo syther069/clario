@@ -4,16 +4,39 @@ import {
   type CopilotMessage,
   type CopilotContext,
 } from "@/lib/ai/copilot";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
+import { sanitizeErrorMessage } from "@/lib/security/safe-error";
+import { parseSafeJson } from "@/lib/security/input-validation";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { messages, context } = body as {
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`ai:copilot:${clientIp}`, {
+      maxRequests: 20,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: "Too many AI Copilot requests. Please wait before asking another question.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
+    const body = await parseSafeJson<{
       messages: CopilotMessage[];
       context: CopilotContext;
-    };
+    }>(req);
+    const { messages, context } = body;
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -34,7 +57,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ reply });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = sanitizeErrorMessage(error, "Failed to process request.");
     return NextResponse.json(
       { error: `Copilot error: ${msg}` },
       { status: 500 },

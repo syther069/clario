@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { ClarioBadge, ClarioButton } from "@/components/ui/clario-ui";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 interface AuthCardProps {
   compact?: boolean | undefined;
@@ -144,15 +145,19 @@ export function AuthCard({
                 {activeWalletAddress}
               </span>
               <button
+                type="button"
                 onClick={handleCopy}
-                className="p-1 rounded hover:bg-slate-100 transition text-slate-600 hover:text-black shrink-0"
+                className="relative size-7 flex items-center justify-center p-1 rounded hover:bg-slate-100 transition-colors duration-150 text-slate-600 hover:text-black shrink-0 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-10 after:-translate-1/2"
                 title="Copy address"
+                aria-label="Copy address"
               >
-                {copied ? (
-                  <Check className="h-4 w-4 text-emerald-600" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+                <ContextualIconSwap
+                  isActive={copied}
+                  ActiveIcon={Check}
+                  InactiveIcon={Copy}
+                  className="h-4 w-4"
+                  activeClassName="text-emerald-600"
+                />
               </button>
             </div>
           </div>

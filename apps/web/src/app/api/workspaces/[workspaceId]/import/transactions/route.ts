@@ -24,24 +24,15 @@ export async function GET(
 
     const url = new URL(req.url);
     const addressParam = url.searchParams.get("address");
-    const walletHeader = req.headers.get("x-wallet-address");
-
     let authAddress: string | null = null;
     if (db) {
-      try {
-        const authContext = requireAuth(req);
-        const policy = new AuthorizationPolicy(db);
-        await policy.getMembership(workspaceId, authContext);
-        authAddress = authContext.address;
-      } catch (authError) {
-        // If neither session cookie nor query address was supplied, enforce 401
-        if (!addressParam && !walletHeader) {
-          throw authError;
-        }
-      }
+      const authContext = requireAuth(req);
+      const policy = new AuthorizationPolicy(db);
+      await policy.getMembership(workspaceId, authContext);
+      authAddress = authContext.address;
     }
 
-    const effectiveAddress = addressParam ?? walletHeader ?? authAddress;
+    const effectiveAddress = addressParam ?? authAddress;
     if (!effectiveAddress || !isValidAddress(effectiveAddress)) {
       return NextResponse.json(
         {

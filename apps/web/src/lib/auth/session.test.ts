@@ -9,6 +9,7 @@ import {
   verifyCsrfToken,
   verifySessionToken,
 } from "./session";
+import { getSessionSecret } from "./context";
 
 describe("Secure Session Management and CSRF Defense (APP-002)", () => {
   const secret = "test-secret-at-least-16-characters-long!";
@@ -118,5 +119,38 @@ describe("Secure Session Management and CSRF Defense (APP-002)", () => {
 
     // Mismatched CSRF
     expect(verifyCsrfToken(payload, "invalid-csrf-token")).toBe(false);
+  });
+
+  it("fails closed in production if session secret is missing or too short", () => {
+    const env = process.env as Record<string, string | undefined>;
+    const originalEnv = env.NODE_ENV;
+    const originalSecret = env.SESSION_SECRET;
+    const originalClarioSecret = env.CLARIO_SESSION_SECRET;
+    const originalPrivySecret = env.PRIVY_APP_SECRET;
+
+    try {
+      env.NODE_ENV = "production";
+      delete env.SESSION_SECRET;
+      delete env.CLARIO_SESSION_SECRET;
+      delete env.PRIVY_APP_SECRET;
+
+      expect(() => getSessionSecret()).toThrow(/FATAL SECURITY CONFIGURATION/);
+
+      // Too short (<32 chars) should also fail
+      env.SESSION_SECRET = "short-secret";
+      expect(() => getSessionSecret()).toThrow(/FATAL SECURITY CONFIGURATION/);
+
+      // Valid 32+ char secret succeeds
+      env.SESSION_SECRET = "secure-production-secret-must-be-at-least-32-chars-long";
+      expect(getSessionSecret()).toBe("secure-production-secret-must-be-at-least-32-chars-long");
+    } finally {
+      env.NODE_ENV = originalEnv;
+      if (originalSecret) env.SESSION_SECRET = originalSecret;
+      else delete env.SESSION_SECRET;
+      if (originalClarioSecret) env.CLARIO_SESSION_SECRET = originalClarioSecret;
+      else delete env.CLARIO_SESSION_SECRET;
+      if (originalPrivySecret) env.PRIVY_APP_SECRET = originalPrivySecret;
+      else delete env.PRIVY_APP_SECRET;
+    }
   });
 });

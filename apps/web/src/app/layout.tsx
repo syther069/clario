@@ -22,7 +22,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" data-theme="light">
+    <html lang="en" data-theme="light" className="antialiased">
       <body className="bg-grid min-h-screen text-[#121212] antialiased">
         <ClarioPrivyProvider>
           <ToastProvider>{children}</ToastProvider>

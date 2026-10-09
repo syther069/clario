@@ -14,7 +14,26 @@ import {
 import type { WorkspaceRole } from "@clario/protocol";
 
 export function getSessionSecret(): string {
-  const secret = process.env.SESSION_SECRET;
+  const secret = process.env.CLARIO_SESSION_SECRET || process.env.SESSION_SECRET;
+  if (secret && secret.length >= 32) {
+    return secret;
+  }
+
+  if (
+    process.env.PRIVY_APP_SECRET &&
+    process.env.PRIVY_APP_SECRET.length >= 32
+  ) {
+    return process.env.PRIVY_APP_SECRET;
+  }
+
+  // In production, NEVER permit fallback secrets - fail closed immediately!
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "FATAL SECURITY CONFIGURATION: CLARIO_SESSION_SECRET or SESSION_SECRET must be set and contain at least 32 characters in production.",
+    );
+  }
+
+  // In non-production test or dev environments, accept valid developer secrets
   if (secret && secret.length >= 16) {
     return secret;
   }
@@ -26,7 +45,7 @@ export function getSessionSecret(): string {
     return process.env.PRIVY_APP_SECRET;
   }
 
-  return "clario-production-session-secret-32-chars-min!";
+  return "clario-development-only-session-secret-32-chars-minimum!";
 }
 
 /**

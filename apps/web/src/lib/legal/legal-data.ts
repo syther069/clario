@@ -103,7 +103,7 @@ export const PRIVACY_POLICY_DATA: LegalDocumentData = {
           number: "02.1",
           title: "Tier A: Stored Exclusively in Your Browser Vault",
           paragraphs: [
-            "Unless you explicitly submit an expense or utilize cloud sync, the following information is stored entirely inside your local browser storage (localStorage) and never leaves your computer:",
+            "Unless you explicitly submit an expense or use cloud sync, the following information is stored entirely inside your local browser storage (localStorage) and never leaves your computer:",
           ],
           bullets: [
             "Unsubmitted receipt images, scans, and invoice files.",
@@ -422,7 +422,7 @@ export const TERMS_OF_SERVICE_DATA: LegalDocumentData = {
       number: "07",
       title: "AI Features Suggest Only; Humans Approve",
       paragraphs: [
-        "Optical character recognition (OCR) and Financial Copilot features utilize probabilistic artificial intelligence models (Google Gemini and Groq).",
+        "Optical character recognition (OCR) and Financial Copilot features use probabilistic artificial intelligence models (Google Gemini and Groq).",
       ],
       bullets: [
         "Advisory Only: AI suggestions, extracted amounts, merchant names, and anomaly warnings are preliminary suggestions for human review.",

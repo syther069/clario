@@ -10,6 +10,7 @@ import {
   serializeSessionCookie,
 } from "@/lib/auth/session";
 import { getSessionSecret } from "@/lib/auth/context";
+import { _resetRateLimits } from "@/lib/security/rate-limit";
 import { IMPORTED_FACTS_DISCLAIMER, type NormalizedTransaction } from "./types";
 
 interface SourceTxRecord {
@@ -166,6 +167,7 @@ describe("Transaction Import API Routes", () => {
   }
 
   beforeEach(() => {
+    _resetRateLimits();
     mockDb = new MockDbForImportRoutes();
     setDatabaseClient(mockDb);
 
@@ -196,6 +198,17 @@ describe("Transaction Import API Routes", () => {
     it("rejects unauthenticated request with 401", async () => {
       const req = new Request(
         `http://localhost/api/workspaces/${WS_ID}/import/transactions`,
+      );
+      const res = await getTransactionsHandler(req, {
+        params: Promise.resolve({ workspaceId: WS_ID }),
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("rejects unauthenticated request with 401 even if address query param is provided", async () => {
+      const req = new Request(
+        `http://localhost/api/workspaces/${WS_ID}/import/transactions?address=${USER_ADDR}`,
       );
       const res = await getTransactionsHandler(req, {
         params: Promise.resolve({ workspaceId: WS_ID }),
@@ -270,6 +283,34 @@ describe("Transaction Import API Routes", () => {
       expect(body.transaction.sourceTransactionHash).toBe(validHash);
       expect(body.disclaimer).toBe(IMPORTED_FACTS_DISCLAIMER);
     }, 15000);
+
+    it("enforces rate limit of 30 requests per minute with 429", async () => {
+      const auth = createAuthHeader(USER_ADDR);
+      // Fire 30 requests
+      for (let i = 0; i < 30; i++) {
+        const req = new Request(
+          `http://localhost/api/workspaces/${WS_ID}/import/lookup?hash=${validHash}`,
+          { headers: auth },
+        );
+        await lookupHandler(req, {
+          params: Promise.resolve({ workspaceId: WS_ID }),
+        });
+      }
+
+      // The 31st request should be rate-limited
+      const rateLimitedReq = new Request(
+        `http://localhost/api/workspaces/${WS_ID}/import/lookup?hash=${validHash}`,
+        { headers: auth },
+      );
+      const rateLimitedRes = await lookupHandler(rateLimitedReq, {
+        params: Promise.resolve({ workspaceId: WS_ID }),
+      });
+
+      expect(rateLimitedRes.status).toBe(429);
+      const body = await rateLimitedRes.json();
+      expect(body.error.code).toBe("RATE_LIMITED");
+      expect(rateLimitedRes.headers.get("Retry-After")).toBeDefined();
+    });
   });
 
   describe("POST /api/workspaces/[wsId]/import/claim", () => {

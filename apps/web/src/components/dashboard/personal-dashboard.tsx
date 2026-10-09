@@ -1710,14 +1710,14 @@ export function PersonalDashboard({
 
                 {/* The Undisputed Hero Number */}
                 <div className="my-2">
-                  <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-[#121212] flex items-center">
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tabular-nums tracking-tight text-[#121212] flex items-center">
                     <span>{netCashFlow >= 0 ? "+" : "-"}</span>
                     <span>{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(Math.abs(netCashFlow) * 100) / 100}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500 font-medium">
+                  <p className="mt-1 text-xs text-slate-500 font-medium text-pretty">
                     {subLedger === "fiat"
                       ? "Net recorded personal cashflow across cash, cards & bank accounts"
                       : "Net crypto balance across Monad, Base, Ethereum & Arbitrum"}
@@ -1732,7 +1732,7 @@ export function PersonalDashboard({
                     <span>Monthly Inflow</span>
                     <TrendingUp className="h-3.5 w-3.5" />
                   </div>
-                  <div className="text-lg sm:text-xl font-black font-mono text-[#15803d] mt-1 flex items-center">
+                  <div className="text-lg sm:text-xl font-black font-mono tabular-nums text-[#15803d] mt-1 flex items-center">
                     <span>+{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(monthlyIncome * 100) / 100}
@@ -1748,7 +1748,7 @@ export function PersonalDashboard({
                     <span>Monthly Outflow</span>
                     <TrendingDown className="h-3.5 w-3.5" />
                   </div>
-                  <div className="text-lg sm:text-xl font-black font-mono text-[#b91c1c] mt-1 flex items-center">
+                  <div className="text-lg sm:text-xl font-black font-mono tabular-nums text-[#b91c1c] mt-1 flex items-center">
                     <span>-{activeCurrencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(monthlySpending * 100) / 100}
@@ -1777,7 +1777,7 @@ export function PersonalDashboard({
                   </div>
                 </div>
                 <div className="mt-2">
-                  <div className="text-2xl font-black font-mono text-[#836EF9] flex items-center">
+                  <div className="text-2xl font-black font-mono tabular-nums text-[#836EF9] flex items-center">
                     <span>{currencySymbol}</span>
                     <SlidingNumber
                       value={Math.round(availableBudget * 100) / 100}
@@ -1785,7 +1785,7 @@ export function PersonalDashboard({
                   </div>
                   <div className="mt-2 w-full h-2 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden">
                     <div
-                      className="h-full bg-[#836EF9] transition-all"
+                      className="h-full bg-[#836EF9] transition-[width] duration-300 ease-out"
                       style={{
                         width: `${Math.min(
                           100,
@@ -1864,7 +1864,7 @@ export function PersonalDashboard({
                     Quick Add Personal Expense
                   </h3>
                   <span className="text-[10px] font-mono font-bold uppercase text-slate-500 bg-white px-2 py-0.5 rounded border border-[#121212]">
-                    Zero Friction
+                    Instant Entry
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -2114,7 +2114,7 @@ export function PersonalDashboard({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-black font-mono text-[#121212]">
+                        <p className="text-xs font-black font-mono tabular-nums text-[#121212]">
                           {currencySymbol}
                           {Number(sub.amount).toFixed(2)}
                         </p>
@@ -2172,14 +2172,14 @@ export function PersonalDashboard({
                         <span className="uppercase tracking-wide">
                           {cat.name}
                         </span>
-                        <span className="font-mono">
+                        <span className="font-mono tabular-nums">
                           {currencySymbol}
                           {cat.amount.toFixed(2)} ({cat.pct}%)
                         </span>
                       </div>
                       <div className="w-full h-2.5 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden">
                         <div
-                          className="h-full bg-[#836EF9] transition-all"
+                          className="h-full bg-[#836EF9] transition-[width] duration-300 ease-out"
                           style={{
                             width: `${Math.min(100, Math.max(5, cat.pct))}%`,
                           }}
@@ -2337,7 +2337,7 @@ export function PersonalDashboard({
                       <div className="flex items-center justify-between sm:justify-end gap-3">
                         <div className="text-right">
                           <div
-                            className={`text-sm font-black font-mono tracking-tight ${
+                            className={`text-sm font-black font-mono tabular-nums tracking-tight ${
                               isExpense ? "text-[#b91c1c]" : "text-[#15803d]"
                             }`}
                           >
@@ -2752,7 +2752,7 @@ export function PersonalDashboard({
                           <td className="py-3 px-4 text-slate-600">
                             {tx.payment_method || "Card"}
                           </td>
-                          <td className="py-3 px-4 font-mono font-black text-[#b91c1c] text-right">
+                          <td className="py-3 px-4 font-mono font-black tabular-nums text-[#b91c1c] text-right">
                             -{currencySymbol}
                             {Number(tx.amount).toFixed(2)}
                           </td>
@@ -2855,7 +2855,7 @@ export function PersonalDashboard({
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">
                 Largest Source
               </span>
-              <div className="text-2xl font-black font-mono text-[#121212] mt-1 truncate">
+              <div className="text-2xl font-black font-mono tabular-nums text-[#121212] mt-1 truncate">
                 {largestIncomeTx
                   ? `+${currencySymbol}${Number(largestIncomeTx.amount).toFixed(2)}`
                   : "None"}
@@ -2905,14 +2905,14 @@ export function PersonalDashboard({
                       <span className="uppercase tracking-wide">
                         {src.name}
                       </span>
-                      <span className="font-mono text-[#15803d]">
+                      <span className="font-mono tabular-nums text-[#15803d]">
                         +{currencySymbol}
                         {src.amount.toFixed(2)} ({src.pct}%)
                       </span>
                     </div>
                     <div className="w-full h-2 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden">
                       <div
-                        className="h-full bg-[#15803d] transition-all"
+                        className="h-full bg-[#15803d] transition-[width] duration-300 ease-out"
                         style={{
                           width: `${Math.min(100, Math.max(5, src.pct))}%`,
                         }}
@@ -2997,7 +2997,7 @@ export function PersonalDashboard({
                             {formatCategoryName(tx.category, tx.category_id)}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-mono font-black text-[#15803d] text-right">
+                        <td className="py-3 px-4 font-mono font-black tabular-nums text-[#15803d] text-right">
                           +{currencySymbol}
                           {Number(tx.amount).toFixed(2)}
                         </td>
@@ -3369,7 +3369,7 @@ export function PersonalDashboard({
                         </span>
                       </div>
 
-                      <div className="text-2xl font-black font-mono text-[#121212] mt-4">
+                      <div className="text-2xl font-black font-mono tabular-nums text-[#121212] mt-4">
                         {currencySymbol}
                         {Number(sub.amount).toFixed(2)}
                       </div>
@@ -3743,7 +3743,7 @@ export function PersonalDashboard({
 
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">
                             <p
-                              className={`text-sm font-black font-mono ${
+                              className={`text-sm font-black font-mono tabular-nums ${
                                 t.type === "income"
                                   ? "text-[#15803d]"
                                   : "text-[#121212]"

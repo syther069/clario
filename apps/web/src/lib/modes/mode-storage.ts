@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { redactSensitiveString } from "@/lib/security/audit-logger";
 import type {
   Client,
   Invoice,
@@ -851,20 +852,24 @@ export async function getBusinessAuditEvents(
 export async function recordBusinessAuditEvent(
   event: BusinessAuditEvent,
 ): Promise<BusinessAuditEvent> {
-  const scopeId = event.org_id;
+  const sanitizedEvent: BusinessAuditEvent = {
+    ...event,
+    details: redactSensitiveString(event.details || ""),
+  };
+  const scopeId = sanitizedEvent.org_id;
   const localList = readScopedLocal<BusinessAuditEvent>(
     STORAGE_KEYS.BUSINESS_AUDIT,
     scopeId,
     [],
   );
-  const updated = [event, ...localList];
+  const updated = [sanitizedEvent, ...localList];
   writeScopedLocal(STORAGE_KEYS.BUSINESS_AUDIT, updated, scopeId);
 
   try {
     const supabase = getSupabaseClient(scopeId);
-    await supabase.from("business_audit_events").upsert(event);
+    await supabase.from("business_audit_events").upsert(sanitizedEvent);
   } catch {
     // Supabase optional
   }
-  return event;
+  return sanitizedEvent;
 }

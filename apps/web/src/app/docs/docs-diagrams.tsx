@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Database,
   FileCheck,
-  Sparkles,
   Fingerprint,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
@@ -173,7 +172,7 @@ export function AiBoundaryDiagram() {
     <div className="my-6 rounded-md border-2 border-[#121212] bg-white p-5 shadow-[4px_4px_0_0_#121212]">
       <div className="flex items-center justify-between border-b-2 border-[#121212] pb-3 mb-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[#836EF9]" />
+          <Cpu className="h-4 w-4 text-[#836EF9]" />
           <h4 className="font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
             AI BOUNDARY BLUEPRINT // STRICTLY ADVISORY (ZERO AUTHORITY)
           </h4>

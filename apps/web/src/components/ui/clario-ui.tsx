@@ -57,7 +57,7 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
     const startIcon = leftIcon || icon;
 
     const baseStyles =
-      "relative inline-flex items-center justify-center font-mono font-black uppercase tracking-wider transition-all duration-100 select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9] focus-visible:ring-offset-2";
+      "relative inline-flex items-center justify-center font-mono font-black uppercase tracking-wider transition-[transform,box-shadow,background-color,color,border-color] duration-150 ease-out select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9] focus-visible:ring-offset-2";
 
     const variantStyles = {
       primary:
@@ -79,7 +79,7 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
       sm: "h-8 px-2.5 text-[11px] rounded-lg gap-1.5",
       md: "h-10 px-4 text-xs rounded-xl gap-2",
       lg: "h-12 px-6 text-sm rounded-xl gap-2.5",
-      icon: "h-9 w-9 p-0 rounded-lg justify-center",
+      icon: "h-9 w-9 p-0 rounded-lg justify-center relative after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2",
     };
 
     return (
@@ -205,7 +205,7 @@ export function ClarioCard({
       className={cn(
         variantStyles[variant],
         isInteractive &&
-          "transition-all duration-100 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#121212] cursor-pointer",
+          "transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#121212] cursor-pointer",
         className,
       )}
       {...props}
@@ -417,7 +417,7 @@ export function ClarioTabs({
             type="button"
             onClick={() => onChange(tab.id)}
             className={cn(
-              "relative flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all duration-100",
+              "relative flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-[background-color,color,box-shadow,border-color] duration-150 ease-out",
               isActive
                 ? "bg-[#836EF9] text-white border-1.5 border-[#121212] shadow-[2px_2px_0_0_#121212]"
                 : "text-gray-600 hover:text-[#121212] hover:bg-white/60",

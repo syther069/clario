@@ -115,7 +115,11 @@
   box-shadow: 2px 2px 0 0 #121212;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 100ms cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    transform 100ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 100ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 100ms cubic-bezier(0.2, 0, 0, 1),
+    color 100ms cubic-bezier(0.2, 0, 0, 1);
   user-select: none;
 }
 
@@ -205,7 +209,10 @@
   color: #121212;
   font-size: 0.8125rem;
   font-weight: 500;
-  transition: all 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
 }
 
 .neo-input:focus {
@@ -408,10 +415,13 @@ body {
 
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -423,6 +433,14 @@ body {
   a {
     color: inherit;
     text-decoration: inherit;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  p, li, figcaption, blockquote {
+    text-wrap: pretty;
   }
 }
 

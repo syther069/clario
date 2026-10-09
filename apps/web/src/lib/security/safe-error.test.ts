@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handleSafeApiError } from "./safe-error";
+import { handleSafeApiError, sanitizeErrorMessage } from "./safe-error";
 import { ProtocolError } from "@clario/protocol";
 
 describe("Safe API Error Handler", () => {
@@ -24,5 +24,24 @@ describe("Safe API Error Handler", () => {
     const json = await response.json();
     expect(json.error.code).toBe("UNAUTHORIZED");
     expect(json.error.message).toBe("Active session required.");
+  });
+
+  it("maps RecordNotFoundError to 404 NOT_FOUND", async () => {
+    const notFoundErr = new Error("Expense draft not found.");
+    notFoundErr.name = "RecordNotFoundError";
+    const response = handleSafeApiError(notFoundErr);
+
+    expect(response.status).toBe(404);
+    const json = await response.json();
+    expect(json.error.code).toBe("NOT_FOUND");
+    expect(json.error.message).toBe("Expense draft not found.");
+  });
+
+  it("sanitizes connection string leaks via sanitizeErrorMessage", () => {
+    const leak = "connect ECONNREFUSED postgresql://user:secret123@db.internal:5432/clario";
+    expect(sanitizeErrorMessage(leak, "Database connection failed.")).toBe("Database connection failed.");
+
+    const safe = "Expense title is required.";
+    expect(sanitizeErrorMessage(safe)).toBe("Expense title is required.");
   });
 });

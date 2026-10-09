@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Copy, AlertCircle, Info, ShieldAlert, Sparkles, Terminal } from "lucide-react";
+import { Check, Copy, AlertCircle, Info, ShieldAlert, CheckCircle2, Terminal } from "lucide-react";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 // ==========================================
 // 1. DocCodeBlock: High-contrast Tactical Code
@@ -47,18 +48,17 @@ export function DocCodeBlock({
         <button
           onClick={handleCopy}
           aria-label="Copy code to clipboard"
-          className="flex items-center gap-1.5 rounded border border-white/20 bg-white/10 px-2.5 py-1 text-slate-300 font-mono text-[11px] font-bold uppercase tracking-wider transition hover:bg-white/20 hover:text-white active:scale-95"
+          className="relative flex items-center gap-1.5 rounded border border-white/20 bg-white/10 px-2.5 py-1 text-slate-300 font-mono text-[11px] font-bold uppercase tracking-wider transition-[transform,background-color,color] duration-150 ease-out hover:bg-white/20 hover:text-white active:scale-[0.96] after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
         >
+          <ContextualIconSwap
+            isActive={copied}
+            initialIcon={<Copy className="h-3 w-3" />}
+            activeIcon={<Check className="h-3 w-3 text-emerald-400" />}
+          />
           {copied ? (
-            <>
-              <Check className="h-3 w-3 text-emerald-400" />
-              <span className="text-emerald-400">[ COPIED ]</span>
-            </>
+            <span className="text-emerald-400">[ COPIED ]</span>
           ) : (
-            <>
-              <Copy className="h-3 w-3" />
-              <span>[ COPY ]</span>
-            </>
+            <span>[ COPY ]</span>
           )}
         </button>
       </div>
@@ -122,7 +122,7 @@ export function DocCallout({ type, title, children }: DocCalloutProps) {
     tip: {
       border: "border-[#121212]",
       bg: "bg-emerald-50",
-      icon: <Sparkles className="h-4 w-4 text-emerald-700 shrink-0" />,
+      icon: <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0" />,
       badgeBg: "bg-emerald-700 text-white",
       defaultTitle: "ENGINEERING DIRECTIVE",
     },

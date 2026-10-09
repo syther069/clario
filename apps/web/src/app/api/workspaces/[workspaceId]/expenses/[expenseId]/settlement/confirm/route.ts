@@ -27,6 +27,7 @@ import {
   SettlementConfigError,
 } from "@/lib/settlement/config";
 import type { MinimalTransactionReceipt } from "@/lib/settlement/receipt";
+import { validateSafeRpcUrl } from "@/lib/security/ssrf-guard";
 
 export async function POST(
   req: Request,
@@ -74,6 +75,24 @@ export async function POST(
     const service = new SettlementService(db);
     const config = getSettlementConfig();
 
+    let effectiveRpcUrl = config.rpcUrl;
+    if (body.rpcUrl) {
+      try {
+        effectiveRpcUrl = validateSafeRpcUrl(body.rpcUrl);
+      } catch (ssrfErr) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "INVALID_REQUEST",
+              message:
+                ssrfErr instanceof Error ? ssrfErr.message : "Invalid RPC URL.",
+            },
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const result = await service.confirmSettlement(
       workspaceId,
       expenseId,
@@ -81,7 +100,7 @@ export async function POST(
       {
         receipt: body.receipt,
         transactionHash: body.transactionHash,
-        rpcUrl: body.rpcUrl ?? config.rpcUrl,
+        rpcUrl: effectiveRpcUrl,
         chainId: config.chainId,
         registryAddress: config.registryAddress,
         tokenConfig: config.token,

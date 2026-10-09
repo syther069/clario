@@ -141,7 +141,7 @@ export function ReceiptPreviewModal({
               <Receipt className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wide text-[#121212]">
+              <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] text-balance">
                 Create Receipt
               </h2>
             </div>
@@ -150,7 +150,7 @@ export function ReceiptPreviewModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-md border border-[#121212] hover:bg-slate-100 transition shadow-[1px_1px_0_0_#121212]"
+              className="relative size-8 flex items-center justify-center rounded-md border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
               aria-label="Close"
             >
               <X className="h-4 w-4 text-[#121212]" />
@@ -178,7 +178,7 @@ export function ReceiptPreviewModal({
                 {receiptName.length}/80
               </span>
             </div>
-            <p className="text-[11px] text-slate-600 leading-normal">
+            <p className="text-[11px] text-slate-600 leading-normal text-pretty">
               Give this receipt a recognizable name so you can find it later.
             </p>
             <div className="relative">
@@ -193,7 +193,7 @@ export function ReceiptPreviewModal({
                 placeholder="e.g. September Crypto Expenses"
                 maxLength={80}
                 disabled={isSubmitting}
-                className={`w-full px-3.5 py-2.5 bg-white border-2 rounded-xl text-sm font-bold text-[#121212] placeholder-slate-400 shadow-[2px_2px_0_0_#121212] focus:outline-none transition ${
+                className={`w-full px-3.5 py-2.5 bg-white border-2 rounded-xl text-sm font-bold text-[#121212] placeholder-slate-400 shadow-[2px_2px_0_0_#121212] focus:outline-none transition-colors duration-150 ease-out ${
                   nameTouched && !trimmedName
                     ? "border-red-500 focus:border-red-600"
                     : "border-[#121212] focus:border-[#836EF9]"
@@ -214,7 +214,7 @@ export function ReceiptPreviewModal({
               <span className="text-[9px] font-mono font-black uppercase text-slate-500">
                 Receipt Number
               </span>
-              <p className="font-mono text-sm font-black text-[#121212]">
+              <p className="font-mono text-sm font-black text-[#121212] tabular-nums">
                 #{receiptNumber}
               </p>
             </div>
@@ -222,10 +222,10 @@ export function ReceiptPreviewModal({
               <span className="text-[9px] font-mono font-black uppercase text-slate-500">
                 Summary
               </span>
-              <p className="font-mono text-sm font-black text-[#121212] flex items-center gap-1 justify-end">
+              <p className="font-mono text-sm font-black text-[#121212] flex items-center gap-1 justify-end tabular-nums">
                 <span>{transactions.length} transactions</span>
                 <span className="text-slate-400">·</span>
-                <span className="text-[#836EF9]">
+                <span className="text-[#836EF9] tabular-nums">
                   Total -{currencySymbol}
                   {totalAmount.toFixed(2)}
                 </span>
@@ -241,7 +241,7 @@ export function ReceiptPreviewModal({
                 <p className="font-bold uppercase tracking-wide">
                   Duplicate Receipt Notice
                 </p>
-                <p className="text-[11px] text-amber-800 mt-0.5">
+                <p className="text-[11px] text-amber-800 mt-0.5 text-pretty">
                   {alreadyBundledTxs.length} of the selected transaction(s) are
                   already part of another receipt. Creating this bundle will
                   anchor a new snapshot commitment on Monad Testnet.
@@ -276,7 +276,7 @@ export function ReceiptPreviewModal({
               {transactions.map((tx, idx) => (
                 <div
                   key={tx.id}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition"
+                  className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition-colors duration-150 ease-out"
                 >
                   <div className="min-w-0 pr-3">
                     <div className="flex items-center gap-1.5">
@@ -298,7 +298,7 @@ export function ReceiptPreviewModal({
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-mono font-black text-[#121212]">
+                    <p className="text-xs font-mono font-black text-[#121212] tabular-nums">
                       {tx.type === "income" ? "+" : "-"}
                       {currencySymbol}
                       {Number(tx.amount).toFixed(2)}
@@ -313,7 +313,7 @@ export function ReceiptPreviewModal({
               <span className="text-[10px] font-mono font-black uppercase text-slate-500">
                 Total
               </span>
-              <p className="text-sm font-mono font-black text-[#121212]">
+              <p className="text-sm font-mono font-black text-[#121212] tabular-nums">
                 -{currencySymbol}
                 {totalAmount.toLocaleString("en-US", {
                   minimumFractionDigits: 2,

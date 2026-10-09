@@ -19,3 +19,4 @@ export * from "./text-morph";
 export * from "./dialog";
 export * from "./morphing-popover";
 export * from "./toolbar-expandable";
+export * from "./contextual-icon-swap";

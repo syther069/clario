@@ -8,11 +8,34 @@ import {
 } from "@/lib/blockchain/registry";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { parseEventLogs } from "viem";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
+import { parseSafeJson, isValidUuid } from "@/lib/security/input-validation";
+import { sanitizeErrorMessage } from "@/lib/security/safe-error";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const rawInput = (body.hash || "").trim();
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`proof:verify:${clientIp}`, {
+      maxRequests: 30,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: "Too many verification requests. Please try again shortly.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
+    const body = await parseSafeJson<{ hash?: unknown }>(request);
+    const rawInput = typeof body.hash === "string" ? body.hash.trim() : "";
 
     if (!rawInput) {
       return NextResponse.json(
@@ -24,14 +47,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const publicClient = getMonadPublicClient();
-
-    // 1. Check if input is a valid 32-byte hex (transaction hash or data hash)
+    // Strict validation: Reject malformed or injected characters before query execution.
+    // Allowed formats: 32-byte hex, UUID, or clean alphanumeric/receipt id (3 to 64 chars).
     const formattedHex = rawInput.startsWith("0x") ? rawInput : `0x${rawInput}`;
     const is32ByteHex = /^0x[0-9a-fA-F]{64}$/.test(formattedHex);
+    const isUuid = isValidUuid(rawInput);
+    const isAlphanumericId = !rawInput.startsWith("0x") && /^[a-zA-Z0-9_-]{3,64}$/.test(rawInput);
 
+    if (!is32ByteHex && !isUuid && !isAlphanumericId) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid cryptographic fingerprint or identifier format. Must be a valid 32-byte hex, UUID, or alphanumeric identifier.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const publicClient = getMonadPublicClient();
+
+    // 1. Direct Monad Testnet transaction receipt lookup for 32-byte hexes
     if (is32ByteHex) {
-      // First attempt: direct Monad Testnet transaction receipt lookup
       try {
         const receipt = await publicClient.getTransactionReceipt({
           hash: formattedHex as `0x${string}`,
@@ -86,47 +122,75 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = getSupabaseAdminClient();
 
-      // Check receipt_bundles
-      const { data: bundleData } = await supabase
-        .from("receipt_bundles")
-        .select("*")
-        .or(
-          `receipt_hash.eq.${rawInput},receipt_hash.eq.${formattedHex},id.eq.${rawInput},blockchain_tx_hash.eq.${formattedHex}`,
-        )
-        .limit(1)
-        .maybeSingle();
+      // Query receipt_bundles safely using verified input shape
+      const bundleConditions: string[] = [];
+      if (is32ByteHex) {
+        bundleConditions.push(`receipt_hash.eq.${formattedHex}`);
+        bundleConditions.push(`blockchain_tx_hash.eq.${formattedHex}`);
+      }
+      if (isUuid) {
+        bundleConditions.push(`id.eq.${rawInput}`);
+      }
+      if (isAlphanumericId) {
+        bundleConditions.push(`receipt_number.eq.${rawInput}`);
+        if (!isUuid) {
+          bundleConditions.push(`id.eq.${rawInput}`);
+        }
+      }
 
-      if (bundleData) {
-        matchedTxHash = bundleData.blockchain_tx_hash || null;
-        recordMetadata = {
-          receiptNumber: bundleData.receipt_number,
-          receiptName: bundleData.receipt_name || bundleData.name,
-          totalAmount: bundleData.total_amount,
-          currency: bundleData.currency,
-          transactionCount: bundleData.transaction_count,
-          owner: bundleData.wallet_address || bundleData.user_id,
-        };
-      } else {
-        // Check transactions table
-        const { data: txData } = await supabase
-          .from("transactions")
+      if (bundleConditions.length > 0) {
+        const { data: bundleData } = await supabase
+          .from("receipt_bundles")
           .select("*")
-          .or(
-            `blockchain_data_hash.eq.${formattedHex},commitment_hash.eq.${formattedHex},blockchain_tx_hash.eq.${formattedHex},id.eq.${rawInput}`,
-          )
+          .or(bundleConditions.join(","))
           .limit(1)
           .maybeSingle();
 
-        if (txData) {
-          matchedTxHash =
-            txData.blockchain_tx_hash || txData.monad_tx_hash || null;
+        if (bundleData) {
+          matchedTxHash = bundleData.blockchain_tx_hash || null;
           recordMetadata = {
-            merchant: txData.merchant,
-            amount: txData.amount,
-            currency: txData.currency,
-            category: txData.category_id || txData.category,
-            source: txData.source,
+            receiptNumber: bundleData.receipt_number,
+            receiptName: bundleData.receipt_name || bundleData.name,
+            totalAmount: bundleData.total_amount,
+            currency: bundleData.currency,
+            transactionCount: bundleData.transaction_count,
+            // Invariant: Do not leak internal user_id in public verification endpoints
+            owner: bundleData.wallet_address || undefined,
           };
+        }
+      }
+
+      // If no bundle matched, check transactions table
+      if (!matchedTxHash) {
+        const txConditions: string[] = [];
+        if (is32ByteHex) {
+          txConditions.push(`blockchain_data_hash.eq.${formattedHex}`);
+          txConditions.push(`commitment_hash.eq.${formattedHex}`);
+          txConditions.push(`blockchain_tx_hash.eq.${formattedHex}`);
+        }
+        if (isUuid) {
+          txConditions.push(`id.eq.${rawInput}`);
+        }
+
+        if (txConditions.length > 0) {
+          const { data: txData } = await supabase
+            .from("transactions")
+            .select("*")
+            .or(txConditions.join(","))
+            .limit(1)
+            .maybeSingle();
+
+          if (txData) {
+            matchedTxHash =
+              txData.blockchain_tx_hash || txData.monad_tx_hash || null;
+            recordMetadata = {
+              merchant: txData.merchant,
+              amount: txData.amount,
+              currency: txData.currency,
+              category: txData.category_id || txData.category,
+              source: txData.source,
+            };
+          }
         }
       }
     } catch (dbErr) {
@@ -180,10 +244,11 @@ export async function POST(request: NextRequest) {
         "The cryptographic fingerprint could not be found or verified on Monad Testnet (Chain ID 10143). Ensure the transaction has been signed and anchored onchain.",
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Verification error";
+    const message = sanitizeErrorMessage(err);
     return NextResponse.json(
       { success: false, verified: false, error: message },
       { status: 500 },
     );
   }
 }
+

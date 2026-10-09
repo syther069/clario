@@ -161,9 +161,7 @@ async function fetchPriceWithTimeout(
   // 4. Fallback: Alchemy Token Prices API
   const effectiveApiKey =
     alchemyApiKey ||
-    process.env.ALCHEMY_API_KEY ||
-    process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ||
-    "alch_0DE73d0UoAQVAslj6vRBp";
+    process.env.ALCHEMY_API_KEY;
 
   if (effectiveApiKey && normSymbol) {
     try {

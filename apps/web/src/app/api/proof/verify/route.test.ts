@@ -82,9 +82,12 @@ vi.mock("@/lib/supabase/server", () => ({
   })),
 }));
 
+import { _resetRateLimits } from "@/lib/security/rate-limit";
+
 describe("Proof Verification API (/api/proof/verify)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetRateLimits();
   });
 
   it("returns 400 when empty hash payload is provided", async () => {
@@ -149,5 +152,43 @@ describe("Proof Verification API (/api/proof/verify)", () => {
     expect(json.error).toContain(
       "could not be found or verified on Monad Testnet",
     );
+  });
+
+  it("rejects malicious injection attempts and invalid characters with 400", async () => {
+    const maliciousInputs = [
+      "0x1234,id.eq.admin",
+      "'; DROP TABLE users; --",
+      "<script>alert(1)</script>",
+      "../../../etc/passwd",
+      "0x123", // incomplete hex
+      "not_a_valid_hash_with_special_chars!@#$",
+    ];
+
+    for (const input of maliciousInputs) {
+      const req = new NextRequest("http://localhost:3000/api/proof/verify", {
+        method: "POST",
+        body: JSON.stringify({ hash: input }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toContain("Invalid cryptographic fingerprint or identifier format");
+    }
+  });
+
+  it("verifies receipt bundle using valid alphanumeric identifier", async () => {
+    const req = new NextRequest("http://localhost:3000/api/proof/verify", {
+      method: "POST",
+      body: JSON.stringify({ hash: "bundle-123" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.success).toBe(true);
+    expect(json.verified).toBe(true);
+    expect(json.type).toBe("commitment");
+    expect(json.metadata?.receiptNumber).toBe("CR-10143-001");
   });
 });

@@ -54,7 +54,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const verified = await verifyAuthChallenge({ message, signature });
+    const url = new URL(req.url);
+    const verified = await verifyAuthChallenge({
+      message,
+      signature,
+      expectedDomain: url.host,
+    });
 
     // Provision or resolve user in database
     let userId: string = randomUUID();

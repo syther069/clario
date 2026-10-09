@@ -8,7 +8,6 @@ import {
   FileSpreadsheet,
   AlertTriangle,
   Clock,
-  Sparkles,
 } from "lucide-react";
 
 interface ComparisonItem {
@@ -66,13 +65,13 @@ export function BeforeAfterSection() {
     >
       <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
         <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-3 py-1 rounded-md border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-1.5 mb-3">
-          <Sparkles className="h-3 w-3" />
-          The Clario Advantage
+          <CheckCircle2 className="h-3 w-3" />
+          Side-by-Side Comparison
         </span>
-        <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight">
-          The Clario Advantage
+        <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight text-balance">
+          Why Crypto Teams Switch to Clario
         </h2>
-        <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed">
+        <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed text-pretty">
           Verifiable cryptographic certainty versus traditional expense friction.
         </p>
       </div>
@@ -102,7 +101,7 @@ export function BeforeAfterSection() {
                     <XCircle className="h-4 w-4 stroke-[2.5]" />
                     <span>Traditional Expense Process</span>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed font-normal">
+                  <p className="text-sm text-gray-700 leading-relaxed font-normal text-pretty">
                     {item.withoutClario}
                   </p>
                 </div>
@@ -113,7 +112,7 @@ export function BeforeAfterSection() {
                     <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />
                     <span>The Clario Standard</span>
                   </div>
-                  <p className="text-sm text-[#121212] leading-relaxed font-semibold">
+                  <p className="text-sm text-[#121212] leading-relaxed font-semibold text-pretty">
                     {item.withClario}
                   </p>
                 </div>

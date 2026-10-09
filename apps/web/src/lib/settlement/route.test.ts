@@ -1080,4 +1080,33 @@ describe("Settlement API Routes (SET-001)", () => {
       expect(data.error.code).toBe("DUPLICATE_SETTLEMENT");
     });
   });
+
+  describe("POST /api/workspaces/[wsId]/expenses/[expId]/settlement/confirm", () => {
+    it("rejects SSRF attempt targeting cloud metadata service via rpcUrl", async () => {
+      const { cookie, csrfToken } = makeAuth(TREASURY_ADDR, 1);
+      const req = new Request(
+        `http://localhost/api/workspaces/${WS_ID}/expenses/${EXP_ID}/settlement/confirm`,
+        {
+          method: "POST",
+          headers: {
+            cookie,
+            "x-csrf-token": csrfToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transactionHash: TX_HASH,
+            rpcUrl: "http://169.254.169.254/latest/meta-data",
+          }),
+        },
+      );
+
+      const res = await confirmHandler(req, {
+        params: Promise.resolve({ workspaceId: WS_ID, expenseId: EXP_ID }),
+      });
+
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data.error.message).toMatch(/SSRF_BLOCKED/);
+    });
+  });
 });

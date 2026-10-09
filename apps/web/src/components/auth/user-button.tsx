@@ -26,6 +26,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import { EditNicknameModal } from "./edit-nickname-modal";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 export function UserButton() {
   const router = useRouter();
@@ -326,15 +327,19 @@ export function UserButton() {
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                     <button
+                      type="button"
                       onClick={handleCopy}
-                      className="text-slate-600 hover:text-black p-0.5 transition"
+                      className="relative size-6 flex items-center justify-center p-0.5 text-slate-600 hover:text-black transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-10 after:-translate-1/2"
                       title="Copy wallet address"
+                      aria-label="Copy wallet address"
                     >
-                      {copied ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
+                      <ContextualIconSwap
+                        isActive={copied}
+                        ActiveIcon={Check}
+                        InactiveIcon={Copy}
+                        className="h-3.5 w-3.5"
+                        activeClassName="text-emerald-600"
+                      />
                     </button>
                   </div>
                 </div>

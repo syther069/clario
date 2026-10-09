@@ -31,6 +31,7 @@ import { ReceiptExportDropdown } from "@/components/dashboard/receipt-export-dro
 import { extractCanonicalReceiptData } from "@/lib/export/receipt-exporter";
 import type { Address } from "viem";
 import { motion, AnimatePresence } from "motion/react";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 interface ReceiptBundleModalProps {
   isOpen: boolean;
@@ -259,7 +260,8 @@ export function ReceiptBundleModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md border border-[#121212] hover:bg-slate-100 transition shadow-[1px_1px_0_0_#121212] shrink-0"
+            className="relative size-8 flex items-center justify-center rounded-md border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] shrink-0 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
+            aria-label="Close"
           >
             <X className="h-4 w-4 text-[#121212]" />
           </button>
@@ -317,11 +319,11 @@ export function ReceiptBundleModal({
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
                   Total Amount
                 </span>
-                <p className="text-xl font-mono font-black text-[#121212] mt-0.5">
+                <p className="text-xl font-mono font-black tabular-nums text-[#121212] mt-0.5">
                   -${Number(activeBundle.total_amount).toFixed(2)}{" "}
                   {activeBundle.currency}
                 </p>
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-[#836EF9] bg-[#f3f0ff] border border-[#836EF9]/40 px-2 py-0.5 rounded shadow-[1px_1px_0_0_#121212] mt-1">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold tabular-nums text-[#836EF9] bg-[#f3f0ff] border border-[#836EF9]/40 px-2 py-0.5 rounded shadow-[1px_1px_0_0_#121212] mt-1">
                   <Layers className="h-3 w-3" />
                   <span>{activeBundle.transaction_count} Transactions</span>
                 </span>
@@ -340,7 +342,7 @@ export function ReceiptBundleModal({
                     {renameValue.length}/80
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-normal">
+                <p className="text-[11px] text-slate-600 leading-normal text-pretty">
                   The on-chain proof commits to the canonical name. Renaming
                   creates a new version and invalidates existing verification
                   until re-anchored on Monad.
@@ -435,13 +437,15 @@ export function ReceiptBundleModal({
                 <button
                   type="button"
                   onClick={() => handleCopy(receiptHash, "receiptHash")}
-                  className="hover:text-[#836EF9] flex items-center gap-1 transition"
+                  className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                  title="Copy receipt canonical hash"
+                  aria-label="Copy receipt canonical hash"
                 >
-                  {copiedField === "receiptHash" ? (
-                    <Check className="h-3 w-3 text-emerald-600" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
+                  <ContextualIconSwap
+                    isActive={copiedField === "receiptHash"}
+                    initialIcon={<Copy className="h-3 w-3" />}
+                    activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                  />
                   <span>
                     {copiedField === "receiptHash" ? "Copied" : "Copy"}
                   </span>
@@ -460,13 +464,15 @@ export function ReceiptBundleModal({
                   <button
                     type="button"
                     onClick={() => handleCopy(txHash, "txHash")}
-                    className="hover:text-[#836EF9] flex items-center gap-1 transition"
+                    className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                    title="Copy transaction hash"
+                    aria-label="Copy transaction hash"
                   >
-                    {copiedField === "txHash" ? (
-                      <Check className="h-3 w-3 text-emerald-600" />
-                    ) : (
-                      <Copy className="h-3 w-3" />
-                    )}
+                    <ContextualIconSwap
+                      isActive={copiedField === "txHash"}
+                      initialIcon={<Copy className="h-3 w-3" />}
+                      activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                    />
                     <span>{copiedField === "txHash" ? "Copied" : "Copy"}</span>
                   </button>
                 </div>
@@ -483,13 +489,15 @@ export function ReceiptBundleModal({
                 <button
                   type="button"
                   onClick={() => handleCopy(contractAddress, "contract")}
-                  className="hover:text-[#836EF9] flex items-center gap-1 transition"
+                  className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                  title="Copy contract address"
+                  aria-label="Copy contract address"
                 >
-                  {copiedField === "contract" ? (
-                    <Check className="h-3 w-3 text-emerald-600" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
+                  <ContextualIconSwap
+                    isActive={copiedField === "contract"}
+                    initialIcon={<Copy className="h-3 w-3" />}
+                    activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                  />
                   <span>{copiedField === "contract" ? "Copied" : "Copy"}</span>
                 </button>
               </div>
@@ -553,7 +561,7 @@ export function ReceiptBundleModal({
               {bundledTxs.map((tx, idx) => (
                 <div
                   key={tx.id || idx}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition"
+                  className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition-colors duration-150 ease-out"
                 >
                   <div className="min-w-0 pr-3">
                     <div className="flex items-center gap-1.5">
@@ -574,7 +582,7 @@ export function ReceiptBundleModal({
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-mono font-black text-[#121212]">
+                    <p className="text-xs font-mono font-black tabular-nums text-[#121212]">
                       -${Number(tx.amount).toFixed(2)}
                     </p>
                   </div>

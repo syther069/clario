@@ -303,7 +303,7 @@ export function TransactionImportDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-all active:translate-x-0.5 active:translate-y-0.5"
+            className="relative rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
           >
             <X className="h-4 w-4" />
           </button>
@@ -331,7 +331,7 @@ export function TransactionImportDialog({
             <button
               type="button"
               onClick={() => setActiveTab("wallet")}
-              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all ${
+              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out ${
                 activeTab === "wallet"
                   ? "bg-[#836EF9] text-white"
                   : "bg-white text-[#121212] hover:bg-slate-50"
@@ -342,7 +342,7 @@ export function TransactionImportDialog({
             <button
               type="button"
               onClick={() => setActiveTab("hash")}
-              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all ${
+              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out ${
                 activeTab === "hash"
                   ? "bg-[#836EF9] text-white"
                   : "bg-white text-[#121212] hover:bg-slate-50"
@@ -412,7 +412,7 @@ export function TransactionImportDialog({
                     onClick={() => fetchTransactions(false)}
                     disabled={loading || !isValidEvmAddress(queryAddress)}
                     title="Refresh transactions via Alchemy"
-                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-all active:translate-x-0.5 active:translate-y-0.5"
+                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                   >
                     <RefreshCw
                       className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
@@ -447,7 +447,7 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={onConnectWallet}
-                      className="mt-2 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2.5 px-5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                      className="mt-2 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2.5 px-5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-[1px] active:translate-y-[1px]"
                     >
                       <Wallet className="h-4 w-4" />
                       <span>CONNECT EVM WALLET</span>
@@ -478,7 +478,7 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={() => fetchTransactions(false)}
-                      className="border-2 border-[#121212] bg-[#ef4444] hover:bg-[#dc2626] text-white font-black uppercase text-xs px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                      className="border-2 border-[#121212] bg-[#ef4444] hover:bg-[#dc2626] text-white font-black uppercase text-xs px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       <span>Retry Alchemy Request</span>
@@ -489,7 +489,7 @@ export function TransactionImportDialog({
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(10143)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                         >
                           <CryptoChainIcon chain={10143} className="h-3.5 w-3.5" />
                           <span>Monad Testnet</span>
@@ -497,7 +497,7 @@ export function TransactionImportDialog({
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(8453)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                         >
                           <CryptoChainIcon chain={8453} className="h-3.5 w-3.5" />
                           <span>Base</span>
@@ -505,7 +505,7 @@ export function TransactionImportDialog({
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(11155111)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                         >
                           <CryptoChainIcon chain={11155111} className="h-3.5 w-3.5" />
                           <span>Sepolia</span>
@@ -515,7 +515,7 @@ export function TransactionImportDialog({
                       <button
                         type="button"
                         onClick={() => setSelectedChainId(0)}
-                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                       >
                         <Globe className="h-3.5 w-3.5 text-[#836EF9]" />
                         <span>Try All Chains</span>
@@ -525,7 +525,7 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={() => setActiveTab("hash")}
-                      className="border-2 border-[#121212] bg-[#f3f0ff] hover:bg-[#e9e3ff] text-[#836EF9] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5 sm:ml-auto"
+                      className="border-2 border-[#121212] bg-[#f3f0ff] hover:bg-[#e9e3ff] text-[#836EF9] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 sm:ml-auto"
                     >
                       <Search className="h-3.5 w-3.5" />
                       <span>Direct Hash Lookup →</span>
@@ -593,7 +593,7 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={() => setSelectedChainId(0)}
-                      className="mt-1 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2 px-4 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                      className="mt-1 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2 px-4 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                     >
                       <Globe className="h-3.5 w-3.5" />
                       <span>Scan All Supported Chains</span>
@@ -648,7 +648,7 @@ export function TransactionImportDialog({
                     return (
                       <div
                         key={`${tx.sourceChainId}-${tx.sourceTransactionHash}-${tx.claimSlot}`}
-                        className={`border-2 border-[#121212] rounded-xl p-4 shadow-[3px_3px_0_0_#121212] flex flex-col gap-3 transition-all ${
+                        className={`border-2 border-[#121212] rounded-xl p-4 shadow-[3px_3px_0_0_#121212] flex flex-col gap-3 transition-[background-color,border-color,box-shadow] duration-150 ease-out ${
                           tx.isClaimed
                             ? "bg-slate-50 opacity-75"
                             : "bg-white hover:bg-[#faf8fe]"
@@ -683,11 +683,11 @@ export function TransactionImportDialog({
 
                             <div>
                               <div className="flex items-baseline gap-2">
-                                <span className="font-mono text-base font-black text-[#121212]">
+                                <span className="font-mono tabular-nums text-base font-black text-[#121212]">
                                   {tx.formattedAmount} {tx.assetSymbol}
                                 </span>
                                 {tx.usdValueFormatted && (
-                                  <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
+                                  <span className="font-mono tabular-nums text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
                                     {tx.usdValueFormatted} USD
                                   </span>
                                 )}
@@ -743,7 +743,7 @@ export function TransactionImportDialog({
                               onSelectTransaction(tx, "imported_transaction");
                               onClose();
                             }}
-                            className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
+                            className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out ${
                               tx.isClaimed || tx.status === "failed"
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                                 : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
@@ -798,7 +798,7 @@ export function TransactionImportDialog({
 
                           <div className="sm:text-right">
                             <span className="text-slate-400">Time:</span>{" "}
-                            <span className="font-bold text-[#121212]">
+                            <span className="font-bold tabular-nums text-[#121212]">
                               {formatTransactionDateTime(tx.blockTimestamp)}
                             </span>
                           </div>
@@ -821,7 +821,7 @@ export function TransactionImportDialog({
                         type="button"
                         onClick={() => fetchTransactions(true)}
                         disabled={loadingMore}
-                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs tracking-wider px-5 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs tracking-wider px-5 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
                       >
                         {loadingMore ? (
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -854,7 +854,7 @@ export function TransactionImportDialog({
                     type="button"
                     onClick={handleLookup}
                     disabled={lookupLoading || !lookupHash.trim()}
-                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
                   >
                     {lookupLoading ? (
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -888,13 +888,13 @@ export function TransactionImportDialog({
                         />
                       </div>
                       <div>
-                        <div className="font-mono text-lg font-black text-[#121212] flex items-center gap-2">
+                        <div className="font-mono tabular-nums text-lg font-black text-[#121212] flex items-center gap-2">
                           <span>
                             {lookupCandidate.formattedAmount}{" "}
                             {lookupCandidate.assetSymbol}
                           </span>
                           {lookupCandidate.usdValueFormatted && (
-                            <span className="font-mono text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#16a34a]/30">
+                            <span className="font-mono tabular-nums text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#16a34a]/30">
                               {lookupCandidate.usdValueFormatted} USD
                             </span>
                           )}
@@ -938,7 +938,7 @@ export function TransactionImportDialog({
                         );
                         onClose();
                       }}
-                      className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-all ${
+                      className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out ${
                         lookupCandidate.isClaimed ||
                         lookupCandidate.status === "failed"
                           ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
@@ -968,7 +968,7 @@ export function TransactionImportDialog({
                     </div>
                     <div>
                       <span className="text-slate-400">Exact Time:</span>{" "}
-                      <span className="font-bold text-[#121212]">
+                      <span className="font-bold tabular-nums text-[#121212]">
                         {formatTransactionDateTime(
                           lookupCandidate.blockTimestamp,
                         )}
@@ -992,7 +992,7 @@ export function TransactionImportDialog({
           <button
             type="button"
             onClick={onClose}
-            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-all active:translate-x-0.5 active:translate-y-0.5"
+            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
           >
             Close
           </button>

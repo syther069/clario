@@ -8,7 +8,7 @@ import {
   FileText,
   ArrowLeft,
   Camera,
-  Sparkles,
+  ScanText,
   CreditCard,
   Banknote,
   Smartphone,
@@ -319,7 +319,7 @@ export function TransactionModal({
             <button
               type="button"
               onClick={() => setIsNoWalletPopupOpen(false)}
-              className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition"
+              className="relative size-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -431,7 +431,7 @@ export function TransactionModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition cursor-pointer"
+            className="relative size-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -519,11 +519,11 @@ export function TransactionModal({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2.5 py-0.5 rounded-md border border-[#836EF9]/40 shadow-[1px_1px_0_0_#836EF9]">
-                        <Sparkles className="h-3 w-3" />
-                        Gemini AI OCR
+                        <ScanText className="h-3 w-3" />
+                        Multimodal Receipt Scan
                       </span>
                       <span className="text-[10px] font-mono font-black uppercase text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-300 shadow-[1px_1px_0_0_#121212]">
-                        Zero Friction
+                        Local Device
                       </span>
                     </div>
                     <h4 className="text-sm font-black uppercase tracking-wider text-[#121212] group-hover:text-[#836EF9] transition-colors flex items-center justify-between">
@@ -957,7 +957,7 @@ export function TransactionModal({
                   <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-800 border border-[#121212]">
                     {savedTransaction.type.toUpperCase()}
                   </span>
-                  <div className="text-xl font-black font-mono text-[#121212] mt-1.5">
+                  <div className="text-xl font-black font-mono tabular-nums text-[#121212] mt-1.5">
                     {savedTransaction.currency === "USD" || !savedTransaction.currency
                       ? "$"
                       : `${savedTransaction.currency} `}

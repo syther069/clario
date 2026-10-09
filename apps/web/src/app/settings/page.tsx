@@ -30,6 +30,7 @@ import {
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import type { PlatformMode } from "@/lib/supabase/types";
 import { EditNicknameModal } from "@/components/auth/edit-nickname-modal";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -256,7 +257,7 @@ export default function AccountSettingsPage() {
                           </h2>
                           <button
                             onClick={handleStartInlineEdit}
-                            className="text-slate-400 hover:text-[#836EF9] p-1 transition rounded hover:bg-slate-100"
+                            className="relative text-slate-400 hover:text-[#836EF9] p-1 transition-colors duration-150 ease-out rounded hover:bg-slate-100 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                             title="Edit Nickname"
                             aria-label="Edit Nickname"
                           >
@@ -348,7 +349,7 @@ export default function AccountSettingsPage() {
                         onClick={() =>
                           openNicknameModal(activeWalletAddress, "Edit Active Wallet Nickname")
                         }
-                        className="text-slate-500 hover:text-[#836EF9] p-1.5 transition rounded hover:bg-slate-100"
+                        className="relative text-slate-500 hover:text-[#836EF9] p-1.5 transition-colors duration-150 ease-out rounded hover:bg-slate-100 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                         title="Set / Edit Nickname"
                         aria-label="Set / Edit Nickname"
                       >
@@ -358,7 +359,7 @@ export default function AccountSettingsPage() {
                         href={`https://testnet.monadexplorer.com/address/${activeWalletAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-slate-500 hover:text-black p-1.5 transition rounded hover:bg-slate-100"
+                        className="relative text-slate-500 hover:text-black p-1.5 transition-colors duration-150 ease-out rounded hover:bg-slate-100 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                         title="View on Monad Explorer"
                         aria-label="View on Monad Explorer"
                       >
@@ -366,15 +367,15 @@ export default function AccountSettingsPage() {
                       </a>
                       <button
                         onClick={() => handleCopy(activeWalletAddress)}
-                        className="text-slate-600 hover:text-black p-1.5 transition rounded hover:bg-slate-100"
+                        className="relative text-slate-600 hover:text-black p-1.5 transition-colors duration-150 ease-out rounded hover:bg-slate-100 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                         title="Copy wallet address"
                         aria-label="Copy wallet address"
                       >
-                        {copied ? (
-                          <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
+                        <ContextualIconSwap
+                          isActive={copied}
+                          initialIcon={<Copy className="h-3.5 w-3.5" />}
+                          activeIcon={<Check className="h-3.5 w-3.5 text-emerald-600" />}
+                        />
                       </button>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ import { requireAuth } from "@/lib/auth/context";
 import { RecordNotFoundError } from "@/lib/auth/policy";
 import { getDatabaseClient } from "@/lib/db";
 import { ExportService } from "@/lib/export";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 interface ExportRequestBody {
   disclosureLevel?: DisclosureLevel | undefined;
@@ -35,6 +36,29 @@ export async function POST(
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`exports:create:${clientIp}`, {
+      maxRequests: 15,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Too many export requests. Please try again shortly.",
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
     const context = requireAuth(req);
     const { workspaceId } = await params;
     const body = await parseBody(req);

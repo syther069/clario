@@ -12,7 +12,7 @@ import {
   Receipt,
   Check,
   Copy,
-  Sparkles,
+  Terminal,
   CheckCircle2,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
@@ -274,7 +274,7 @@ export default function LandingPage() {
               </TextEffect>
 
               {/* Subtitle */}
-              <p className="text-base sm:text-lg text-gray-600 font-normal leading-relaxed max-w-xl">
+              <p className="text-base sm:text-lg text-gray-600 font-normal leading-relaxed max-w-xl text-pretty">
                 Track everyday spending across four simple workspaces. Your receipts
                 stay on your device, while Monad creates proof that nobody can dispute or change.
               </p>
@@ -392,7 +392,7 @@ export default function LandingPage() {
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-2xl font-bold font-mono tabular-nums text-gray-900">
                         {activeExpense.amount}
                       </span>
                       <div className="mt-1">
@@ -518,7 +518,7 @@ export default function LandingPage() {
           <div className="rounded-2xl border-2 border-[#121212] bg-[#121212] text-white p-6 sm:p-10 shadow-[6px_6px_0_0_#836EF9] overflow-hidden">
             <div className="max-w-2xl">
               <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-white/10 px-3 py-1 rounded-md border border-white/20 inline-flex items-center gap-1.5 mb-3">
-                <Sparkles className="h-3 w-3" />
+                <Terminal className="h-3 w-3" />
                 Live Verification Inspector
               </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white leading-tight">
@@ -721,8 +721,8 @@ export default function LandingPage() {
           <div className="rounded-2xl border-2 border-[#121212] bg-white p-8 sm:p-14 text-center shadow-[6px_6px_0_0_#836EF9]">
             <div className="max-w-xl mx-auto space-y-5">
               <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-3 py-1 rounded-md border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                Get Started Today
+                <ArrowRight className="h-3.5 w-3.5" />
+                Launch On Monad Testnet
               </span>
               <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight [text-wrap:balance]">
                 Ready to test private, verifiable expenses?

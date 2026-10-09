@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import type { ExpenseTimelineResponse } from "@/lib/timeline/types";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 interface ProofSpineTimelineProps {
   readonly timeline: ExpenseTimelineResponse;
@@ -83,6 +84,7 @@ export function ProofSpineTimeline({
                 fontSize: "1.125rem",
                 fontWeight: 600,
                 letterSpacing: "-0.01em",
+                textWrap: "balance",
               }}
             >
               Proof Spine · Activity Timeline
@@ -93,6 +95,7 @@ export function ProofSpineTimeline({
               margin: "4px 0 0",
               fontSize: "0.8125rem",
               color: "var(--text-secondary)",
+              textWrap: "pretty",
             }}
           >
             Authoritative lineage joining offchain evidence with verified Monad
@@ -141,7 +144,7 @@ export function ProofSpineTimeline({
                 cursor: "pointer",
                 boxShadow:
                   filterMode === tab.id ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
-                transition: "all 0.15s ease",
+                transition: "color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease",
               }}
             >
               {tab.label}
@@ -171,8 +174,14 @@ export function ProofSpineTimeline({
           <div style={{ flex: 1 }}>
             <span style={{ fontWeight: 600 }}>Indexer Lagging:</span>{" "}
             {timeline.indexerLag.message} (Latest block:{" "}
-            {timeline.indexerLag.latestKnownBlock}, Indexed:{" "}
-            {timeline.indexerLag.indexedCheckpointBlock})
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>
+              {timeline.indexerLag.latestKnownBlock}
+            </span>
+            , Indexed:{" "}
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>
+              {timeline.indexerLag.indexedCheckpointBlock}
+            </span>
+            )
           </div>
         </div>
       )}
@@ -327,7 +336,7 @@ export function ProofSpineTimeline({
                   padding: isExpanded
                     ? "var(--space-3) var(--space-4)"
                     : "2px var(--space-2)",
-                  transition: "all 0.15s ease",
+                  transition: "background-color 0.15s ease, border-color 0.15s ease, padding 0.15s ease",
                 }}
               >
                 {/* Event Headline & Primary Badges */}
@@ -502,6 +511,7 @@ export function ProofSpineTimeline({
                     fontSize: "0.8125rem",
                     color: "var(--text-secondary)",
                     lineHeight: 1.4,
+                    textWrap: "pretty",
                   }}
                 >
                   {event.description}
@@ -516,6 +526,7 @@ export function ProofSpineTimeline({
                     fontSize: "0.6875rem",
                     color: "var(--text-tertiary)",
                     flexWrap: "wrap",
+                    fontVariantNumeric: "tabular-nums",
                   }}
                 >
                   {event.timestamp.applicationTime && (
@@ -615,6 +626,7 @@ export function ProofSpineTimeline({
                                   `comm-${event.id}`,
                                 )
                               }
+                              className="relative after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-[''] transition-colors duration-150 ease-out"
                               style={{
                                 border: "none",
                                 background: "none",
@@ -625,18 +637,23 @@ export function ProofSpineTimeline({
                                 color: "var(--text-tertiary)",
                               }}
                               title="Copy commitment hash"
+                              aria-label="Copy commitment hash"
                             >
-                              {copiedText === `comm-${event.id}` ? (
-                                <Check
-                                  className="w-3.5 h-3.5 text-emerald-600"
-                                  aria-label="Copied"
-                                />
-                              ) : (
-                                <Copy
-                                  className="w-3.5 h-3.5 text-gray-500 hover:text-black"
-                                  aria-label="Copy"
-                                />
-                              )}
+                              <ContextualIconSwap
+                                isActive={copiedText === `comm-${event.id}`}
+                                initialIcon={
+                                  <Copy
+                                    className="w-3.5 h-3.5 text-gray-500 hover:text-black"
+                                    aria-label="Copy"
+                                  />
+                                }
+                                activeIcon={
+                                  <Check
+                                    className="w-3.5 h-3.5 text-emerald-600"
+                                    aria-label="Copied"
+                                  />
+                                }
+                              />
                             </button>
                           </div>
                         </div>
@@ -673,6 +690,7 @@ export function ProofSpineTimeline({
                               onClick={() =>
                                 handleCopy(event.txHash!, `tx-${event.id}`)
                               }
+                              className="relative after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-[''] transition-colors duration-150 ease-out"
                               style={{
                                 border: "none",
                                 background: "none",
@@ -683,18 +701,23 @@ export function ProofSpineTimeline({
                                 color: "var(--text-tertiary)",
                               }}
                               title="Copy transaction hash"
+                              aria-label="Copy transaction hash"
                             >
-                              {copiedText === `tx-${event.id}` ? (
-                                <Check
-                                  className="w-3.5 h-3.5 text-emerald-600"
-                                  aria-label="Copied"
-                                />
-                              ) : (
-                                <Copy
-                                  className="w-3.5 h-3.5 text-gray-500 hover:text-black"
-                                  aria-label="Copy"
-                                />
-                              )}
+                              <ContextualIconSwap
+                                isActive={copiedText === `tx-${event.id}`}
+                                initialIcon={
+                                  <Copy
+                                    className="w-3.5 h-3.5 text-gray-500 hover:text-black"
+                                    aria-label="Copy"
+                                  />
+                                }
+                                activeIcon={
+                                  <Check
+                                    className="w-3.5 h-3.5 text-emerald-600"
+                                    aria-label="Copied"
+                                  />
+                                }
+                              />
                             </button>
                           </div>
                         </div>

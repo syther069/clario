@@ -44,7 +44,7 @@ const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider rounded-lg gap-1.5",
   md: "px-4 py-2.5 text-xs font-mono font-black uppercase tracking-wider rounded-lg gap-2",
   lg: "px-5 py-3 text-sm font-mono font-black uppercase tracking-wider rounded-xl gap-2.5",
-  icon: "h-9 w-9 p-0 flex items-center justify-center rounded-lg",
+  icon: "relative h-9 w-9 p-0 flex items-center justify-center rounded-lg after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']",
 };
 
 export function WatermelonButton({
@@ -70,11 +70,11 @@ export function WatermelonButton({
 
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: "spring", duration: 0.2, bounce: 0 }}
       disabled={disabled || isLoading}
       className={cn(
-        "inline-flex items-center justify-center font-mono font-black uppercase transition-all select-none cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
+        "inline-flex items-center justify-center font-mono font-black uppercase transition-colors duration-150 ease-out select-none cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
         variantStyles[variant],
         sizeStyles[size],
         className

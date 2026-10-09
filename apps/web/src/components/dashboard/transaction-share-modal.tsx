@@ -22,6 +22,7 @@ import { MonadLogo } from "@/components/ui/crypto-icon";
 import { ReceiptExportDropdown } from "@/components/dashboard/receipt-export-dropdown";
 import { extractTransactionReceiptData } from "@/lib/export/receipt-exporter";
 import { motion, AnimatePresence } from "motion/react";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 interface TransactionShareModalProps {
   isOpen: boolean;
@@ -156,7 +157,7 @@ export function TransactionShareModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1 rounded-md border border-[#121212] hover:bg-slate-100 transition shadow-[1px_1px_0_0_#121212] cursor-pointer"
+                className="relative size-8 rounded-md flex items-center justify-center border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
                 aria-label="Close receipt"
               >
                 <X className="h-4 w-4 text-[#121212]" />
@@ -172,7 +173,7 @@ export function TransactionShareModal({
                     <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
                       Merchant / Description
                     </p>
-                    <h3 className="text-base font-black uppercase text-[#121212] mt-0.5">
+                    <h3 className="text-base font-black uppercase text-[#121212] mt-0.5 text-balance">
                       {transaction.merchant}
                     </h3>
                     <p className="text-xs text-slate-500 font-mono mt-0.5">
@@ -189,7 +190,7 @@ export function TransactionShareModal({
                         • RECORDED ENTRY
                       </span>
                     )}
-                    <p className="text-lg font-black font-mono text-[#121212] mt-2">
+                    <p className="text-lg font-black font-mono text-[#121212] mt-2 tabular-nums">
                       {transaction.currency === "USD" || !transaction.currency
                         ? "$"
                         : `${transaction.currency} `}
@@ -347,16 +348,17 @@ export function TransactionShareModal({
                     onClick={handleCopyLink}
                     className="neo-btn neo-btn-secondary !py-1.5 !px-3 text-xs font-mono font-bold shrink-0 flex items-center gap-1.5 cursor-pointer"
                   >
+                    <ContextualIconSwap
+                      isActive={copiedLink}
+                      ActiveIcon={Check}
+                      InactiveIcon={Copy}
+                      className="h-3.5 w-3.5"
+                      activeClassName="text-emerald-600"
+                    />
                     {copiedLink ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-emerald-700">Copied!</span>
-                      </>
+                      <span className="text-emerald-700">Copied!</span>
                     ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        <span>Copy Link</span>
-                      </>
+                      <span>Copy Link</span>
                     )}
                   </button>
                 </div>
@@ -366,7 +368,7 @@ export function TransactionShareModal({
               {isVerified && (
                 <div className="p-3 bg-[#fbf9fe] border-2 border-[#836EF9]/30 rounded-xl flex items-start gap-2.5">
                   <ShieldCheck className="h-4 w-4 text-[#836EF9] shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 leading-relaxed text-pretty">
                     <strong className="text-[#121212]">
                       Zero Sensitive Data Leaked:
                     </strong>{" "}
@@ -384,19 +386,20 @@ export function TransactionShareModal({
                   onClick={handleCopySummary}
                   className="neo-btn neo-btn-secondary flex-1 flex items-center justify-center gap-1.5 text-xs cursor-pointer"
                 >
-                  {copied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>Copied Summary!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span>
-                        {isVerified ? "Copy Proof Summary" : "Copy Summary"}
-                      </span>
-                    </>
-                  )}
+                  <ContextualIconSwap
+                    isActive={copied}
+                    ActiveIcon={Check}
+                    InactiveIcon={Copy}
+                    className="h-3.5 w-3.5"
+                    activeClassName="text-emerald-600"
+                  />
+                  <span>
+                    {copied
+                      ? "Copied Summary!"
+                      : isVerified
+                        ? "Copy Proof Summary"
+                        : "Copy Summary"}
+                  </span>
                 </button>
 
                 <div className="flex-1">

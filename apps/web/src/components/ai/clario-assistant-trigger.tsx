@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, X, Bot } from "lucide-react";
+import { X, Bot } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
 interface ClarioAssistantTriggerProps {
@@ -81,7 +81,7 @@ export function ClarioAssistantTrigger({
               <div className="flex items-start gap-2.5">
                 {/* Assistant Mini Icon */}
                 <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#f4f0ff] text-[#836EF9] shadow-[1px_1px_0_0_#121212]">
-                  <Sparkles className="h-4 w-4 fill-[#836EF9]/20" aria-hidden="true" />
+                  <Bot className="h-4 w-4 text-[#836EF9]" aria-hidden="true" />
                   <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#836EF9] opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#836EF9] border border-white" />
@@ -99,9 +99,9 @@ export function ClarioAssistantTrigger({
                       Assistant
                     </span>
                   </div>
-                  {/* Exact prompt text */}
+                  {/* Prompt text */}
                   <p className="text-xs font-black text-[#121212] tracking-tight leading-snug">
-                    Need a hand??
+                    Financial Copilot
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5 leading-tight font-medium">
                     Tap to ask ledger, budget, or invoice questions.
@@ -151,7 +151,6 @@ export function ClarioAssistantTrigger({
           {/* Assistant Icon */}
           <div className="relative flex items-center justify-center">
             <Bot className="h-6 w-6 text-white transition-transform duration-200 group-hover:rotate-6" aria-hidden="true" />
-            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-amber-300 fill-amber-300 animate-pulse" aria-hidden="true" />
           </div>
 
           {/* Monad Verified Badge Dot */}

@@ -31,3 +31,9 @@ minimumReleaseAgeExclude:
 
 patchedDependencies:
   "@privy-io/react-auth": patches/@privy-io__react-auth.patch
+
+overrides:
+  sharp: ">=0.35.5"
+  source-map-js: ">=1.2.2"
+  brace-expansion: ">=1.1.21"
+  decode-uri-component: ">=0.4.3"

@@ -141,6 +141,9 @@ export function computeExpenseCommitmentV1(
   const normalizedEvidenceHash =
     params.evidenceManifestHash.toLowerCase() as `0x${string}`;
   const normalizedSalt = params.salt.toLowerCase() as `0x${string}`;
+  if (normalizedSalt === `0x${"00".repeat(32)}`) {
+    throw new Error("salt must not be all zeros (insecure zero salt).");
+  }
 
   const encoded = encodeAbiParameters(
     [

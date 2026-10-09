@@ -5,6 +5,7 @@ import { AuthorizationPolicy, RecordNotFoundError } from "@/lib/auth/policy";
 import { getDatabaseClient } from "@/lib/db";
 import { TransactionImportService } from "@/lib/import/service";
 import { IMPORTED_FACTS_DISCLAIMER } from "@/lib/import/types";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -14,6 +15,29 @@ export async function GET(
   { params }: { params: Promise<{ workspaceId: string }> },
 ) {
   try {
+    const clientIp = getClientIp(req);
+    const rateCheck = checkRateLimit(`import:lookup:${clientIp}`, {
+      maxRequests: 30,
+      windowMs: 60_000,
+    });
+
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "RATE_LIMITED",
+            message: "Too many transaction lookup requests. Please try again shortly.",
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)),
+          },
+        },
+      );
+    }
+
     const { workspaceId } = await params;
     let db;
     try {

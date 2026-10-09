@@ -12,6 +12,7 @@ import {
   computePackageFileHash,
   validateVerificationPackageManifestV1,
 } from "../package/validate.js";
+import { safeJsonReviver } from "./archive.js";
 import type {
   VerificationCheckResult,
   VerificationCheckStatus,
@@ -36,7 +37,7 @@ function equalHex(left: string, right: string): boolean {
 function jsonFile(files: Map<string, Buffer>, path: string): unknown {
   const bytes = files.get(path);
   if (!bytes) throw new Error(`Missing package file: ${path}`);
-  return JSON.parse(bytes.toString("utf8")) as unknown;
+  return JSON.parse(bytes.toString("utf8"), safeJsonReviver) as unknown;
 }
 
 function overallStatus(
@@ -369,9 +370,11 @@ export async function verifyPackage(
         try {
           record = JSON.parse(
             recordBytes.toString("utf8"),
+            safeJsonReviver,
           ) as CanonicalExpenseV1;
           evidenceManifest = JSON.parse(
             evidenceManifestBytes.toString("utf8"),
+            safeJsonReviver,
           ) as CanonicalEvidenceManifestV1;
           recordHash = hashCanonicalExpenseV1(record);
           evidenceManifestHash =

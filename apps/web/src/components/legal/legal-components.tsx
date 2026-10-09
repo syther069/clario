@@ -6,7 +6,7 @@ import {
   ShieldAlert,
   AlertCircle,
   Info,
-  Sparkles,
+  CheckCircle2,
   Link2,
   Check,
   ChevronDown,
@@ -22,6 +22,7 @@ import type {
   LegalCalloutData,
   LegalTableData,
 } from "@/lib/legal/legal-data";
+import { ContextualIconSwap } from "@/components/ui/motion";
 
 // ==========================================
 // 1. Plain-English Summary Box
@@ -31,7 +32,7 @@ export function LegalSummaryCallout({ summary }: { summary: string[] }) {
   return (
     <div className="my-6 rounded-xl border-2 border-[#121212] bg-[#f5f3ff] p-5 shadow-[4px_4px_0_0_#836EF9] print:border-black print:bg-white print:shadow-none">
       <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-[#121212]/20">
-        <Sparkles className="h-4 w-4 text-[#836EF9]" aria-hidden="true" />
+        <FileText className="h-4 w-4 text-[#836EF9]" aria-hidden="true" />
         <span className="font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
           [ Plain-English Summary ]
         </span>
@@ -93,7 +94,7 @@ export function LegalCallout({ data }: { data: LegalCalloutData }) {
     tip: {
       border: "border-[#121212]",
       bg: "bg-emerald-50",
-      icon: <Sparkles className="h-4 w-4 text-emerald-700 shrink-0" aria-hidden="true" />,
+      icon: <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0" aria-hidden="true" />,
       badgeBg: "bg-emerald-700 text-white",
     },
   }[data.type];
@@ -166,9 +167,13 @@ export function LegalSectionHeading({
         <button
           onClick={handleCopy}
           aria-label={`Copy link to section ${title}`}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-1 text-slate-400 hover:text-[#836EF9] transition-opacity print:hidden"
+          className="relative opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-1 text-slate-400 hover:text-[#836EF9] transition-opacity print:hidden after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Link2 className="h-3.5 w-3.5" />}
+          <ContextualIconSwap
+            isActive={copied}
+            initialIcon={<Link2 className="h-3.5 w-3.5" />}
+            activeIcon={<Check className="h-3.5 w-3.5 text-emerald-600" />}
+          />
         </button>
       </h3>
     );
@@ -190,18 +195,17 @@ export function LegalSectionHeading({
       <button
         onClick={handleCopy}
         aria-label={`Copy link to section ${title}`}
-        className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 inline-flex items-center gap-1 font-mono text-[11px] font-bold uppercase text-slate-500 hover:text-[#836EF9] transition-opacity print:hidden"
+        className="relative opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 inline-flex items-center gap-1 font-mono text-[11px] font-bold uppercase text-slate-500 hover:text-[#836EF9] transition-opacity print:hidden after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
       >
+        <ContextualIconSwap
+          isActive={copied}
+          initialIcon={<Link2 className="h-3.5 w-3.5" />}
+          activeIcon={<Check className="h-3.5 w-3.5 text-emerald-600" />}
+        />
         {copied ? (
-          <>
-            <Check className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="text-emerald-600">[ Copied ]</span>
-          </>
+          <span className="text-emerald-600">[ Copied ]</span>
         ) : (
-          <>
-            <Link2 className="h-3.5 w-3.5" />
-            <span>[ Link ]</span>
-          </>
+          <span>[ Link ]</span>
         )}
       </button>
     </h2>

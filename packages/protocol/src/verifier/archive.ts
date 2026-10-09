@@ -6,6 +6,13 @@ const MAX_ARCHIVE_BYTES = 512 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 128 * 1024 * 1024;
 const MAX_ENTRIES = 10_000;
 
+const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+export function safeJsonReviver(key: string, value: unknown): unknown {
+  if (DANGEROUS_KEYS.has(key)) return undefined;
+  return value;
+}
+
 function safePath(value: string): string {
   const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
   const segments = normalized.split("/");
@@ -123,7 +130,7 @@ export function loadVerificationPackageZip(
     throw new Error("Verification package is missing manifest.json.");
   let parsed: unknown;
   try {
-    parsed = JSON.parse(manifestBytes.toString("utf8")) as unknown;
+    parsed = JSON.parse(manifestBytes.toString("utf8"), safeJsonReviver) as unknown;
   } catch {
     throw new Error("Verification package manifest.json is not valid JSON.");
   }

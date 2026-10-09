@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ShieldCheck,
-  Sparkles,
+  Layers,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
@@ -100,13 +100,13 @@ export function FollowReceiptRail() {
       {/* Section Header */}
       <div className="max-w-2xl mb-12 sm:mb-16">
         <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-3 py-1 rounded-md border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] inline-flex items-center gap-1.5 mb-3">
-          <Sparkles className="h-3 w-3" />
-          Life of an Expense
+          <Layers className="h-3 w-3" />
+          Four-Stage Lifecycle
         </span>
-        <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight">
+        <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight text-balance">
           Follow One Receipt
         </h2>
-        <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed">
+        <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed text-pretty">
           See how an everyday expense moves from your pocket to verified settlement without leaking private details.
         </p>
       </div>
@@ -120,7 +120,7 @@ export function FollowReceiptRail() {
           >
             <div>
               <div className="flex items-center justify-between gap-3 mb-4">
-                <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-2.5 py-1 rounded border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] whitespace-nowrap">
+                <span className="font-mono tabular-nums text-xs font-black uppercase tracking-wider text-[#836EF9] bg-[#f5f3ff] px-2.5 py-1 rounded border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] whitespace-nowrap">
                   Step {step.step}
                 </span>
                 <span className="font-mono text-xs font-black uppercase tracking-wider text-gray-600 bg-gray-100 px-2.5 py-1 rounded border border-[#121212]/30 whitespace-nowrap">
@@ -128,10 +128,10 @@ export function FollowReceiptRail() {
                 </span>
               </div>
 
-              <h3 className="text-xl font-black uppercase text-[#121212] leading-snug">
+              <h3 className="text-xl font-black uppercase text-[#121212] leading-snug text-balance">
                 {step.title}
               </h3>
-              <p className="text-sm text-gray-700 mt-3 leading-relaxed font-normal">
+              <p className="text-sm text-gray-700 mt-3 leading-relaxed font-normal text-pretty">
                 {step.summary}
               </p>
 

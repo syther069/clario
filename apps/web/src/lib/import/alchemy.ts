@@ -137,8 +137,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
     this.apiKey =
       apiKey ??
       process.env.ALCHEMY_API_KEY ??
-      process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ??
-      "alch_0DE73d0UoAQVAslj6vRBp";
+      null;
     this.monadFallback =
       monadFallback ?? new MonadFallbackImportAdapter(this.apiKey ?? undefined);
   }

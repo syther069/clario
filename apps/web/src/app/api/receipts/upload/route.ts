@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { extractReceiptWithGemini } from "@/lib/ai/gemini-ocr";
+import { sanitizeErrorMessage } from "@/lib/security/safe-error";
 
 export const dynamic = "force-dynamic";
 
@@ -83,9 +84,9 @@ export async function POST(req: Request) {
       ocrError: ocrResult.error || null,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = sanitizeErrorMessage(error, "Receipt processing failed.");
     return NextResponse.json(
-      { error: `Receipt processing failed: ${message}` },
+      { error: message },
       { status: 500 },
     );
   }

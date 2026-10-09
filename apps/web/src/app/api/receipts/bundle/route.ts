@@ -14,6 +14,7 @@ import {
   isValidEvmAddress,
 } from "@/lib/receipts/saved-receipts-storage";
 import type { Address } from "viem";
+import { sanitizeErrorMessage } from "@/lib/security/safe-error";
 
 export async function GET(request: NextRequest) {
   try {
@@ -111,8 +112,10 @@ export async function GET(request: NextRequest) {
       { status: 400 },
     );
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to fetch receipt bundles";
+    const message = sanitizeErrorMessage(
+      err,
+      "Failed to fetch receipt bundles",
+    );
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },
@@ -227,8 +230,10 @@ export async function POST(request: NextRequest) {
       bundle: receipt,
     });
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to persist receipt bundle";
+    const message = sanitizeErrorMessage(
+      err,
+      "Failed to persist receipt bundle",
+    );
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },
@@ -318,8 +323,10 @@ export async function PATCH(request: NextRequest) {
         "Receipt renamed successfully. A new version was created and requires re-verification on Monad Testnet.",
     });
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to rename receipt bundle";
+    const message = sanitizeErrorMessage(
+      err,
+      "Failed to rename receipt bundle",
+    );
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },
@@ -347,8 +354,10 @@ export async function DELETE(request: NextRequest) {
       message: "Saved receipt successfully removed",
     });
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to delete saved receipt";
+    const message = sanitizeErrorMessage(
+      err,
+      "Failed to delete saved receipt",
+    );
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },

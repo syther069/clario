@@ -7,6 +7,7 @@ import { ModeHeader } from "@/components/layout/mode-header";
 import {
   ShieldCheck,
   CheckCircle2,
+  Check,
   Copy,
   ExternalLink,
   Hash,
@@ -23,6 +24,7 @@ import {
   ScrollProgress,
   AnimatedBackground,
   BorderTrail,
+  ContextualIconSwap,
 } from "@/components/ui/motion";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -141,7 +143,7 @@ export default function ProofCenterPage() {
           >
             Proof Center
           </TextEffect>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed text-pretty">
             Verify the cryptographic integrity of any financial record, receipt,
             or expense reimbursement without revealing private underlying
             contents.
@@ -220,10 +222,10 @@ export default function ProofCenterPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
                 <Lock className="h-5 w-5" />
               </div>
-              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212]">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212] text-balance">
                 Private Offchain Evidence
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium text-pretty">
                 Receipts, item descriptions, and vendor details remain private
                 in encrypted Supabase storage. Zero private data enters public
                 calldata.
@@ -241,10 +243,10 @@ export default function ProofCenterPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fef9c3] text-[#a16207] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
                 <Hash className="h-5 w-5" />
               </div>
-              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212]">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212] text-balance">
                 RFC 8785 Canonical Hashes
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium text-pretty">
                 Every expense state is serialized canonically and hashed via
                 SHA-256. Any material edit produces a new immutable record
                 version.
@@ -262,10 +264,10 @@ export default function ProofCenterPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3f0ff] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] p-1.5">
                 <MonadLogo className="h-7 w-7" />
               </div>
-              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212]">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[#121212] text-balance">
                 Monad 10,000 TPS Trust
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium text-pretty">
                 Proof roots are anchored on Monad Testnet (Chain ID 10143) with
                 sub-second finality, providing non-repudiable audit trails.
               </p>
@@ -287,10 +289,10 @@ export default function ProofCenterPage() {
             />
           )}
           <div className="space-y-1">
-            <h2 className="text-lg font-black uppercase tracking-wider text-[#121212]">
+            <h2 className="text-lg font-black uppercase tracking-wider text-[#121212] text-balance">
               Onchain Hash Verifier
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 text-pretty">
               Enter any SHA-256 receipt fingerprint or commitment hash to
               inspect its onchain status.
             </p>
@@ -352,9 +354,15 @@ export default function ProofCenterPage() {
                       <button
                         type="button"
                         onClick={() => handleCopy(verificationResult.hash)}
-                        className="flex items-center gap-1 text-[#836EF9] hover:text-[#121212] transition"
+                        className="relative flex items-center gap-1 text-[#836EF9] hover:text-[#121212] transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                        title="Copy verified fingerprint"
+                        aria-label="Copy verified fingerprint"
                       >
-                        <Copy className="h-3 w-3" />
+                        <ContextualIconSwap
+                          isActive={copied}
+                          initialIcon={<Copy className="h-3 w-3" />}
+                          activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                        />
                         <span>{copied ? "Copied" : "Copy"}</span>
                       </button>
                     </div>
@@ -367,7 +375,7 @@ export default function ProofCenterPage() {
                     <span className="text-[11px] text-slate-600 font-bold uppercase">
                       Monad Testnet Block
                     </span>
-                    <p className="font-mono text-xs text-[#836EF9] font-black">
+                    <p className="font-mono text-xs text-[#836EF9] font-black tabular-nums">
                       {verificationResult.monadBlock
                         ? `#${verificationResult.monadBlock}`
                         : "Confirmed Onchain"}
@@ -393,7 +401,7 @@ export default function ProofCenterPage() {
                           </span>
                         )}
                         {Boolean(verificationResult.metadata.totalAmount) && (
-                          <span className="font-mono font-bold text-[#836EF9]">
+                          <span className="font-mono font-bold text-[#836EF9] tabular-nums">
                             $
                             {Number(
                               verificationResult.metadata.totalAmount,
@@ -414,7 +422,7 @@ export default function ProofCenterPage() {
                   )}
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 text-xs gap-2">
-                  <span className="text-slate-500 font-mono text-[11px]">
+                  <span className="text-slate-500 font-mono text-[11px] tabular-nums">
                     Confirmed:{" "}
                     {verificationResult.timestamp
                       ? new Date(verificationResult.timestamp).toLocaleString()
@@ -426,7 +434,7 @@ export default function ProofCenterPage() {
                       href={verificationResult.explorerUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-1.5 text-[#836EF9] hover:underline transition font-bold"
+                      className="flex items-center gap-1.5 text-[#836EF9] hover:underline transition-colors duration-150 ease-out font-bold"
                     >
                       <MonadLogo className="h-3.5 w-3.5" />
                       <span>View Monad Testnet Explorer</span>
@@ -457,7 +465,7 @@ export default function ProofCenterPage() {
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                <p className="text-xs text-slate-700 leading-relaxed font-medium text-pretty">
                   {verificationResult.error ||
                     "The provided cryptographic hash or transaction could not be verified on Monad Testnet."}
                 </p>
