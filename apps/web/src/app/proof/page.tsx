@@ -180,7 +180,7 @@ export default function ProofCenterPage() {
               {
                 id: "overview",
                 label: "Overview",
-                href: "/?mode=crypto&view=overview",
+                href: "/?mode=personal&view=overview",
               },
               {
                 id: "receipts",

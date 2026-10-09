@@ -199,12 +199,6 @@ export function PersonalDashboard({
     currentMode === "crypto" ? "onchain" : "fiat",
   );
 
-  useEffect(() => {
-    if (currentMode === "crypto") {
-      setSubLedger("onchain");
-    }
-  }, [currentMode]);
-
   const [fiatCurrency, setFiatCurrency] = useState<{
     code: string;
     symbol: string;
@@ -1383,21 +1377,7 @@ export function PersonalDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            {currentMode === "crypto" ? (
-              <>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
-                  Crypto & Web3 Ledger
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
-                  <MonadLogo className="h-3 w-3" />
-                  Monad Testnet (10143)
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-[#121212]">
-                  Zero Private Data Onchain
-                </span>
-              </>
-            ) : subLedger === "fiat" ? (
+            {subLedger === "fiat" ? (
               <>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1409,30 +1389,29 @@ export function PersonalDashboard({
               </>
             ) : (
               <>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
                   Universal Ledger & Proof Spines
                 </span>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
                   <MonadLogo className="h-3 w-3" />
                   Monad Testnet (10143)
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-[#121212]">
+                  Zero Private Data Onchain
                 </span>
               </>
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
-            {currentMode === "crypto"
-              ? "Crypto & Web3 Treasury Ledger"
-              : subLedger === "fiat"
-                ? "Personal Finance & Daily Living"
-                : "On-Chain & Web3 Activity"}
+            {subLedger === "fiat"
+              ? "Personal Finance & Daily Living"
+              : "On-Chain & Web3 Activity"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            {currentMode === "crypto"
-              ? "Multi-chain transaction indexing, token gas metrics, and Monad registry notarizations with zero private receipt leaks."
-              : subLedger === "fiat"
-                ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
-                : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
+            {subLedger === "fiat"
+              ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
+              : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
           </p>
         </div>
 

@@ -63,12 +63,13 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
       "freelancer",
       "family",
       "business",
-      "crypto",
-      "power_user",
     ];
 
-    if (urlMode && validModes.includes(urlMode) && urlMode !== activeMode) {
-      setActiveMode(urlMode);
+    const normalizedMode =
+      urlMode === "crypto" || urlMode === "power_user" ? "personal" : urlMode;
+
+    if (normalizedMode && validModes.includes(normalizedMode) && normalizedMode !== activeMode) {
+      setActiveMode(normalizedMode);
     }
 
     const urlView = searchParams.get("view");
@@ -471,7 +472,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           onLogExpense={() => {
-            setTxModalSubLedger(activeMode === "crypto" ? "onchain" : "fiat");
+            setTxModalSubLedger("fiat");
             setTxModalOpen(true);
           }}
         />
@@ -562,7 +563,6 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
         )}
 
         {(activeMode === "personal" ||
-          activeMode === "crypto" ||
           activeMode === "power_user") && (
           <PersonalDashboard
             currentMode={activeMode}
@@ -574,7 +574,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
             activeView={personalView}
             onViewChange={handlePersonalViewChange}
             onAddTransaction={(subLedger) => {
-              setTxModalSubLedger(subLedger || (activeMode === "crypto" ? "onchain" : "fiat"));
+              setTxModalSubLedger(subLedger || "fiat");
               setTxModalOpen(true);
             }}
             onUploadReceipt={() => setReceiptModalOpen(true)}
@@ -642,11 +642,14 @@ function HomeContent() {
     "freelancer",
     "family",
     "business",
-    "crypto",
-    "power_user",
   ];
 
-  const isDashboard = (!!urlMode && validModes.includes(urlMode)) || !!urlTxId;
+  const isDashboard =
+    (!!urlMode &&
+      (validModes.includes(urlMode) ||
+        urlMode === "crypto" ||
+        urlMode === "power_user")) ||
+    !!urlTxId;
 
   if (!isDashboard) {
     return <LandingPage />;

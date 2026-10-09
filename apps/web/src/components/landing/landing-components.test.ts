@@ -12,7 +12,6 @@ describe("Landing Components Suite", () => {
         "freelancer",
         "family",
         "business",
-        "crypto",
       ]);
     });
 

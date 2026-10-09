@@ -856,14 +856,6 @@ export default function LandingPage() {
                     Business Treasury
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/?mode=crypto"
-                    className="text-gray-700 hover:text-[#836EF9] hover:translate-x-1 inline-flex items-center gap-1 transition-all"
-                  >
-                    Crypto Ledger
-                  </Link>
-                </li>
               </ul>
             </div>
 

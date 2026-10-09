@@ -7,7 +7,6 @@ import {
   UsersRound,
   Building2,
   ChevronDown,
-  Wallet,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -26,7 +25,7 @@ const MODES: Array<{
   {
     id: "personal",
     label: "Personal",
-    description: "Income, expenses, budgets & recurring bills",
+    description: "Income, expenses, budgets & on-chain activity",
     icon: UserRound,
   },
   {
@@ -46,13 +45,6 @@ const MODES: Array<{
     label: "Business",
     description: "Team reimbursements, policies & audit log",
     icon: Building2,
-  },
-  {
-    id: "crypto",
-    label: "Crypto",
-    description: "Onchain transfers, token spend & Monad proofs",
-    icon: Wallet,
-    badge: "Web3",
   },
 ];
 

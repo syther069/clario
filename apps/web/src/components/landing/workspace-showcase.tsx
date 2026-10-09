@@ -12,7 +12,6 @@ import {
   BriefcaseBusiness,
   UsersRound,
   Building2,
-  Wallet,
   ArrowRight,
   Check,
   BadgeCheck,
@@ -24,7 +23,6 @@ const MODE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   freelancer: BriefcaseBusiness,
   family: UsersRound,
   business: Building2,
-  crypto: Wallet,
 };
 
 export function WorkspaceShowcase() {
@@ -86,10 +84,10 @@ export function WorkspaceShowcase() {
           Dedicated Workspaces
         </span>
         <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#121212] leading-tight [text-wrap:balance]">
-          Five Workspaces. One Private System.
+          Four Workspaces. One Private System.
         </h2>
         <p className="text-base sm:text-lg text-gray-700 font-medium mt-3 leading-relaxed">
-          Switch between personal cashflow, freelance client billing, household budgets, team expenses, and onchain crypto spending with one click.
+          Switch between personal cashflow, freelance client billing, household budgets, and team expenses with one click.
         </p>
       </div>
 
