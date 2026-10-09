@@ -3,11 +3,11 @@ packages:
   - "packages/*"
 
 allowBuilds:
-  '@google/genai': set this to true or false
+  '@google/genai': true
   "@reown/appkit": true
   bufferutil: true
   keccak: true
-  protobufjs: set this to true or false
+  protobufjs: true
   unrs-resolver: true
   utf-8-validate: true
 
