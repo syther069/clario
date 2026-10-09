@@ -43,7 +43,11 @@ export function UserButton() {
     embeddedWalletAddress,
     wallets,
     externalEvmWallets,
-    isActiveWalletEmbedded,
+    hasConnectedEvmWallet,
+    connectEvmWallet,
+    disconnectWallet,
+    isEmailOnlyUser,
+    accountType,
     linkWallet,
     linkEmail,
     linkGoogle,
@@ -89,7 +93,7 @@ export function UserButton() {
     return (
       <button
         onClick={() => login()}
-        className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+        className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
       >
         <LogIn className="h-3.5 w-3.5" />
         <span>Sign In</span>
@@ -233,7 +237,7 @@ export function UserButton() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 rounded-lg border-2 border-[#121212] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#f3f4f6] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+        className="flex items-center gap-2 rounded-lg border-2 border-[#121212] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#f3f4f6] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
         aria-label="User account and wallet menu"
         aria-expanded={dropdownOpen}
       >
@@ -241,6 +245,12 @@ export function UserButton() {
           {displayName.slice(0, 1).toUpperCase()}
         </div>
         <span className="max-w-[120px] truncate">{displayName}</span>
+        {hasConnectedEvmWallet && (
+          <span
+            className="h-2 w-2 rounded-full bg-emerald-500 border border-[#121212]"
+            title="EVM Wallet Connected"
+          />
+        )}
         <ChevronDown
           className={`h-3 w-3 transition-transform text-[#121212] ${dropdownOpen ? "rotate-180" : ""}`}
         />
@@ -248,8 +258,17 @@ export function UserButton() {
 
       {dropdownOpen && (
         <div className="absolute right-0 mt-2 w-[340px] max-w-[calc(100vw-2rem)] origin-top-right rounded-xl border-2 border-[#121212] bg-white p-3 shadow-[4px_4px_0_0_#121212] z-50 animate-in fade-in zoom-in-95 duration-100 max-h-[85vh] overflow-y-auto">
-          {/* User Profile Header */}
+          {/* Section 1: Clario Account (App Identity & Saved Workspace) */}
           <div className="border-b-2 border-[#121212] pb-2.5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
+                Clario Account
+              </span>
+              <span className="text-[9px] font-mono font-bold uppercase text-slate-500">
+                Workspace Owner
+              </span>
+            </div>
+
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
@@ -261,47 +280,36 @@ export function UserButton() {
                       setTargetWalletForEdit(activeWalletAddress);
                       setNicknameModalOpen(true);
                     }}
-                    className="text-slate-400 hover:text-[#836EF9] p-0.5 transition"
+                    className="text-slate-400 hover:text-[#836EF9] p-0.5 transition cursor-pointer"
                     title="Set custom nickname"
                   >
                     <Pencil className="h-3 w-3" />
                   </button>
                 </div>
                 {primaryEmail ? (
-                  <p className="text-[11px] text-slate-500 truncate mt-0.5 font-mono">
+                  <p className="text-[11px] text-slate-600 truncate mt-0.5 font-mono">
                     {primaryEmail}
                   </p>
-                ) : activeWalletAddress ? (
+                ) : user?.id ? (
                   <p className="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
-                    {activeWalletAddress.slice(0, 6)}...{activeWalletAddress.slice(-4)}
+                    ID: {user.id.slice(0, 18)}...
                   </p>
                 ) : null}
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="inline-flex items-center gap-1 rounded bg-[#836EF9]/10 px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-wider text-[#836EF9] border border-[#836EF9]/40">
-                  <MonadLogo className="h-2.5 w-2.5" />
-                  MONAD TESTNET
-                </span>
-              </div>
             </div>
 
-            {/* Active Wallet Card */}
-            {activeWalletAddress && (
+            {/* Section 2: Connected Blockchain Wallet */}
+            {hasConnectedEvmWallet && activeWalletAddress ? (
               <div className="mt-2.5 rounded-lg bg-[#f8f9fa] p-2 border-2 border-[#121212]">
                 <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider font-bold mb-1">
-                  <span className="text-slate-500 flex items-center gap-1">
+                  <span className="text-slate-600 flex items-center gap-1">
                     <Wallet className="h-3 w-3 text-[#836EF9]" />
-                    Active Onchain Signer
+                    Connected EVM Wallet
                   </span>
-                  {isActiveWalletEmbedded ? (
-                    <span className="rounded bg-[#836EF9]/20 px-1.5 py-0.2 text-[9px] font-black text-[#836EF9]">
-                      Privy Embedded
-                    </span>
-                  ) : (
-                    <span className="rounded bg-emerald-100 px-1.5 py-0.2 text-[9px] font-black text-emerald-800">
-                      External WALLET
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 rounded bg-[#836EF9]/10 px-1.5 py-0.5 text-[9px] font-black text-[#836EF9] border border-[#836EF9]/40">
+                    <MonadLogo className="h-2 w-2" />
+                    Monad Testnet
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2 bg-white px-2 py-1 rounded border border-[#121212]">
@@ -321,7 +329,7 @@ export function UserButton() {
                       href={`https://testnet.monadexplorer.com/address/${activeWalletAddress}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-slate-500 hover:text-black p-0.5 transition"
+                      className="text-slate-500 hover:text-black p-0.5 transition cursor-pointer"
                       title="View on Monad Explorer"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -341,8 +349,42 @@ export function UserButton() {
                         activeClassName="text-emerald-600"
                       />
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => disconnectWallet(activeWalletAddress)}
+                      className="text-[9px] font-mono font-black uppercase text-slate-400 hover:text-red-600 px-1 py-0.5 transition hover:underline cursor-pointer"
+                      title="Disconnect wallet"
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div className="mt-2.5 rounded-lg bg-[#fbf9fe] p-2.5 border-2 border-dashed border-[#121212]">
+                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider font-bold mb-1">
+                  <span className="text-slate-600 flex items-center gap-1">
+                    <Wallet className="h-3 w-3 text-slate-400" />
+                    Blockchain Account
+                  </span>
+                  <span className="rounded bg-slate-100 text-slate-600 px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase border border-slate-300">
+                    Not Connected
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 font-mono leading-tight mb-2.5">
+                  Connect an EVM wallet to fetch transaction history and anchor receipts on Monad.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    connectEvmWallet();
+                  }}
+                  className="w-full border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-mono font-black uppercase text-xs tracking-wider py-2 px-3 rounded-lg shadow-[2px_2px_0_0_#121212] flex items-center justify-center gap-2 transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+                >
+                  <Wallet className="h-3.5 w-3.5" />
+                  <span>Connect Wallet</span>
+                </button>
               </div>
             )}
           </div>

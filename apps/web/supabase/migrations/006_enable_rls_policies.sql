@@ -184,7 +184,6 @@ CREATE POLICY "receipt_bundles_owner_access"
     OR user_id = auth.jwt() ->> 'sub'
     OR lower(coalesce(wallet_address, user_id)) = lower(nullif(current_setting('request.headers', true)::json->>'x-wallet-address', ''))
     OR user_id = nullif(current_setting('request.headers', true)::json->>'x-user-id', '')
-    OR verification_status = 'verified' -- verified bundles can be inspected for proof verification
   )
   WITH CHECK (
     user_id = auth.uid()::text

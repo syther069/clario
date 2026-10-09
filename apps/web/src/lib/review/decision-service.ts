@@ -302,6 +302,45 @@ export class ReviewDecisionService {
             "Self-approval is strictly prohibited: submitters cannot approve their own expenses.",
         });
       }
+
+      // Invariant: Cannot approve an expense that is already settled or in active settlement
+      const checkReimb = await this.db.query<{ status: string; version: number }>(
+        `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
+        [workspaceId, expenseId],
+      );
+      if (checkReimb.rows.length > 0) {
+        throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+          message: `Cannot approve expense: this expense has already been settled or has an active settlement in progress (version ${checkReimb.rows[0]!.version}, status '${checkReimb.rows[0]!.status}').`,
+        });
+      }
+
+      // Check if attached receipts were already settled in another expense
+      const dupReceipt = await this.db.query<{
+        other_expense_id: string;
+        sha256_hash: string;
+      }>(
+        `SELECT other_eo.expense_id AS other_expense_id, current_eo.sha256_hash
+         FROM evidence_objects current_eo
+         JOIN evidence_objects other_eo
+           ON other_eo.workspace_id = current_eo.workspace_id
+          AND other_eo.sha256_hash = current_eo.sha256_hash
+          AND other_eo.expense_id <> current_eo.expense_id
+         JOIN reimbursements r
+           ON r.workspace_id = other_eo.workspace_id
+          AND r.expense_id = other_eo.expense_id
+         WHERE current_eo.workspace_id = $1
+           AND current_eo.expense_id = $2
+           AND current_eo.version = $3
+           AND r.status NOT IN ('failed', 'cancelled')
+         LIMIT 1;`,
+        [workspaceId, expenseId, version],
+      );
+      if (dupReceipt.rows.length > 0) {
+        const shortHash = `${dupReceipt.rows[0]!.sha256_hash.slice(0, 8)}...${dupReceipt.rows[0]!.sha256_hash.slice(-6)}`;
+        throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+          message: `Cannot approve expense: attached receipt (SHA-256: ${shortHash}) has already been reimbursed or is pending reimbursement in expense '${dupReceipt.rows[0]!.other_expense_id}'.`,
+        });
+      }
     }
 
     // 5. Invariant: Version must be current version and not superseded
@@ -583,6 +622,16 @@ export class ReviewDecisionService {
 
       // If approved, update expense_versions status to 'current'
       if (decision === "approve") {
+        const checkReimb = await tx.query<{ status: string; version: number }>(
+          `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
+          [workspaceId, expenseId],
+        );
+        if (checkReimb.rows.length > 0) {
+          throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+            message: `Cannot approve expense: this expense has already been settled or has an active settlement in progress (version ${checkReimb.rows[0]!.version}, status '${checkReimb.rows[0]!.status}').`,
+          });
+        }
+
         await tx.query(
           `UPDATE expense_versions
            SET status = 'current'
@@ -726,6 +775,27 @@ export class ReviewDecisionService {
       throw new ProtocolError("INVALID_LIFECYCLE_TRANSITION", {
         message:
           "Version is already an editable draft. Modify the existing draft instead of creating a successor.",
+      });
+    }
+
+    // Invariant: Cannot create successor draft for an expense that is already settled or in active settlement
+    const reimbRes = await this.db.query<{ status: string; version: number }>(
+      `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+    if (reimbRes.rows.length > 0) {
+      throw new ProtocolError("INVALID_LIFECYCLE_TRANSITION", {
+        message: `Cannot create successor draft: this expense has already been settled or has an active settlement in progress (version ${reimbRes.rows[0]!.version}, status '${reimbRes.rows[0]!.status}'). Settled expenses cannot be edited or superseded.`,
+      });
+    }
+
+    const projRes = await this.db.query<{ version: number }>(
+      `SELECT version FROM projection_settlements WHERE workspace_id = $1 AND expense_id = $2 LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+    if (projRes.rows.length > 0) {
+      throw new ProtocolError("INVALID_LIFECYCLE_TRANSITION", {
+        message: `Cannot create successor draft: this expense has already been settled onchain (version ${projRes.rows[0]!.version}).`,
       });
     }
 

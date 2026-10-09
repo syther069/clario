@@ -31,7 +31,7 @@ import { motion, AnimatePresence } from "motion/react";
 export default function BudgetsPage() {
   const router = useRouter();
   const { user, connectedEvmAddress } = useClarioAuth();
-  const effectiveUserId = connectedEvmAddress || user?.id || "demo_user";
+  const effectiveUserId = user?.id || connectedEvmAddress || "demo_user";
   const userId = effectiveUserId;
   const [activeMode, setActiveMode] = useState<PlatformMode>("personal");
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);

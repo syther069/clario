@@ -41,6 +41,18 @@ Clario is deployed and active on **Monad Testnet**:
 | **Deployer** | `0x678A34EE5138803549c3ea1E9a946AE9176A6f31` |
 | **Block Number** | `67304188` |
 
+### Smart Contract Architecture Tracks
+
+Clario's onchain infrastructure operates across two purposeful tracks:
+
+- **`ClarioTransactionRegistry` (Live on Monad Testnet)**:
+  - Deployed at [`0x92f9B76673C1D88c9E3c490A88eB95b08823bA87`](https://testnet.monadexplorer.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87).
+  - Powers personal and universal expense commitments, cryptographic transaction hashes (`saveTransaction`), and canonical multi-transaction receipt bundles (`saveReceipt`).
+  - Directly verified by the cryptographic Proof Center (`/proof`) and user receipt vaults.
+- **`protocol/v1` Modular Governance Suite**:
+  - Located in `contracts/src/protocol/v1/` (`ClarioWorkspaceRegistryV1`, `ClarioExpenseRegistryV1`, `ClarioDecisionRegistryV1`, `ClarioSettlementRegistryV1`, `ClarioCommitmentV1`).
+  - Implements multi-role corporate workspace governance (Submitter, Approver, Treasury), EIP-712 human reviewer approval signatures, and onchain USDC treasury settlement with reentrancy protection and duplicate settlement prevention.
+
 ---
 
 ## Architectural Principles & Founder Invariants

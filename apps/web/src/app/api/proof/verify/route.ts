@@ -75,9 +75,6 @@ export async function POST(request: NextRequest) {
 
         if (receipt) {
           const isSuccess = receipt.status === "success";
-          const block = await publicClient.getBlock({
-            blockNumber: receipt.blockNumber,
-          });
 
           // Parse any Clario registry events
           let parsedEvents: Array<Record<string, unknown>> = [];
@@ -94,21 +91,41 @@ export async function POST(request: NextRequest) {
             // Non-critical if no registry events found in log
           }
 
-          return NextResponse.json({
-            success: true,
-            verified: isSuccess,
-            type: "transaction",
-            hash: formattedHex,
-            txHash: formattedHex,
-            blockNumber: Number(receipt.blockNumber),
-            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
-            chain: "Monad Testnet",
-            chainId: MONAD_TESTNET_CHAIN_ID,
-            contractAddress: receipt.to,
-            status: receipt.status,
-            events: parsedEvents,
-            explorerUrl: getMonadExplorerTxUrl(formattedHex),
-          });
+          const knownAddresses = [
+            CLARIO_REGISTRY_ADDRESS.toLowerCase(),
+            process.env.NEXT_PUBLIC_WORKSPACE_REGISTRY_ADDRESS?.toLowerCase(),
+            process.env.NEXT_PUBLIC_EXPENSE_REGISTRY_ADDRESS?.toLowerCase(),
+            process.env.NEXT_PUBLIC_DECISION_REGISTRY_ADDRESS?.toLowerCase(),
+            process.env.NEXT_PUBLIC_SETTLEMENT_REGISTRY_ADDRESS?.toLowerCase(),
+          ].filter(Boolean);
+
+          const isClarioTarget = Boolean(
+            receipt.to && knownAddresses.includes(receipt.to.toLowerCase()),
+          );
+          const hasClarioEvents = parsedEvents.length > 0;
+
+          // Only verify directly if targeting a Clario contract or emitting Clario events
+          if (isClarioTarget || hasClarioEvents) {
+            const block = await publicClient.getBlock({
+              blockNumber: receipt.blockNumber,
+            });
+
+            return NextResponse.json({
+              success: true,
+              verified: isSuccess,
+              type: "transaction",
+              hash: formattedHex,
+              txHash: formattedHex,
+              blockNumber: Number(receipt.blockNumber),
+              timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+              chain: "Monad Testnet",
+              chainId: MONAD_TESTNET_CHAIN_ID,
+              contractAddress: receipt.to,
+              status: receipt.status,
+              events: parsedEvents,
+              explorerUrl: getMonadExplorerTxUrl(formattedHex),
+            });
+          }
         }
       } catch {
         // Transaction not found directly as txHash; proceed to search commitment database

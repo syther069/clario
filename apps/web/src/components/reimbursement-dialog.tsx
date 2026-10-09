@@ -977,32 +977,64 @@ export function ReimbursementDialog({
           {/* Error state */}
           {error && (
             <div
-              className="settlement-alert settlement-alert--error"
+              className={`settlement-alert settlement-alert--error ${
+                /duplicate|already settled|already reimbursed|identical receipt/i.test(
+                  error,
+                )
+                  ? "border-2 border-black shadow-[4px_4px_0px_#000] bg-rose-50 p-4"
+                  : ""
+              }`}
               role="alert"
             >
               <span className="settlement-alert-icon" aria-hidden="true">
-                <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
               </span>
               <div>
-                <strong>Error</strong>
-                <p>{error}</p>
+                {/duplicate|already settled|already reimbursed|identical receipt/i.test(
+                  error,
+                ) ? (
+                  <>
+                    <div className="font-mono text-xs uppercase tracking-wider font-bold text-rose-700 mb-1">
+                      Duplicate Reimbursement Blocked
+                    </div>
+                    <strong className="block text-sm text-black mb-1">
+                      Reimbursement Rejected by Authoritative Protocol Rule
+                    </strong>
+                    <p className="text-sm text-slate-800 mb-2 leading-relaxed">
+                      {error}
+                    </p>
+                    <div className="text-xs text-slate-600 bg-white border border-black p-2 font-mono">
+                      <strong>Policy Invariant:</strong> Expenses and receipt
+                      evidence cannot be reimbursed or settled more than once
+                      across any version or expense claim in this workspace.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong>Error</strong>
+                    <p>{error}</p>
+                  </>
+                )}
               </div>
             </div>
           )}
 
-          {/* Retry button on failure */}
-          {status === "failed" && (
-            <div style={{ marginTop: "16px" }}>
-              <button
-                id="settlement-retry-btn"
-                className="settlement-btn settlement-btn--primary"
-                onClick={() => void handleRetry()}
-                style={{ width: "100%" }}
-              >
-                Reset & Retry Reimbursement →
-              </button>
-            </div>
-          )}
+          {/* Retry button on failure (only for retryable non-duplicate errors) */}
+          {status === "failed" &&
+            !/duplicate|already settled|already reimbursed|identical receipt/i.test(
+              error || "",
+            ) && (
+              <div style={{ marginTop: "16px" }}>
+                <button
+                  id="settlement-retry-btn"
+                  className="settlement-btn settlement-btn--primary"
+                  onClick={() => void handleRetry()}
+                  style={{ width: "100%" }}
+                >
+                  Reset & Retry Reimbursement →
+                </button>
+              </div>
+            )}
         </div>
 
         {/* Footer */}

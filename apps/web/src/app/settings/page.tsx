@@ -750,7 +750,7 @@ export default function AccountSettingsPage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-black uppercase tracking-wider text-[#121212]">
-                    Monad Invariant & Zero-Knowledge Guarantee
+                    Monad Invariant & Cryptographic Preimage Integrity
                   </h3>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">

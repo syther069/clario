@@ -114,48 +114,70 @@ export function useClarioAuth() {
     return externalEvmWallets[0] || null;
   }, [externalEvmWallets]);
 
-  // Active wallet: honor useActiveWallet(), fallback to embedded or first external
+  // Has ANY connected external EVM wallet (MetaMask, Coinbase, Rabby, etc.)
+  const hasConnectedEvmWallet: boolean = useMemo(() => {
+    if (externalEvmWallets.length > 0) return true;
+    if (activeConnectedWallet && activeConnectedWallet.walletClientType !== "privy") {
+      return true;
+    }
+    return false;
+  }, [externalEvmWallets, activeConnectedWallet]);
+
+  const hasAnyWallet: boolean = hasConnectedEvmWallet;
+
+  // Active wallet: prioritize active external wallet, then first external wallet
   const activeWallet: ConnectedWallet | null = useMemo(() => {
-    if (activeConnectedWallet && "getEthereumProvider" in activeConnectedWallet) {
+    if (
+      activeConnectedWallet &&
+      activeConnectedWallet.walletClientType !== "privy" &&
+      "getEthereumProvider" in activeConnectedWallet
+    ) {
       return activeConnectedWallet as ConnectedWallet;
     }
-    if (embeddedWallet) return embeddedWallet;
     if (externalEvmWallet) return externalEvmWallet;
-    return wallets[0] || null;
-  }, [activeConnectedWallet, embeddedWallet, externalEvmWallet, wallets]);
+    return null;
+  }, [activeConnectedWallet, externalEvmWallet]);
 
-  // Active wallet address (Both embedded and external are valid EVM addresses)
-  const activeWalletAddress: string | null = useMemo(() => {
+  // Active connected EVM wallet address - strictly null for email-only users without connected wallet
+  const connectedEvmAddress: string | null = useMemo(() => {
+    if (!hasConnectedEvmWallet) return null;
     const addr =
       activeWallet?.address ||
-      embeddedWalletAddress ||
       externalEvmWallet?.address ||
-      (user?.wallet?.address && /^0x[a-fA-F0-9]{40}$/.test(user.wallet.address)
-        ? user.wallet.address
+      (activeConnectedWallet && activeConnectedWallet.walletClientType !== "privy"
+        ? activeConnectedWallet.address
         : null);
     if (addr && /^0x[a-fA-F0-9]{40}$/.test(addr)) {
       return addr;
     }
     return null;
-  }, [activeWallet, embeddedWalletAddress, externalEvmWallet, user]);
+  }, [hasConnectedEvmWallet, activeWallet, externalEvmWallet, activeConnectedWallet]);
 
-  // Critical fix: connectedEvmAddress returns activeWalletAddress
-  const connectedEvmAddress: string | null = activeWalletAddress;
-  const primaryWalletAddress: string | null = activeWalletAddress;
+  const activeWalletAddress: string | null = connectedEvmAddress;
+  const primaryWalletAddress: string | null = connectedEvmAddress;
 
-  // Has ANY connected EVM wallet (embedded or external)
-  const hasConnectedEvmWallet: boolean = Boolean(activeWalletAddress);
-  const hasAnyWallet: boolean = Boolean(activeWalletAddress);
+  // True if user is signed in to Clario account (email/google) but has NO wallet connected
+  const isEmailOnlyUser: boolean = Boolean(
+    authenticated && !hasConnectedEvmWallet,
+  );
 
   // Is active wallet the embedded one?
-  const isActiveWalletEmbedded: boolean = Boolean(
-    activeWallet && activeWallet.walletClientType === "privy",
-  );
+  const isActiveWalletEmbedded: boolean = false;
 
   // Are all wallets embedded? (User has not connected external wallet yet)
   const isEmbeddedWalletOnly: boolean = Boolean(
     embeddedWalletAddress && externalEvmWallets.length === 0,
   );
+
+  // Account identity type
+  const accountType: "email" | "google" | "wallet" | "passkey" | "anonymous" = useMemo(() => {
+    if (!user) return "anonymous";
+    if (user.google) return "google";
+    if (user.email?.address) return "email";
+    if (hasConnectedEvmWallet) return "wallet";
+    if (user.linkedAccounts?.some((a) => a.type === "passkey")) return "passkey";
+    return "email";
+  }, [user, hasConnectedEvmWallet]);
 
   // Login hook
   const { login } = useLogin({
@@ -232,14 +254,39 @@ export function useClarioAuth() {
   const connectEvmWallet = useCallback(() => {
     if (authenticated) {
       try {
-        linkWallet();
-      } catch {
         connectWallet();
+      } catch {
+        linkWallet();
       }
     } else {
       login();
     }
-  }, [authenticated, linkWallet, connectWallet, login]);
+  }, [authenticated, connectWallet, linkWallet, login]);
+
+  // Disconnect EVM wallet
+  const disconnectWallet = useCallback(
+    async (address?: string) => {
+      const targetAddress = address || connectedEvmAddress;
+      const targetWallet = wallets.find(
+        (w) => w.address.toLowerCase() === targetAddress?.toLowerCase(),
+      );
+      if (targetWallet && typeof targetWallet.disconnect === "function") {
+        try {
+          await targetWallet.disconnect();
+        } catch (err) {
+          console.warn("[Clario Auth] Wallet disconnect:", err);
+        }
+      }
+      if (targetAddress) {
+        try {
+          await unlinkWalletRaw({ address: targetAddress });
+        } catch {
+          // May only be connected for this session rather than permanently linked
+        }
+      }
+    },
+    [connectedEvmAddress, wallets, unlinkWalletRaw],
+  );
 
   // Helper to switch chain on active wallet
   const switchChain = useCallback(
@@ -311,6 +358,8 @@ export function useClarioAuth() {
     isReady: ready,
     isAuthenticated: authenticated,
     user,
+    accountType,
+    isEmailOnlyUser,
     displayName,
     nickname: activeNickname,
     walletNicknames: nicknames,
@@ -345,6 +394,7 @@ export function useClarioAuth() {
     setWalletRecovery,
     exportWallet,
     connectEvmWallet,
+    disconnectWallet,
     setActiveWallet,
     switchChain,
     getAccessToken,

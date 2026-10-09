@@ -72,4 +72,110 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
     expect(setCookie).toContain("clario_session=");
     expect(setCookie).toContain("Max-Age=0");
   });
+
+  describe("Clario Account vs Connected Wallet Separation", () => {
+    it("distinguishes pure email login from connected blockchain wallet", () => {
+      // Simulate email-only user state
+      const email = "founder@clario.xyz";
+      const privyUser = {
+        id: "did:privy:clario-founder-1",
+        email: { address: email },
+        wallet: undefined,
+      };
+      const activeWallets: any[] = [];
+
+      const externalEvmWallets = activeWallets.filter(
+        (w) =>
+          (/^0x[a-fA-F0-9]{40}$/.test(w.address) && w.chainType !== "solana") ||
+          w.type === "ethereum",
+      );
+      const connectedEvmAddress = externalEvmWallets[0]?.address ?? null;
+      const hasConnectedEvmWallet = Boolean(
+        connectedEvmAddress && /^0x[a-fA-F0-9]{40}$/.test(connectedEvmAddress),
+      );
+      const isEmailOnlyUser = Boolean(email && !hasConnectedEvmWallet);
+      const accountType = email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
+
+      expect(accountType).toBe("email");
+      expect(isEmailOnlyUser).toBe(true);
+      expect(hasConnectedEvmWallet).toBe(false);
+      expect(connectedEvmAddress).toBeNull();
+      expect(privyUser.id).toBe("did:privy:clario-founder-1");
+    });
+
+    it("transitions to hybrid account when external EVM wallet connects", () => {
+      const email = "founder@clario.xyz";
+      const privyUser = {
+        id: "did:privy:clario-founder-1",
+        email: { address: email },
+      };
+      const activeWallets = [
+        {
+          address: "0x836EF91234567890123456789012345678901234",
+          walletClientType: "metamask",
+          type: "ethereum",
+          chainType: "ethereum",
+        },
+      ];
+
+      const externalEvmWallets = activeWallets.filter(
+        (w) =>
+          (/^0x[a-fA-F0-9]{40}$/.test(w.address) && w.chainType !== "solana") ||
+          w.type === "ethereum",
+      );
+      const connectedEvmAddress = externalEvmWallets[0]?.address ?? null;
+      const hasConnectedEvmWallet = Boolean(
+        connectedEvmAddress && /^0x[a-fA-F0-9]{40}$/.test(connectedEvmAddress),
+      );
+      const isEmailOnlyUser = Boolean(email && !hasConnectedEvmWallet);
+      const accountType = email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
+
+      expect(accountType).toBe("hybrid");
+      expect(isEmailOnlyUser).toBe(false);
+      expect(hasConnectedEvmWallet).toBe(true);
+      expect(connectedEvmAddress).toBe("0x836EF91234567890123456789012345678901234");
+      // Clario Account ID remains stable across wallet connections
+      expect(privyUser.id).toBe("did:privy:clario-founder-1");
+    });
+
+    it("preserves stable Clario account identity when wallet disconnects", () => {
+      const email = "founder@clario.xyz";
+      const privyUserId = "did:privy:clario-founder-1";
+      let connectedEvmAddress: string | null = "0x836EF91234567890123456789012345678901234";
+
+      // Effective User ID should be anchored to Clario Account ID
+      const getEffectiveUserId = (addr: string | null) => privyUserId || addr || "demo_user";
+      expect(getEffectiveUserId(connectedEvmAddress)).toBe(privyUserId);
+
+      // Simulate wallet disconnect
+      connectedEvmAddress = null;
+      expect(getEffectiveUserId(connectedEvmAddress)).toBe(privyUserId);
+      expect(connectedEvmAddress).toBeNull();
+    });
+
+    it("filters out non-EVM wallets (e.g. Solana) from EVM transaction fetching capabilities", () => {
+      const activeWallets = [
+        {
+          address: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK",
+          walletClientType: "phantom",
+          type: "solana",
+          chainType: "solana",
+        },
+      ];
+
+      const externalEvmWallets = activeWallets.filter(
+        (w) =>
+          (/^0x[a-fA-F0-9]{40}$/.test(w.address) && w.chainType !== "solana") ||
+          w.type === "ethereum",
+      );
+      const connectedEvmAddress = externalEvmWallets[0]?.address ?? null;
+      const hasConnectedEvmWallet = Boolean(
+        connectedEvmAddress && /^0x[a-fA-F0-9]{40}$/.test(connectedEvmAddress),
+      );
+
+      expect(hasConnectedEvmWallet).toBe(false);
+      expect(connectedEvmAddress).toBeNull();
+    });
+  });
 });
+

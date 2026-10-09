@@ -77,10 +77,10 @@ export const FOLLOW_RECEIPT_STEPS: ReceiptStep[] = [
     badge: "Duplicate-proof settlement",
     illustrationType: "payout",
     technicalDetails: {
-      rule: "Deterministic Settlement & Nullifier Guard",
+      rule: "Deterministic Settlement & Duplicate Guard",
       description:
-        "Monad smart contracts store a spent nullifier derived from the receipt commitment. Any repeated submission reverts immediately with DUPLICATE_NULLIFIER.",
-      spec: "Monad onchain nullifier registry permanently prevents re-submission",
+        "Monad smart contracts store an immutable settlement record bound to the expense version. Any repeated submission reverts immediately with DuplicateSettlement.",
+      spec: "Monad onchain settlement registry permanently prevents duplicate reimbursement",
     },
   },
 ];

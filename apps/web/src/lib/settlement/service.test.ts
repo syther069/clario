@@ -101,6 +101,27 @@ class MockDb implements DatabaseClient {
     metadata: string;
     created_at: string;
   }> = [];
+  evidenceObjects: Array<{
+    workspace_id: string;
+    expense_id: string;
+    version: number;
+    evidence_id: string;
+    sha256_hash: string;
+  }> = [];
+  sourceTransactions: Array<{
+    workspace_id: string;
+    expense_id: string;
+    source_chain_id: number;
+    source_transaction_hash: string;
+    claim_slot: number;
+  }> = [];
+  projectionSettlements: Array<{
+    workspace_id: string;
+    expense_id: string;
+    version: number;
+    settled_at_tx: string;
+    settled_at_block?: string;
+  }> = [];
 
   async query<T = Record<string, unknown>>(
     sql: string,
@@ -251,19 +272,129 @@ class MockDb implements DatabaseClient {
     if (normalizedSql.includes("from reimbursements")) {
       const wsId = params?.[0] as string;
       const expId = params?.[1] as string;
-      const ver = params?.[2] as number;
+      const ver =
+        params && params.length >= 3 && typeof params[2] === "number"
+          ? params[2]
+          : undefined;
+      const isStatusConfirmed = normalizedSql.includes("status = 'confirmed'");
       const rows = this.reimbursements
         .filter(
           (r) =>
             r.workspace_id === wsId &&
             r.expense_id === expId &&
-            r.version === ver,
+            (ver !== undefined ? r.version === ver : true) &&
+            (!isStatusConfirmed || r.status === "confirmed"),
         )
         .sort(
           (a, b) =>
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
       return { rows: rows as unknown as T[], rowCount: rows.length };
+    }
+
+    // Projection settlements lookup
+    if (normalizedSql.includes("from projection_settlements")) {
+      const wsId = params?.[0] as string;
+      const expId = params?.[1] as string;
+      const ver =
+        params && params.length >= 3 && typeof params[2] === "number"
+          ? params[2]
+          : undefined;
+      const rows = this.projectionSettlements.filter(
+        (p) =>
+          p.workspace_id === wsId &&
+          p.expense_id === expId &&
+          (ver !== undefined ? p.version === ver : true),
+      );
+      return { rows: rows as unknown as T[], rowCount: rows.length };
+    }
+
+    // Evidence duplicate join
+    if (
+      normalizedSql.includes("evidence_objects current_eo") &&
+      normalizedSql.includes("evidence_objects other_eo")
+    ) {
+      const wsId = params?.[0] as string;
+      const expId = params?.[1] as string;
+      const ver = params?.[2] as number;
+      const currentEos = this.evidenceObjects.filter(
+        (e) =>
+          e.workspace_id === wsId &&
+          e.expense_id === expId &&
+          e.version === ver,
+      );
+      const matches = [];
+      for (const cur of currentEos) {
+        for (const other of this.evidenceObjects) {
+          if (
+            other.workspace_id === wsId &&
+            other.expense_id !== expId &&
+            other.sha256_hash === cur.sha256_hash
+          ) {
+            const reimb = this.reimbursements.find(
+              (r) =>
+                r.workspace_id === wsId &&
+                r.expense_id === other.expense_id &&
+                r.status !== "failed" &&
+                r.status !== "cancelled",
+            );
+            if (reimb) {
+              matches.push({
+                other_expense_id: other.expense_id,
+                other_version: other.version,
+                reimbursement_id: reimb.reimbursement_id,
+                reimbursement_status: reimb.status,
+                transaction_hash: reimb.transaction_hash,
+                sha256_hash: cur.sha256_hash,
+              });
+            }
+          }
+        }
+      }
+      return { rows: matches as unknown as T[], rowCount: matches.length };
+    }
+
+    // Source transactions duplicate join
+    if (
+      normalizedSql.includes("source_transactions current_st") &&
+      normalizedSql.includes("source_transactions other_st")
+    ) {
+      const wsId = params?.[0] as string;
+      const expId = params?.[1] as string;
+      const currentSts = this.sourceTransactions.filter(
+        (s) => s.workspace_id === wsId && s.expense_id === expId,
+      );
+      const matches = [];
+      for (const cur of currentSts) {
+        for (const other of this.sourceTransactions) {
+          if (
+            other.workspace_id === wsId &&
+            other.expense_id !== expId &&
+            other.source_chain_id === cur.source_chain_id &&
+            other.source_transaction_hash.toLowerCase() ===
+              cur.source_transaction_hash.toLowerCase() &&
+            other.claim_slot === cur.claim_slot
+          ) {
+            const reimb = this.reimbursements.find(
+              (r) =>
+                r.workspace_id === wsId &&
+                r.expense_id === other.expense_id &&
+                r.status !== "failed" &&
+                r.status !== "cancelled",
+            );
+            if (reimb) {
+              matches.push({
+                other_expense_id: other.expense_id,
+                source_transaction_hash: cur.source_transaction_hash,
+                claim_slot: cur.claim_slot,
+                reimbursement_id: reimb.reimbursement_id,
+                reimbursement_status: reimb.status,
+              });
+            }
+          }
+        }
+      }
+      return { rows: matches as unknown as T[], rowCount: matches.length };
     }
 
     // Write operations (INSERT, UPDATE) — just succeed
@@ -286,10 +417,27 @@ class MockDb implements DatabaseClient {
         });
       }
       if (normalizedSql.includes("into reimbursements")) {
+        const wsId = params?.[1] as string;
+        const expId = params?.[2] as string;
+        const existingActive = this.reimbursements.find(
+          (r) =>
+            r.workspace_id === wsId &&
+            r.expense_id === expId &&
+            r.status !== "failed" &&
+            r.status !== "cancelled",
+        );
+        if (existingActive) {
+          const err = new Error(
+            "duplicate key value violates unique constraint idx_reimbursements_active_unique",
+          );
+          (err as unknown as { code: string }).code = "23505";
+          throw err;
+        }
+
         this.reimbursements.push({
           reimbursement_id: params?.[0] as string,
-          workspace_id: params?.[1] as string,
-          expense_id: params?.[2] as string,
+          workspace_id: wsId,
+          expense_id: expId,
           version: params?.[3] as number,
           token_address: params?.[4] as string,
           recipient_address: null,
@@ -310,6 +458,40 @@ class MockDb implements DatabaseClient {
           resource_id: params?.[4] as string,
           metadata: params?.[5] as string,
           created_at: new Date().toISOString(),
+        });
+      }
+      if (
+        normalizedSql.includes("update reimbursements") &&
+        normalizedSql.includes("status = 'failed'")
+      ) {
+        const reimbId = params?.[0] as string;
+        const target = this.reimbursements.find(
+          (r) => r.reimbursement_id === reimbId,
+        );
+        if (target) target.status = "failed";
+      }
+      if (
+        normalizedSql.includes("update reimbursements") &&
+        normalizedSql.includes("status = 'confirmed'")
+      ) {
+        const txHash = params?.[0] as string;
+        const reimbId = params?.[1] as string;
+        const target = this.reimbursements.find(
+          (r) => r.reimbursement_id === reimbId,
+        );
+        if (target) {
+          target.status = "confirmed";
+          target.transaction_hash = txHash;
+          target.settled_at = new Date().toISOString();
+        }
+      }
+      if (normalizedSql.includes("into projection_settlements")) {
+        this.projectionSettlements.push({
+          workspace_id: params?.[0] as string,
+          expense_id: params?.[1] as string,
+          version: params?.[2] as number,
+          settled_at_tx: params?.[9] as string,
+          settled_at_block: params?.[8] as string,
         });
       }
       return { rows: [] as unknown as T[], rowCount: 0 };
@@ -960,5 +1142,440 @@ describe("Settlement Configuration & Provenance", () => {
     expect(config.chainId).toBe(CHAIN_ID);
     expect(config.isFromManifest).toBe(true);
     setSettlementConfigForTesting(null);
+  });
+});
+
+describe("Duplicate Settlement & Receipt Prevention", () => {
+  let db: MockDb;
+  let service: SettlementService;
+
+  const OTHER_EXP_ID =
+    "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
+  const RECEIPT_HASH =
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+  const DIFFERENT_RECEIPT_HASH =
+    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+
+  beforeEach(() => {
+    db = new MockDb();
+    service = new SettlementService(db);
+  });
+
+  it("blocks duplicate settlement of the same expense across different versions (v1 confirmed, v2 prepare blocked)", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    // v1 is already confirmed
+    db.reimbursements = [
+      {
+        reimbursement_id: "reimb-v1",
+        workspace_id: WS_ID,
+        expense_id: EXP_ID,
+        version: 1,
+        token_address: TOKEN_CONFIG.address,
+        recipient_address: RECIPIENT_ADDR,
+        amount: "1000000",
+        payment_reference: null,
+        transaction_hash: TX_HASH,
+        status: "confirmed",
+        settled_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      },
+    ];
+
+    // Set expense to version 2
+    const exp = db.expenses.find((e) => e.expense_id === EXP_ID)!;
+    exp.current_version = 2;
+    db.expenseVersions.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 2,
+      commitment:
+        "0x2222222222222222222222222222222222222222222222222222222222222222",
+      previous_commitment: COMMITMENT,
+      amount: "1000000",
+      currency: "USDC",
+      recipient: RECIPIENT_ADDR,
+      status: "current",
+    });
+    db.decisions.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 2,
+      commitment:
+        "0x2222222222222222222222222222222222222222222222222222222222222222",
+      decision_type: "approve",
+      reviewer_address: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      recorded_at: new Date().toISOString(),
+    });
+
+    await expect(
+      service.prepareSettlement(
+        WS_ID,
+        EXP_ID,
+        ctx,
+        TOKEN_CONFIG,
+        REGISTRY_ADDRESS,
+        CHAIN_ID,
+      ),
+    ).rejects.toThrow(/DUPLICATE_SETTLEMENT|already been reimbursed/i);
+  });
+
+  it("blocks duplicate settlement when an identical receipt was already reimbursed in another expense", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    // Attach receipt to current expense (EXP_ID)
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 1,
+      evidence_id: "ev-1",
+      sha256_hash: RECEIPT_HASH,
+    });
+
+    // Another expense (OTHER_EXP_ID) attached the same receipt and was already confirmed
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      evidence_id: "ev-other",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.reimbursements.push({
+      reimbursement_id: "reimb-other",
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      token_address: TOKEN_CONFIG.address,
+      recipient_address: RECIPIENT_ADDR,
+      amount: "1000000",
+      payment_reference: null,
+      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      status: "confirmed",
+      settled_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    });
+
+    await expect(
+      service.prepareSettlement(
+        WS_ID,
+        EXP_ID,
+        ctx,
+        TOKEN_CONFIG,
+        REGISTRY_ADDRESS,
+        CHAIN_ID,
+      ),
+    ).rejects.toThrow(/DUPLICATE_RECEIPT_SETTLEMENT|identical receipt/i);
+  });
+
+  it("blocks duplicate settlement when an identical receipt is pending in another expense", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 1,
+      evidence_id: "ev-1",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      evidence_id: "ev-other",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.reimbursements.push({
+      reimbursement_id: "reimb-other-pending",
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      token_address: TOKEN_CONFIG.address,
+      recipient_address: RECIPIENT_ADDR,
+      amount: "1000000",
+      payment_reference: null,
+      transaction_hash: "0x8888888888888888888888888888888888888888888888888888888888888888",
+      status: "submitted",
+      settled_at: null,
+      created_at: new Date().toISOString(),
+    });
+
+    await expect(
+      service.prepareSettlement(
+        WS_ID,
+        EXP_ID,
+        ctx,
+        TOKEN_CONFIG,
+        REGISTRY_ADDRESS,
+        CHAIN_ID,
+      ),
+    ).rejects.toThrow(/DUPLICATE_RECEIPT_SETTLEMENT|pending reimbursement/i);
+  });
+
+  it("blocks duplicate settlement when the source transaction was already reimbursed in another expense", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    db.sourceTransactions.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      source_chain_id: 1,
+      source_transaction_hash: "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      claim_slot: 0,
+    });
+    db.sourceTransactions.push({
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      source_chain_id: 1,
+      source_transaction_hash: "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      claim_slot: 0,
+    });
+    db.reimbursements.push({
+      reimbursement_id: "reimb-source-confirmed",
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      token_address: TOKEN_CONFIG.address,
+      recipient_address: RECIPIENT_ADDR,
+      amount: "1000000",
+      payment_reference: null,
+      transaction_hash: "0x7777777777777777777777777777777777777777777777777777777777777777",
+      status: "confirmed",
+      settled_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    });
+
+    await expect(
+      service.prepareSettlement(
+        WS_ID,
+        EXP_ID,
+        ctx,
+        TOKEN_CONFIG,
+        REGISTRY_ADDRESS,
+        CHAIN_ID,
+      ),
+    ).rejects.toThrow(/DUPLICATE_SOURCE_SETTLEMENT|source transaction/i);
+  });
+
+  it("allows settlement of a separate legitimate expense with different receipt evidence", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    // Attach distinct receipts to both expenses
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 1,
+      evidence_id: "ev-1",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      evidence_id: "ev-other",
+      sha256_hash: DIFFERENT_RECEIPT_HASH,
+    });
+    // OTHER_EXP_ID was already confirmed
+    db.reimbursements.push({
+      reimbursement_id: "reimb-other",
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      token_address: TOKEN_CONFIG.address,
+      recipient_address: RECIPIENT_ADDR,
+      amount: "1000000",
+      payment_reference: null,
+      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      status: "confirmed",
+      settled_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    });
+
+    // First valid settlement on EXP_ID must succeed
+    const prep = await service.prepareSettlement(
+      WS_ID,
+      EXP_ID,
+      ctx,
+      TOKEN_CONFIG,
+      REGISTRY_ADDRESS,
+      CHAIN_ID,
+    );
+    expect(prep.expenseId).toBe(EXP_ID);
+
+    const reconciled = await service.reconcileSettlement(
+      WS_ID,
+      EXP_ID,
+      1,
+      COMMITMENT,
+      TX_HASH,
+      "idem-valid",
+      ctx,
+      TOKEN_CONFIG,
+      CHAIN_ID,
+      REGISTRY_ADDRESS,
+    );
+    expect(reconciled.status).toBe("submitted");
+  });
+
+  it("handles repeated reconcile requests with same txHash idempotently", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    const first = await service.reconcileSettlement(
+      WS_ID,
+      EXP_ID,
+      1,
+      COMMITMENT,
+      TX_HASH,
+      "idem-first",
+      ctx,
+      TOKEN_CONFIG,
+      CHAIN_ID,
+      REGISTRY_ADDRESS,
+    );
+    expect(first.status).toBe("submitted");
+
+    // Second repeated reconcile call with same txHash
+    const second = await service.reconcileSettlement(
+      WS_ID,
+      EXP_ID,
+      1,
+      COMMITMENT,
+      TX_HASH,
+      "idem-retry",
+      ctx,
+      TOKEN_CONFIG,
+      CHAIN_ID,
+      REGISTRY_ADDRESS,
+    );
+    expect(second.reimbursementId).toBe(first.reimbursementId);
+    expect(second.status).toBe("submitted");
+  });
+
+  it("blocks concurrent reconcile request with different txHash when already submitted", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    await service.reconcileSettlement(
+      WS_ID,
+      EXP_ID,
+      1,
+      COMMITMENT,
+      TX_HASH,
+      "idem-1",
+      ctx,
+      TOKEN_CONFIG,
+      CHAIN_ID,
+      REGISTRY_ADDRESS,
+    );
+
+    const DIFFERENT_TX =
+      "0x4444444444444444444444444444444444444444444444444444444444444444";
+
+    await expect(
+      service.reconcileSettlement(
+        WS_ID,
+        EXP_ID,
+        1,
+        COMMITMENT,
+        DIFFERENT_TX,
+        "idem-2",
+        ctx,
+        TOKEN_CONFIG,
+        CHAIN_ID,
+        REGISTRY_ADDRESS,
+      ),
+    ).rejects.toThrow(/DUPLICATE_SETTLEMENT|already pending/i);
+  });
+
+  it("allows retry after previous settlement transaction failed", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    // Prior settlement attempt failed
+    db.reimbursements = [
+      {
+        reimbursement_id: "reimb-failed",
+        workspace_id: WS_ID,
+        expense_id: EXP_ID,
+        version: 1,
+        token_address: TOKEN_CONFIG.address,
+        recipient_address: RECIPIENT_ADDR,
+        amount: "1000000",
+        payment_reference: null,
+        transaction_hash: "0x1111111111111111111111111111111111111111111111111111111111111111",
+        status: "failed",
+        settled_at: null,
+        created_at: new Date(Date.now() - 60000).toISOString(),
+      },
+    ];
+
+    // Retry must be permitted
+    const prep = await service.prepareSettlement(
+      WS_ID,
+      EXP_ID,
+      ctx,
+      TOKEN_CONFIG,
+      REGISTRY_ADDRESS,
+      CHAIN_ID,
+    );
+    expect(prep.expenseId).toBe(EXP_ID);
+
+    const reconciled = await service.reconcileSettlement(
+      WS_ID,
+      EXP_ID,
+      1,
+      COMMITMENT,
+      TX_HASH,
+      "idem-retry-new",
+      ctx,
+      TOKEN_CONFIG,
+      CHAIN_ID,
+      REGISTRY_ADDRESS,
+    );
+    expect(reconciled.status).toBe("submitted");
+  });
+
+  it("flags isDuplicateBlocked in treasury queue when receipt was already settled in another expense", async () => {
+    seedDb(db);
+    const ctx = makeAuthContext();
+
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: EXP_ID,
+      version: 1,
+      evidence_id: "ev-1",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.evidenceObjects.push({
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      evidence_id: "ev-other",
+      sha256_hash: RECEIPT_HASH,
+    });
+    db.reimbursements.push({
+      reimbursement_id: "reimb-other",
+      workspace_id: WS_ID,
+      expense_id: OTHER_EXP_ID,
+      version: 1,
+      token_address: TOKEN_CONFIG.address,
+      recipient_address: RECIPIENT_ADDR,
+      amount: "1000000",
+      payment_reference: null,
+      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      status: "confirmed",
+      settled_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    });
+
+    const queue = await service.getTreasuryQueue(WS_ID, ctx, TOKEN_CONFIG);
+    const item = queue.items.find((i) => i.expenseId === EXP_ID);
+    expect(item).toBeDefined();
+    expect(item?.isDuplicateBlocked).toBe(true);
+    expect(item?.duplicateReason).toMatch(/receipt already reimbursed/i);
   });
 });

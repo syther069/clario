@@ -22,9 +22,11 @@ import {
   ClipboardList,
   Landmark,
   Bot,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useClarioAuth } from "@/lib/auth/use-clario-auth";
 import {
   AnimatedBackground,
   BorderTrail,
@@ -276,6 +278,8 @@ export function UniversalNav({
 }: UniversalNavProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isAuthenticated, hasConnectedEvmWallet, connectEvmWallet } =
+    useClarioAuth();
 
   const isHome = pathname === "/";
   const navItems = MODE_NAV_CONFIG[currentMode] || MODE_NAV_CONFIG.personal;
@@ -380,6 +384,19 @@ export function UniversalNav({
               <span>Clario</span>
             </button>
           </Magnetic>
+
+          {isAuthenticated && !hasConnectedEvmWallet && (
+            <button
+              type="button"
+              onClick={connectEvmWallet}
+              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+              title="Connect your EVM wallet for on-chain actions"
+            >
+              <Wallet className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">Connect Wallet</span>
+              <span className="sm:hidden">Wallet</span>
+            </button>
+          )}
 
           <Magnetic range={50} intensity={0.3}>
             <UserButton />

@@ -76,6 +76,16 @@ contract ClarioRegistry is IClarioRegistry {
     }
 
     /// @inheritdoc IClarioRegistry
+    function isExpenseSettled(bytes32 workspaceId, bytes32 expenseId)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return _settlementRegistry.isExpenseSettled(workspaceId, expenseId);
+    }
+
+    /// @inheritdoc IClarioRegistry
     function getCurrentVersion(bytes32 workspaceId, bytes32 expenseId)
         external
         view

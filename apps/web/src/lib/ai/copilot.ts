@@ -794,7 +794,7 @@ export async function queryClarioCopilot(
     const anchoredTx = ctx.transactions.filter(
       (t) => t.verification_state === "anchored_onchain" || t.receipt_bundle_id,
     );
-    return `Clario Cryptographic Verification: Tracking ${anchoredTx.length} verified transaction(s) and receipt bundles anchored on Monad Testnet (Chain ID 10143). Merkle roots and deterministic receipts can be verified without trusting any central server.`;
+    return `Clario Cryptographic Verification: Tracking ${anchoredTx.length} verified transaction(s) and receipt bundles anchored on Monad Testnet (Chain ID 10143). Deterministic receipts and Keccak-256 commitments can be verified without trusting any central server.`;
   }
 
   return `I am your Clario Financial Copilot. Mode: ${ctx.activeMode.toUpperCase()}. I analyze your cash flows, track subscriptions, inspect OCR receipt breakdowns, and ensure your ledger entries are anchored cryptographically. How can I help you organize your finances today? (To enable live LLM generation, set GROQ_API_KEY or GEMINI_API_KEY in apps/web/.env.local).`;

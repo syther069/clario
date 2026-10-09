@@ -150,7 +150,7 @@ export function ClarioPrivyProvider({ children }: { children: ReactNode }) {
         ],
         embeddedWallets: {
           ethereum: {
-            createOnLogin: "users-without-wallets",
+            createOnLogin: "off",
           },
         },
         loginMethods: ["wallet", "email", "google", "passkey"],

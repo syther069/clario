@@ -70,6 +70,10 @@ export interface TreasuryQueueItem {
   readonly isSettled: boolean;
   /** Whether the last reimbursement attempt failed and can be retried */
   readonly isFailed: boolean;
+  /** Whether this expense is blocked from reimbursement due to duplicate receipt or cross-version settlement */
+  readonly isDuplicateBlocked?: boolean;
+  /** Human-readable reason why duplicate reimbursement is blocked */
+  readonly duplicateReason?: string | null;
 }
 
 export interface TreasuryQueueResponse {
@@ -319,22 +323,67 @@ export class SettlementService {
     const items: TreasuryQueueItem[] = [];
 
     for (const row of queueRes.rows) {
+      // Check all reimbursements for this expense across any version
       const reimbRes = await this.db.query<ReimbursementRow>(
-        `SELECT reimbursement_id, status, transaction_hash, settled_at
+        `SELECT reimbursement_id, version, status, transaction_hash, settled_at
          FROM reimbursements
-         WHERE workspace_id = $1 AND expense_id = $2 AND version = $3
-         ORDER BY created_at DESC LIMIT 1`,
-        [workspaceId, row.expense_id, row.version],
+         WHERE workspace_id = $1 AND expense_id = $2
+         ORDER BY created_at DESC`,
+        [workspaceId, row.expense_id],
       );
 
-      const latestReimb = reimbRes.rows[0];
-      const hasPendingReimbursement =
-        !!latestReimb &&
+      const confirmedReimb = reimbRes.rows.find((r) => r.status === "confirmed");
+      const pendingReimb = reimbRes.rows.find((r) =>
         ["preparing", "awaiting_signature", "submitted", "confirming"].includes(
-          latestReimb.status,
+          r.status,
+        ),
+      );
+      const latestReimb = reimbRes.rows[0];
+
+      const isSettled = !!confirmedReimb;
+      const hasPendingReimbursement = !isSettled && !!pendingReimb;
+      const isFailed =
+        !isSettled &&
+        !hasPendingReimbursement &&
+        !!latestReimb &&
+        latestReimb.status === "failed";
+
+      // Check if any attached receipt has already been reimbursed or is pending in another expense
+      let isDuplicateBlocked = false;
+      let duplicateReason: string | null = null;
+
+      if (!isSettled) {
+        const dupReceiptRes = await this.db.query<{
+          other_expense_id: string;
+          reimbursement_status: string;
+        }>(
+          `SELECT other_eo.expense_id AS other_expense_id, r.status AS reimbursement_status
+           FROM evidence_objects current_eo
+           JOIN evidence_objects other_eo
+             ON other_eo.workspace_id = current_eo.workspace_id
+            AND other_eo.sha256_hash = current_eo.sha256_hash
+            AND other_eo.expense_id <> current_eo.expense_id
+           JOIN reimbursements r
+             ON r.workspace_id = other_eo.workspace_id
+            AND r.expense_id = other_eo.expense_id
+           WHERE current_eo.workspace_id = $1
+             AND current_eo.expense_id = $2
+             AND current_eo.version = $3
+             AND r.status NOT IN ('failed', 'cancelled')
+           ORDER BY r.created_at DESC
+           LIMIT 1`,
+          [workspaceId, row.expense_id, row.version],
         );
-      const isSettled = !!latestReimb && latestReimb.status === "confirmed";
-      const isFailed = !!latestReimb && latestReimb.status === "failed";
+
+        if (dupReceiptRes.rows.length > 0) {
+          const dup = dupReceiptRes.rows[0]!;
+          isDuplicateBlocked = true;
+          duplicateReason =
+            dup.reimbursement_status === "confirmed"
+              ? `Receipt already reimbursed in expense '${dup.other_expense_id.slice(0, 10)}...'`
+              : `Receipt pending reimbursement in expense '${dup.other_expense_id.slice(0, 10)}...'`;
+        }
+      }
 
       const amountBaseUnits = row.amount ?? "0";
       const decimals =
@@ -364,6 +413,8 @@ export class SettlementService {
         hasPendingReimbursement,
         isSettled,
         isFailed,
+        isDuplicateBlocked,
+        duplicateReason,
       });
     }
 
@@ -530,33 +581,138 @@ export class SettlementService {
       );
     }
 
-    // 5. Duplicate settlement guard
-    const existingReimbRes = await this.db.query<ReimbursementRow>(
-      `SELECT reimbursement_id, status, transaction_hash, settled_at
+    // 5. Authoritative duplicate settlement & duplicate receipt guards
+    // 5a. Cross-version duplicate check: an expense cannot be reimbursed more than once
+    const allReimbRes = await this.db.query<ReimbursementRow>(
+      `SELECT reimbursement_id, version, status, transaction_hash, settled_at
        FROM reimbursements
-       WHERE workspace_id = $1 AND expense_id = $2 AND version = $3
-       ORDER BY created_at DESC LIMIT 1`,
+       WHERE workspace_id = $1 AND expense_id = $2
+       ORDER BY created_at DESC`,
+      [workspaceId, expenseId],
+    );
+
+    const confirmedReimb = allReimbRes.rows.find((r) => r.status === "confirmed");
+    if (confirmedReimb) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `This expense has already been reimbursed and settled in version ${confirmedReimb.version} (reimbursement ${confirmedReimb.reimbursement_id}${confirmedReimb.transaction_hash ? ` on transaction ${confirmedReimb.transaction_hash}` : ""}). Expenses cannot be reimbursed more than once.`,
+      );
+    }
+
+    const pendingReimb = allReimbRes.rows.find((r) =>
+      ["preparing", "awaiting_signature", "submitted", "confirming"].includes(
+        r.status,
+      ),
+    );
+    if (pendingReimb) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `A reimbursement is already pending for this expense (version ${pendingReimb.version}, status '${pendingReimb.status}'). Wait for confirmation or resolution before retrying.`,
+      );
+    }
+
+    // Check projection_settlements in case settled onchain
+    const projRes = await this.db.query<{ version: number; settled_at_tx: string }>(
+      `SELECT version, settled_at_tx
+       FROM projection_settlements
+       WHERE workspace_id = $1 AND expense_id = $2
+       LIMIT 1`,
+      [workspaceId, expenseId],
+    );
+    if (projRes.rows.length > 0) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `This expense has already been confirmed as settled on Monad (version ${projRes.rows[0]!.version}, tx ${projRes.rows[0]!.settled_at_tx}). Expenses cannot be settled more than once.`,
+      );
+    }
+
+    // 5b. Duplicate receipt guard: check if any attached evidence was already settled in another expense
+    const dupReceiptRes = await this.db.query<{
+      other_expense_id: string;
+      other_version: number;
+      reimbursement_id: string;
+      reimbursement_status: string;
+      transaction_hash: string | null;
+      sha256_hash: string;
+    }>(
+      `SELECT
+         other_eo.expense_id AS other_expense_id,
+         other_eo.version AS other_version,
+         r.reimbursement_id,
+         r.status AS reimbursement_status,
+         r.transaction_hash,
+         current_eo.sha256_hash
+       FROM evidence_objects current_eo
+       JOIN evidence_objects other_eo
+         ON other_eo.workspace_id = current_eo.workspace_id
+        AND other_eo.sha256_hash = current_eo.sha256_hash
+        AND other_eo.expense_id <> current_eo.expense_id
+       JOIN reimbursements r
+         ON r.workspace_id = other_eo.workspace_id
+        AND r.expense_id = other_eo.expense_id
+       WHERE current_eo.workspace_id = $1
+         AND current_eo.expense_id = $2
+         AND current_eo.version = $3
+         AND r.status NOT IN ('failed', 'cancelled')
+       ORDER BY r.created_at DESC
+       LIMIT 1;`,
       [workspaceId, expenseId, currentVersion],
     );
 
-    const existing = existingReimbRes.rows[0];
-    if (existing) {
-      if (existing.status === "confirmed") {
+    if (dupReceiptRes.rows.length > 0) {
+      const dup = dupReceiptRes.rows[0]!;
+      const shortHash = `${dup.sha256_hash.slice(0, 8)}...${dup.sha256_hash.slice(-6)}`;
+      if (dup.reimbursement_status === "confirmed") {
         throw new SettlementPreConditionError(
-          "DUPLICATE_SETTLEMENT",
-          `Version ${currentVersion} is already settled (reimbursement ${existing.reimbursement_id}).`,
+          "DUPLICATE_RECEIPT_SETTLEMENT",
+          `Duplicate receipt rejected: An identical receipt file (SHA-256: ${shortHash}) was already reimbursed in expense '${dup.other_expense_id}' (reimbursement ${dup.reimbursement_id}${dup.transaction_hash ? `, tx ${dup.transaction_hash}` : ""}). The same receipt cannot be reimbursed more than once.`,
+        );
+      } else {
+        throw new SettlementPreConditionError(
+          "DUPLICATE_RECEIPT_SETTLEMENT",
+          `Duplicate receipt rejected: An identical receipt file (SHA-256: ${shortHash}) is currently pending reimbursement in expense '${dup.other_expense_id}' (status: ${dup.reimbursement_status}). Wait for resolution before retrying.`,
         );
       }
-      if (
-        ["awaiting_signature", "submitted", "confirming"].includes(
-          existing.status,
-        )
-      ) {
-        throw new SettlementPreConditionError(
-          "DUPLICATE_SETTLEMENT",
-          `A reimbursement is already pending for version ${currentVersion} (${existing.status}). Wait for confirmation or resolution before retrying.`,
-        );
-      }
+    }
+
+    // 5c. Duplicate source transaction guard: check if any source transaction was already reimbursed in another expense
+    const dupSourceRes = await this.db.query<{
+      other_expense_id: string;
+      source_transaction_hash: string;
+      claim_slot: number;
+      reimbursement_id: string;
+      reimbursement_status: string;
+    }>(
+      `SELECT
+         other_st.expense_id AS other_expense_id,
+         current_st.source_transaction_hash,
+         current_st.claim_slot,
+         r.reimbursement_id,
+         r.status AS reimbursement_status
+       FROM source_transactions current_st
+       JOIN source_transactions other_st
+         ON other_st.workspace_id = current_st.workspace_id
+        AND other_st.source_chain_id = current_st.source_chain_id
+        AND LOWER(other_st.source_transaction_hash) = LOWER(current_st.source_transaction_hash)
+        AND other_st.claim_slot = current_st.claim_slot
+        AND other_st.expense_id <> current_st.expense_id
+       JOIN reimbursements r
+         ON r.workspace_id = other_st.workspace_id
+        AND r.expense_id = other_st.expense_id
+       WHERE current_st.workspace_id = $1
+         AND current_st.expense_id = $2
+         AND r.status NOT IN ('failed', 'cancelled')
+       ORDER BY r.created_at DESC
+       LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+
+    if (dupSourceRes.rows.length > 0) {
+      const dup = dupSourceRes.rows[0]!;
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SOURCE_SETTLEMENT",
+        `Duplicate source transaction rejected: The source transaction (${dup.source_transaction_hash.slice(0, 10)}..., slot ${dup.claim_slot}) was already settled or is pending settlement in expense '${dup.other_expense_id}'.`,
+      );
     }
 
     // 6. Validate recipient address
@@ -769,56 +925,212 @@ export class SettlementService {
       );
     }
 
+    // Duplicate settlement guards
+    const existingReimbs = await this.db.query<ReimbursementRow>(
+      `SELECT reimbursement_id, version, status, transaction_hash, settled_at
+       FROM reimbursements
+       WHERE workspace_id = $1 AND expense_id = $2
+       ORDER BY created_at DESC`,
+      [workspaceId, expenseId],
+    );
+
+    // If matching transactionHash was already submitted, handle idempotently
+    const sameTxReimb = existingReimbs.rows.find(
+      (r) =>
+        r.transaction_hash &&
+        r.transaction_hash.toLowerCase() === transactionHash.toLowerCase(),
+    );
+    if (sameTxReimb) {
+      return {
+        reimbursementId: sameTxReimb.reimbursement_id,
+        status:
+          sameTxReimb.status === "confirming" ? "confirming" : "submitted",
+        transactionHash: sameTxReimb.transaction_hash ?? transactionHash,
+        expenseId,
+        version: Number(sameTxReimb.version ?? version),
+      };
+    }
+
+    // If already confirmed on ANY version, reject duplicate settlement
+    const confirmedReimb = existingReimbs.rows.find((r) => r.status === "confirmed");
+    if (confirmedReimb) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `This expense has already been reimbursed (version ${confirmedReimb.version}, tx ${confirmedReimb.transaction_hash ?? "unknown"}). Duplicate reimbursement is strictly prohibited.`,
+      );
+    }
+
+    // If an active settlement is currently in flight, reject concurrent duplicate
+    const pendingReimb = existingReimbs.rows.find((r) =>
+      ["preparing", "awaiting_signature", "submitted", "confirming"].includes(
+        r.status,
+      ),
+    );
+    if (pendingReimb) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `A reimbursement is already pending for this expense (version ${pendingReimb.version}, status '${pendingReimb.status}'). Wait for confirmation or resolution before retrying.`,
+      );
+    }
+
+    // Check projection_settlements across all versions
+    const projRes = await this.db.query<{ version: number; settled_at_tx: string }>(
+      `SELECT version, settled_at_tx
+       FROM projection_settlements
+       WHERE workspace_id = $1 AND expense_id = $2
+       LIMIT 1`,
+      [workspaceId, expenseId],
+    );
+    if (projRes.rows.length > 0) {
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SETTLEMENT",
+        `This expense has already been confirmed as settled on Monad (version ${projRes.rows[0]!.version}, tx ${projRes.rows[0]!.settled_at_tx}). Expenses cannot be settled more than once.`,
+      );
+    }
+
+    // Duplicate receipt guard across expenses
+    const dupReceiptRes = await this.db.query<{
+      other_expense_id: string;
+      reimbursement_id: string;
+      reimbursement_status: string;
+      sha256_hash: string;
+    }>(
+      `SELECT
+         other_eo.expense_id AS other_expense_id,
+         r.reimbursement_id,
+         r.status AS reimbursement_status,
+         current_eo.sha256_hash
+       FROM evidence_objects current_eo
+       JOIN evidence_objects other_eo
+         ON other_eo.workspace_id = current_eo.workspace_id
+        AND other_eo.sha256_hash = current_eo.sha256_hash
+        AND other_eo.expense_id <> current_eo.expense_id
+       JOIN reimbursements r
+         ON r.workspace_id = other_eo.workspace_id
+        AND r.expense_id = other_eo.expense_id
+       WHERE current_eo.workspace_id = $1
+         AND current_eo.expense_id = $2
+         AND current_eo.version = $3
+         AND r.status NOT IN ('failed', 'cancelled')
+       ORDER BY r.created_at DESC
+       LIMIT 1;`,
+      [workspaceId, expenseId, currentVersion],
+    );
+
+    if (dupReceiptRes.rows.length > 0) {
+      const dup = dupReceiptRes.rows[0]!;
+      const shortHash = `${dup.sha256_hash.slice(0, 8)}...${dup.sha256_hash.slice(-6)}`;
+      throw new SettlementPreConditionError(
+        "DUPLICATE_RECEIPT_SETTLEMENT",
+        `Duplicate receipt rejected: An identical receipt file (SHA-256: ${shortHash}) has already been reimbursed or is pending reimbursement in expense '${dup.other_expense_id}'. The same receipt cannot be reimbursed more than once.`,
+      );
+    }
+
+    // Duplicate source transaction guard across expenses
+    const dupSourceRes = await this.db.query<{
+      other_expense_id: string;
+      source_transaction_hash: string;
+      claim_slot: number;
+    }>(
+      `SELECT
+         other_st.expense_id AS other_expense_id,
+         current_st.source_transaction_hash,
+         current_st.claim_slot
+       FROM source_transactions current_st
+       JOIN source_transactions other_st
+         ON other_st.workspace_id = current_st.workspace_id
+        AND other_st.source_chain_id = current_st.source_chain_id
+        AND LOWER(other_st.source_transaction_hash) = LOWER(current_st.source_transaction_hash)
+        AND other_st.claim_slot = current_st.claim_slot
+        AND other_st.expense_id <> current_st.expense_id
+       JOIN reimbursements r
+         ON r.workspace_id = other_st.workspace_id
+        AND r.expense_id = other_st.expense_id
+       WHERE current_st.workspace_id = $1
+         AND current_st.expense_id = $2
+         AND r.status NOT IN ('failed', 'cancelled')
+       ORDER BY r.created_at DESC
+       LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+
+    if (dupSourceRes.rows.length > 0) {
+      const dup = dupSourceRes.rows[0]!;
+      throw new SettlementPreConditionError(
+        "DUPLICATE_SOURCE_SETTLEMENT",
+        `Duplicate source transaction rejected: The source transaction (${dup.source_transaction_hash.slice(0, 10)}..., slot ${dup.claim_slot}) was already settled or is pending settlement in expense '${dup.other_expense_id}'.`,
+      );
+    }
+
     const reimbursementId = randomUUID();
 
-    await withTransaction(this.db, async (tx) => {
-      // Record chain_transaction
-      await tx.query(
-        `INSERT INTO chain_transactions (transaction_id, workspace_id, chain_id, transaction_hash, action, status, submitted_at)
-         VALUES ($1, $2, $3, $4, 'reimburse', 'submitted', NOW())
-         ON CONFLICT (transaction_hash) DO NOTHING`,
-        [randomUUID(), workspaceId, chainId, transactionHash],
-      );
+    try {
+      await withTransaction(this.db, async (tx) => {
+        // Record chain_transaction
+        await tx.query(
+          `INSERT INTO chain_transactions (transaction_id, workspace_id, chain_id, transaction_hash, action, status, submitted_at)
+           VALUES ($1, $2, $3, $4, 'reimburse', 'submitted', NOW())
+           ON CONFLICT (transaction_hash) DO NOTHING`,
+          [randomUUID(), workspaceId, chainId, transactionHash],
+        );
 
-      // Record reimbursement
-      await tx.query(
-        `INSERT INTO reimbursements
-           (reimbursement_id, workspace_id, expense_id, version, token_address, recipient_address, amount, payment_reference, transaction_hash, status, created_at)
-         SELECT $1, $2, $3, $4, $5, ev.recipient, ev.amount,
-                '0x' || LPAD(REPLACE($6::text, '-', ''), 64, '0'),
-                $7, 'submitted', NOW()
-         FROM expense_versions ev
-         WHERE ev.workspace_id = $2 AND ev.expense_id = $3 AND ev.version = $4`,
-        [
-          reimbursementId,
-          workspaceId,
-          expenseId,
-          version,
-          tokenConfig.address,
-          idempotencyKey,
-          transactionHash,
-        ],
-      );
-
-      // Audit log
-      await tx.query(
-        `INSERT INTO audit_events (workspace_id, actor_address, event_type, entity_type, entity_id, metadata, occurred_at)
-         VALUES ($1, $2, 'reimbursement_submitted', 'reimbursement', $3, $4, NOW())`,
-        [
-          workspaceId,
-          context.address.toLowerCase(),
-          reimbursementId,
-          JSON.stringify({
+        // Record reimbursement
+        await tx.query(
+          `INSERT INTO reimbursements
+             (reimbursement_id, workspace_id, expense_id, version, token_address, recipient_address, amount, payment_reference, transaction_hash, status, created_at)
+           SELECT $1, $2, $3, $4, $5, ev.recipient, ev.amount,
+                  '0x' || LPAD(REPLACE($6::text, '-', ''), 64, '0'),
+                  $7, 'submitted', NOW()
+           FROM expense_versions ev
+           WHERE ev.workspace_id = $2 AND ev.expense_id = $3 AND ev.version = $4`,
+          [
+            reimbursementId,
+            workspaceId,
             expenseId,
             version,
-            commitment,
+            tokenConfig.address,
+            idempotencyKey,
             transactionHash,
-            chainId,
-            registryAddress,
-          }),
-        ],
-      );
-    });
+          ],
+        );
+
+        // Audit log
+        await tx.query(
+          `INSERT INTO audit_events (workspace_id, actor_address, event_type, entity_type, entity_id, metadata, occurred_at)
+           VALUES ($1, $2, 'reimbursement_submitted', 'reimbursement', $3, $4, NOW())`,
+          [
+            workspaceId,
+            context.address.toLowerCase(),
+            reimbursementId,
+            JSON.stringify({
+              expenseId,
+              version,
+              commitment,
+              transactionHash,
+              chainId,
+              registryAddress,
+            }),
+          ],
+        );
+      });
+    } catch (err: unknown) {
+      if (
+        (err &&
+          typeof err === "object" &&
+          "code" in err &&
+          (err as { code: string }).code === "23505") ||
+        (err instanceof Error &&
+          /unique constraint|duplicate key|idx_reimbursements_active_unique/i.test(
+            err.message,
+          ))
+      ) {
+        throw new SettlementPreConditionError(
+          "DUPLICATE_SETTLEMENT",
+          "A reimbursement is already active or confirmed for this expense. Duplicate settlement is strictly prohibited.",
+        );
+      }
+      throw err;
+    }
 
     return {
       reimbursementId,
@@ -902,6 +1214,23 @@ export class SettlementService {
       [workspaceId, expenseId, currentVersion],
     );
     if (reimbRes.rows.length === 0) {
+      // Check if another version was already confirmed
+      const allConfirmed = await this.db.query<ReimbursementRow>(
+        `SELECT reimbursement_id, version, status, transaction_hash, settled_at
+         FROM reimbursements
+         WHERE workspace_id = $1 AND expense_id = $2 AND status = 'confirmed'`,
+        [workspaceId, expenseId],
+      );
+      if (
+        allConfirmed.rows.length > 0 &&
+        allConfirmed.rows[0]!.version !== currentVersion
+      ) {
+        throw new SettlementPreConditionError(
+          "DUPLICATE_SETTLEMENT",
+          `This expense has already been reimbursed on version ${allConfirmed.rows[0]!.version}. Duplicate settlement across versions is strictly prohibited.`,
+        );
+      }
+
       throw new SettlementNotFoundError(
         "No reimbursement attempt found for this expense version.",
       );

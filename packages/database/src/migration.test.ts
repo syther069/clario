@@ -12,27 +12,33 @@ describe("PostgreSQL Schema Migration Suite", () => {
 
     const initialStatus = await migrator.status();
     expect(initialStatus.applied).toHaveLength(0);
-    expect(initialStatus.pending).toHaveLength(2);
+    expect(initialStatus.pending).toHaveLength(3);
     expect(initialStatus.pending[0]!.version).toBe(1);
     expect(initialStatus.pending[0]!.name).toBe("initial_schema");
     expect(initialStatus.pending[1]!.version).toBe(2);
     expect(initialStatus.pending[1]!.name).toBe("event_indexing");
+    expect(initialStatus.pending[2]!.version).toBe(3);
+    expect(initialStatus.pending[2]!.name).toBe("duplicate_prevention");
 
     // Execute forward migration
     const applied = await migrator.up();
-    expect(applied).toHaveLength(2);
+    expect(applied).toHaveLength(3);
     expect(applied[0]!.version).toBe(1);
     expect(applied[1]!.version).toBe(2);
+    expect(applied[2]!.version).toBe(3);
 
     // Verify status after up
     const postStatus = await migrator.status();
-    expect(postStatus.applied).toHaveLength(2);
+    expect(postStatus.applied).toHaveLength(3);
     expect(postStatus.applied[0]!.version).toBe(1);
     expect(postStatus.applied[0]!.name).toBe("initial_schema");
     expect(postStatus.applied[0]!.checksum).toBe(applied[0]!.checksum);
     expect(postStatus.applied[1]!.version).toBe(2);
     expect(postStatus.applied[1]!.name).toBe("event_indexing");
     expect(postStatus.applied[1]!.checksum).toBe(applied[1]!.checksum);
+    expect(postStatus.applied[2]!.version).toBe(3);
+    expect(postStatus.applied[2]!.name).toBe("duplicate_prevention");
+    expect(postStatus.applied[2]!.checksum).toBe(applied[2]!.checksum);
     expect(postStatus.pending).toHaveLength(0);
   });
 
@@ -45,7 +51,7 @@ describe("PostgreSQL Schema Migration Suite", () => {
     expect(secondRun).toHaveLength(0);
 
     const status = await migrator.status();
-    expect(status.applied).toHaveLength(2);
+    expect(status.applied).toHaveLength(3);
     expect(status.pending).toHaveLength(0);
   });
 
@@ -75,8 +81,17 @@ describe("PostgreSQL Schema Migration Suite", () => {
     const { client } = createInMemoryDb();
     const migrator = new Migrator(client, MIGRATIONS_DIR);
 
-    // Migrate up both
+    // Migrate up all
     await migrator.up();
+
+    // Rollback migration 3
+    const rolledBack3 = await migrator.down();
+    expect(rolledBack3.version).toBe(3);
+
+    const statusAfterDown3 = await migrator.status();
+    expect(statusAfterDown3.applied).toHaveLength(2);
+    expect(statusAfterDown3.pending).toHaveLength(1);
+    expect(statusAfterDown3.pending[0]!.version).toBe(3);
 
     // Rollback migration 2
     const rolledBack2 = await migrator.down();
@@ -84,7 +99,7 @@ describe("PostgreSQL Schema Migration Suite", () => {
 
     const statusAfterDown2 = await migrator.status();
     expect(statusAfterDown2.applied).toHaveLength(1);
-    expect(statusAfterDown2.pending).toHaveLength(1);
+    expect(statusAfterDown2.pending).toHaveLength(2);
     expect(statusAfterDown2.pending[0]!.version).toBe(2);
 
     // Rollback migration 1
@@ -93,16 +108,17 @@ describe("PostgreSQL Schema Migration Suite", () => {
 
     const statusAfterDown1 = await migrator.status();
     expect(statusAfterDown1.applied).toHaveLength(0);
-    expect(statusAfterDown1.pending).toHaveLength(2);
+    expect(statusAfterDown1.pending).toHaveLength(3);
 
     // Re-migrate from zero after rollback
     const recovered = await migrator.up();
-    expect(recovered).toHaveLength(2);
+    expect(recovered).toHaveLength(3);
     expect(recovered[0]!.version).toBe(1);
     expect(recovered[1]!.version).toBe(2);
+    expect(recovered[2]!.version).toBe(3);
 
     const statusAfterRecovery = await migrator.status();
-    expect(statusAfterRecovery.applied).toHaveLength(2);
+    expect(statusAfterRecovery.applied).toHaveLength(3);
     expect(statusAfterRecovery.pending).toHaveLength(0);
   });
 });

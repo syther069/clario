@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { buildCanonicalReceiptBundle, computeReceiptHash } from "./registry";
-import { generateReceiptNumber } from "./save-receipt-bundle";
+import {
+  generateReceiptNumber,
+  executeSaveReceiptBundle,
+} from "./save-receipt-bundle";
 import type { Transaction } from "@/lib/supabase/types";
 
 describe("Multi-Transaction Receipt Bundling & Canonicalization", () => {
@@ -218,6 +221,24 @@ describe("Multi-Transaction Receipt Bundling & Canonicalization", () => {
       });
 
       expect(computeReceiptHash(bundleA)).toBe(computeReceiptHash(bundleB));
+    });
+  });
+
+  describe("Transaction Bundling Invariants", () => {
+    it("should reject bundling transactions that already belong to a receipt bundle", async () => {
+      const alreadyBundledTx: Transaction = {
+        ...mockTransactions[0]!,
+        id: "tx-already-bundled",
+        receipt_bundle_id: "existing-bundle-999",
+      };
+
+      await expect(
+        executeSaveReceiptBundle({
+          transactions: [alreadyBundledTx],
+          userId: "user-1",
+          receiptName: "Test Receipt",
+        }),
+      ).rejects.toThrow(/already belong to an existing receipt bundle/);
     });
   });
 });

@@ -183,7 +183,7 @@ export const GUIDE_SLIDES: GuideSlide[] = [
                 Business
               </div>
               <p className="text-[10px] text-gray-600 font-mono mt-1">
-                Team approvals, spending caps & nullifier payouts.
+                Team approvals, spending caps & duplicate-proof payouts.
               </p>
             </div>
           </div>
@@ -261,17 +261,17 @@ export const GUIDE_SLIDES: GuideSlide[] = [
       id: "settlement-proof",
       stepNumber: "04",
       category: "DETERMINISTIC SETTLEMENT",
-      title: "Sub-Second Monad Finality & Anti-Duplicate Nullifiers",
+      title: "Sub-Second Monad Finality & Anti-Duplicate Settlement",
       description:
-        "When business treasury approves a reimbursement or an expense is settled, Monad executes with sub-second parallel finality. An onchain nullifier guarantees that duplicate reimbursement claims fail permanently.",
+        "When business treasury approves a reimbursement or an expense is settled, Monad executes with sub-second parallel finality. An onchain settlement guard guarantees that duplicate reimbursement claims fail permanently.",
       takeaways: [
         {
           title: "Sub-Second Finality (< 0.8s)",
           desc: "Monad's 10,000 TPS parallel EVM confirms transactions virtually instantaneously with micro-gas fees ($0.0003).",
         },
         {
-          title: "Strict Anti-Duplicate Nullifier",
-          desc: "Smart contracts record a cryptographic nullifier for every settled commitment; duplicate submissions revert immediately.",
+          title: "Strict Anti-Duplicate Guard",
+          desc: "Smart contracts record an immutable settlement state for every approved commitment; duplicate submissions revert immediately.",
         },
         {
           title: "AI Has Zero Authority",
@@ -295,8 +295,8 @@ export const GUIDE_SLIDES: GuideSlide[] = [
                 <span className="font-bold text-[#121212]">0.00012 MON</span>
               </div>
               <div className="bg-[#f8f9fa] p-2 rounded border border-gray-200">
-                <span className="text-[9px] text-gray-500 block">NULLIFIER STATE:</span>
-                <span className="font-bold text-[#836EF9]">UNSPENT → CLAIMED</span>
+                <span className="text-[9px] text-gray-500 block">SETTLEMENT STATE:</span>
+                <span className="font-bold text-[#836EF9]">UNSETTLED → SETTLED</span>
               </div>
             </div>
           </div>

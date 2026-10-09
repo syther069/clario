@@ -90,6 +90,12 @@ interface IClarioSettlementRegistryV1 {
         view
         returns (bool);
 
+    /// @notice Returns true if the expense has been settled across any version.
+    function isExpenseSettled(bytes32 workspaceId, bytes32 expenseId)
+        external
+        view
+        returns (bool);
+
     /// @notice Returns the full settlement record for an expense version.
     function getSettlementRecord(bytes32 workspaceId, bytes32 expenseId, uint32 version)
         external

@@ -42,7 +42,7 @@ const SAMPLE_EXPENSES = [
     status: "Verified & Settled",
     privacy: "Invoice stays on your laptop · Never published publicly",
     gasFee: "0.00012 MON (< $0.001)",
-    verificationMethod: "SHA-256 pre-image commitment with unspent nullifier",
+    verificationMethod: "Keccak-256 pre-image commitment with onchain settlement guard",
   },
   {
     id: "EXP-9043",
@@ -68,7 +68,7 @@ const SAMPLE_EXPENSES = [
     status: "Verified & Settled",
     privacy: "Scope and notes offchain · Proof fingerprint on Monad",
     gasFee: "0.00011 MON (< $0.001)",
-    verificationMethod: "SHA-256 pre-image commitment with unspent nullifier",
+    verificationMethod: "Keccak-256 pre-image commitment with onchain settlement guard",
   },
 ];
 
@@ -519,14 +519,15 @@ export default function LandingPage() {
             <div className="max-w-2xl">
               <span className="font-mono text-xs font-black uppercase tracking-wider text-[#836EF9] bg-white/10 px-3 py-1 rounded-md border border-white/20 inline-flex items-center gap-1.5 mb-3">
                 <Terminal className="h-3 w-3" />
-                Live Verification Inspector
+                Interactive Sandbox · Verification Simulator
               </span>
               <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white leading-tight">
-                Inspect Receipt Integrity in Real Time
+                Inspect Receipt Integrity (Sandbox Simulator)
               </h2>
               <p className="text-gray-300 text-sm sm:text-base mt-2 leading-relaxed font-medium">
-                Test how auditors, clients, and teammates can independently verify that an expense
-                has not been altered and has never been double-reimbursed.
+                Experience how auditors, clients, and teammates can independently verify that an expense
+                has not been altered and has never been double-reimbursed. For live Monad Testnet verification,
+                explore the dedicated Proof Center.
               </p>
             </div>
 
@@ -571,7 +572,7 @@ export default function LandingPage() {
                   disabled={isVerifying}
                   className="w-full sm:w-auto font-mono text-xs font-black uppercase tracking-wider px-6 py-3 rounded-lg bg-[#836EF9] text-white border-2 border-white shadow-[3px_3px_0_0_#fff] hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50 transition cursor-pointer"
                 >
-                  {isVerifying ? "Verifying Onchain Ledger..." : "Run Instant Verification"}
+                  {isVerifying ? "Simulating Onchain Verification..." : "Run Sandbox Verification"}
                 </button>
               </div>
 
@@ -590,8 +591,8 @@ export default function LandingPage() {
                         <BadgeCheck className="h-4 w-4" aria-hidden="true" />
                         Verification Passed: 100% Valid
                       </span>
-                      <span className="font-mono text-xs text-emerald-300 font-bold">
-                        Monad Block #{verificationResult.block}
+                      <span className="font-mono text-[11px] text-emerald-300 font-bold bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/40">
+                        Monad Block #{verificationResult.block} (Sandbox Demo)
                       </span>
                     </div>
 
@@ -601,7 +602,7 @@ export default function LandingPage() {
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Zero Cloud Leak
                         </div>
-                        <p className="text-[11px] text-gray-300">Receipt image and sensitive notes remained AES-256 encrypted in device storage.</p>
+                        <p className="text-[11px] text-gray-300">Receipt image and sensitive notes remain offchain in private vault storage.</p>
                       </div>
 
                       <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
@@ -622,7 +623,7 @@ export default function LandingPage() {
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Zero Duplicate Settlement
                         </div>
-                        <p className="text-[11px] text-gray-300">Nullifier recorded on Monad; the smart contract prevents duplicate reimbursement forever.</p>
+                        <p className="text-[11px] text-gray-300">Settlement state recorded on Monad; the smart contract prevents duplicate reimbursement forever.</p>
                       </div>
                     </div>
 
@@ -645,6 +646,20 @@ export default function LandingPage() {
                           <div><span className="text-gray-500">Verification Spec:</span> {activeExpense.verificationMethod}</div>
                         </div>
                       )}
+                    </div>
+
+                    {/* Link to live Proof Center */}
+                    <div className="pt-3 border-t border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <span className="font-mono text-[11px] text-gray-300">
+                        Interactive sandbox demonstration. Have a live Monad transaction hash to check?
+                      </span>
+                      <Link
+                        href="/proof"
+                        className="inline-flex items-center gap-1.5 font-mono text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#836EF9] text-white border-2 border-white shadow-[2px_2px_0_0_#fff] hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] transition cursor-pointer"
+                      >
+                        Open Live Proof Center
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
                     </div>
                   </motion.div>
                 )}

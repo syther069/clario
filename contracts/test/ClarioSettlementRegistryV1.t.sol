@@ -226,6 +226,72 @@ contract ClarioSettlementRegistryV1Test {
         settlementRegistry.reimburse(
             WORKSPACE_A, EXPENSE_1, 1, COMMITMENT_V1, address(token), recipient, amount
         );
+        assert(settlementRegistry.isExpenseSettled(WORKSPACE_A, EXPENSE_1));
+    }
+
+    function testRejectsDuplicateSettlementAcrossVersions() public {
+        uint256 amount = 10_000;
+        vm.prank(treasury);
+        settlementRegistry.reimburse(
+            WORKSPACE_A, EXPENSE_1, 1, COMMITMENT_V1, address(token), recipient, amount
+        );
+        assert(settlementRegistry.isExpenseSettled(WORKSPACE_A, EXPENSE_1));
+
+        // Submit version 2 for EXPENSE_1
+        bytes32 commitmentV2 = keccak256("COMMITMENT_V2");
+        vm.prank(submitter);
+        expenseRegistry.submitVersion(WORKSPACE_A, EXPENSE_1, 2, commitmentV2, COMMITMENT_V1);
+
+        // Approver approves version 2
+        vm.prank(approver);
+        decisionRegistry.recordDecision(
+            WORKSPACE_A,
+            EXPENSE_1,
+            2,
+            commitmentV2,
+            IClarioDecisionRegistryV1.Decision.Approve,
+            bytes32(0)
+        );
+
+        // Treasury attempting to reimburse version 2 of the ALREADY SETTLED expense must revert!
+        vm.prank(treasury);
+        vm.expectRevert(IClarioSettlementRegistryV1.DuplicateSettlement.selector);
+        settlementRegistry.reimburse(
+            WORKSPACE_A, EXPENSE_1, 2, commitmentV2, address(token), recipient, amount
+        );
+    }
+
+    function testSeparateExpenseSucceedsAndIsNotBlocked() public {
+        uint256 amount = 10_000;
+        // Settle EXPENSE_1
+        vm.prank(treasury);
+        settlementRegistry.reimburse(
+            WORKSPACE_A, EXPENSE_1, 1, COMMITMENT_V1, address(token), recipient, amount
+        );
+        assert(settlementRegistry.isExpenseSettled(WORKSPACE_A, EXPENSE_1));
+
+        // Submit and approve separate EXPENSE_2
+        bytes32 commitment2 = keccak256("COMMITMENT_EXPENSE_2");
+        vm.prank(submitter);
+        expenseRegistry.submitVersion(WORKSPACE_A, EXPENSE_2, 1, commitment2, bytes32(0));
+
+        vm.prank(approver);
+        decisionRegistry.recordDecision(
+            WORKSPACE_A,
+            EXPENSE_2,
+            1,
+            commitment2,
+            IClarioDecisionRegistryV1.Decision.Approve,
+            bytes32(0)
+        );
+
+        // Separate expense settlement MUST succeed
+        vm.prank(treasury);
+        settlementRegistry.reimburse(
+            WORKSPACE_A, EXPENSE_2, 1, commitment2, address(token), recipient, amount
+        );
+        assert(settlementRegistry.isExpenseSettled(WORKSPACE_A, EXPENSE_2));
+        assert(settlementRegistry.isSettled(WORKSPACE_A, EXPENSE_2, 1));
     }
 
     function testRejectsUnapprovedExpense() public {

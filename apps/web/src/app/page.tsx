@@ -215,7 +215,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
 
-  const effectiveUserId = connectedEvmAddress || user?.id || "demo_user";
+  const effectiveUserId = user?.id || connectedEvmAddress || "demo_user";
   const userId = effectiveUserId;
 
   // Load financial data from Supabase scoped to current user/wallet

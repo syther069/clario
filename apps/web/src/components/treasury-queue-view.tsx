@@ -599,7 +599,18 @@ export function TreasuryQueueView({
                     </td>
 
                     <td style={{ padding: "14px 16px" }}>
-                      {item.isSettled ? (
+                      {item.isDuplicateBlocked ? (
+                        <span
+                          className="border-2 border-black bg-rose-100 text-rose-800 shadow-[2px_2px_0px_#000] font-mono tracking-wider uppercase text-xs px-2 py-0.5 font-bold inline-flex items-center gap-1"
+                          title={
+                            item.duplicateReason ??
+                            "Duplicate reimbursement blocked"
+                          }
+                        >
+                          <AlertCircle className="w-3 h-3 inline text-rose-600 shrink-0" />
+                          Duplicate Blocked
+                        </span>
+                      ) : item.isSettled ? (
                         <span
                           style={{
                             fontSize: "0.75rem",
@@ -661,7 +672,28 @@ export function TreasuryQueueView({
                     </td>
 
                     <td style={{ padding: "14px 16px", textAlign: "right" }}>
-                      {item.isSettled ? (
+                      {item.isDuplicateBlocked ? (
+                        <button
+                          disabled
+                          className="btn btn-secondary"
+                          title={
+                            item.duplicateReason ??
+                            "Duplicate receipt or expense already settled"
+                          }
+                          style={{
+                            height: 32,
+                            fontSize: "0.75rem",
+                            padding: "0 10px",
+                            opacity: 0.6,
+                            cursor: "not-allowed",
+                            border: "2px solid #000",
+                            color: "var(--status-danger)",
+                            backgroundColor: "#fff1f2",
+                          }}
+                        >
+                          Blocked (Duplicate)
+                        </button>
+                      ) : item.isSettled ? (
                         <button
                           onClick={() => onNavigateToExpense?.(item.expenseId)}
                           className="btn btn-secondary"

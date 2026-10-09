@@ -296,75 +296,6 @@ export function TransactionModal({
     );
   }
 
-  // Connect EVM Wallet Guard Popup Modal
-  if (isNoWalletPopupOpen) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          onClick={() => setIsNoWalletPopupOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-        />
-        <div className="relative z-10 w-full max-w-sm rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212] animate-in fade-in zoom-in-95">
-          <div className="flex items-start justify-between pb-3 border-b-2 border-[#121212]">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                <Wallet className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                  EVM Wallet Needed
-                </h3>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsNoWalletPopupOpen(false)}
-              className="relative size-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-bold text-[#121212]">
-              Connect your EVM wallet to fetch blockchain transactions.
-            </p>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              To search and index transactions via Alchemy, connect an external EVM wallet (e.g. MetaMask, Phantom, Coinbase Wallet), or record your entry manually.
-            </p>
-          </div>
-
-          <div className="mt-6 space-y-2.5">
-            <ClarioButton
-              variant="primary"
-              className="w-full justify-center !py-3"
-              icon={<Wallet className="h-4 w-4" />}
-              onClick={() => {
-                setIsNoWalletPopupOpen(false);
-                handleConnectWallet();
-              }}
-            >
-              CONNECT EVM WALLET
-            </ClarioButton>
-
-            <ClarioButton
-              variant="outline"
-              className="w-full justify-center !py-3"
-              icon={<FileText className="h-4 w-4" />}
-              onClick={() => {
-                setIsNoWalletPopupOpen(false);
-                setSubLedger("onchain");
-                setView("manual");
-              }}
-            >
-              RECORD TRANSACTION MANUALLY
-            </ClarioButton>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1116,6 +1047,110 @@ export function TransactionModal({
         }}
         transaction={savedTransaction}
       />
+
+      {/* Connect EVM Wallet Guard Popup Modal Overlay */}
+      <AnimatePresence>
+        {isNoWalletPopupOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNoWalletPopupOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
+            >
+              <div className="flex items-start justify-between pb-3 border-b-2 border-[#121212]">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
+                      Wallet Connection Required
+                    </span>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-[#121212] mt-0.5">
+                      Connect EVM Wallet to Fetch
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNoWalletPopupOpen(false)}
+                  className="relative size-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div className="rounded-xl border-2 border-[#121212] bg-[#fbf9fe] p-3 text-xs shadow-[2px_2px_0_0_#121212]">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-[10px] font-black uppercase text-slate-500">
+                      Clario Account Identity
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase text-purple-700 bg-purple-100 px-1.5 py-0.2 rounded border border-purple-300">
+                      Off-Chain Workspace
+                    </span>
+                  </div>
+                  <div className="font-bold text-[#121212] truncate font-mono text-xs">
+                    {auth.primaryEmail || (auth.user?.id ? `ID: ${auth.user.id.slice(0, 16)}...` : "Email-Authenticated Account")}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1 leading-snug">
+                    Your Clario Account manages saved workspaces, receipts, and offline records.
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 text-xs text-slate-600 leading-relaxed">
+                  <p>
+                    Email authentication does not create blockchain transactions. To search and index on-chain transfers across Monad, Base, Ethereum, or Arbitrum via Alchemy, connect an EVM wallet.
+                  </p>
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 font-mono flex items-start gap-1.5">
+                    <span className="shrink-0 text-amber-600 font-bold">ℹ</span>
+                    <span>
+                      Connecting a wallet does not automatically import all your past history. You can inspect and choose which attributable transactions to index.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-2.5">
+                <ClarioButton
+                  variant="primary"
+                  className="w-full justify-center !py-3 font-mono tracking-wider"
+                  icon={<Wallet className="h-4 w-4" />}
+                  onClick={() => {
+                    setIsNoWalletPopupOpen(false);
+                    handleConnectWallet();
+                  }}
+                >
+                  CONNECT EVM WALLET
+                </ClarioButton>
+
+                <ClarioButton
+                  variant="outline"
+                  className="w-full justify-center !py-2.5 font-mono text-xs"
+                  icon={<FileText className="h-3.5 w-3.5" />}
+                  onClick={() => {
+                    setIsNoWalletPopupOpen(false);
+                    setSubLedger("onchain");
+                    setView("manual");
+                  }}
+                >
+                  RECORD TRANSACTION MANUALLY
+                </ClarioButton>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -33,6 +33,9 @@ contract ClarioSettlementRegistryV1 is IClarioSettlementRegistryV1 {
     /// @dev workspaceId => expenseId => version => isSettled
     mapping(bytes32 => mapping(bytes32 => mapping(uint32 => bool))) private _isSettled;
 
+    /// @dev workspaceId => expenseId => isSettled (across any version)
+    mapping(bytes32 => mapping(bytes32 => bool)) private _isExpenseSettled;
+
     modifier nonReentrant() {
         if (_reentrancyStatus == _ENTERED) {
             revert ReentrancyGuardReentrantCall();
@@ -119,7 +122,7 @@ contract ClarioSettlementRegistryV1 is IClarioSettlementRegistryV1 {
             revert InvalidAmount();
         }
 
-        if (_isSettled[workspaceId][expenseId][version]) {
+        if (_isExpenseSettled[workspaceId][expenseId] || _isSettled[workspaceId][expenseId][version]) {
             revert DuplicateSettlement();
         }
 
@@ -171,6 +174,7 @@ contract ClarioSettlementRegistryV1 is IClarioSettlementRegistryV1 {
             settledAtTimestamp: uint64(block.timestamp)
         });
         _isSettled[workspaceId][expenseId][version] = true;
+        _isExpenseSettled[workspaceId][expenseId] = true;
 
         _safeTransferFrom(token, msg.sender, recipient, amount);
 
@@ -187,6 +191,16 @@ contract ClarioSettlementRegistryV1 is IClarioSettlementRegistryV1 {
         returns (bool)
     {
         return _isSettled[workspaceId][expenseId][version];
+    }
+
+    /// @inheritdoc IClarioSettlementRegistryV1
+    function isExpenseSettled(bytes32 workspaceId, bytes32 expenseId)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return _isExpenseSettled[workspaceId][expenseId];
     }
 
     /// @inheritdoc IClarioSettlementRegistryV1

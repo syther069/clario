@@ -94,6 +94,15 @@ export async function executeSaveReceiptBundle({
     );
   }
 
+  const alreadyBundled = transactions.filter(
+    (tx) => tx.receipt_bundle_id !== null && tx.receipt_bundle_id !== undefined,
+  );
+  if (alreadyBundled.length > 0) {
+    throw new Error(
+      `Cannot bundle transactions: ${alreadyBundled.length} transaction(s) already belong to an existing receipt bundle (${alreadyBundled.map((t) => t.id).slice(0, 3).join(", ")}).`,
+    );
+  }
+
   const trimmedName = (receiptName || "").trim();
   if (!trimmedName) {
     throw new Error("Receipt name is required.");

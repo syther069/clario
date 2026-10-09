@@ -30,6 +30,18 @@ vi.mock("@/lib/blockchain/registry", () => ({
           logs: [],
         };
       }
+      if (
+        hash ===
+        "0x3333333333333333333333333333333333333333333333333333333333333333"
+      ) {
+        return {
+          status: "success",
+          blockNumber: 14298106n,
+          to: "0x000000000000000000000000000000000000dead",
+          gasUsed: 21000n,
+          logs: [],
+        };
+      }
       return null;
     }),
     getBlock: vi.fn(async () => ({
@@ -128,6 +140,20 @@ describe("Proof Verification API (/api/proof/verify)", () => {
       method: "POST",
       body: JSON.stringify({
         hash: "0x2222222222222222222222222222222222222222222222222222222222222222",
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.verified).toBe(false);
+  });
+
+  it("reports unverified for an unrelated transaction on Monad Testnet not targeting Clario", async () => {
+    const req = new NextRequest("http://localhost:3000/api/proof/verify", {
+      method: "POST",
+      body: JSON.stringify({
+        hash: "0x3333333333333333333333333333333333333333333333333333333333333333",
       }),
     });
 

@@ -817,6 +817,17 @@ export class ExpenseService {
 
     const currentDraft = verRes.rows[0]!;
 
+    // Invariant: Prevent submitting an expense that was already settled or has an active settlement in progress
+    const checkReimb = await this.db.query<{ status: string; version: number }>(
+      `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+    if (checkReimb.rows.length > 0) {
+      throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+        message: `Cannot submit expense: this expense has already been settled or has an active settlement in progress (version ${checkReimb.rows[0]!.version}, status '${checkReimb.rows[0]!.status}').`,
+      });
+    }
+
     // 3. Decrypt payload and salt
     const payload = this.decryptPayload(
       workspaceId,
@@ -849,6 +860,36 @@ export class ExpenseService {
        ORDER BY evidence_id ASC;`,
       [workspaceId, expenseId, currentDraft.version],
     );
+
+    // Duplicate receipt guard: verify none of the attached receipts were already reimbursed in another expense
+    const dupReceipt = await this.db.query<{
+      other_expense_id: string;
+      sha256_hash: string;
+      reimbursement_status: string;
+    }>(
+      `SELECT other_eo.expense_id AS other_expense_id, current_eo.sha256_hash, r.status AS reimbursement_status
+       FROM evidence_objects current_eo
+       JOIN evidence_objects other_eo
+         ON other_eo.workspace_id = current_eo.workspace_id
+        AND other_eo.sha256_hash = current_eo.sha256_hash
+        AND other_eo.expense_id <> current_eo.expense_id
+       JOIN reimbursements r
+         ON r.workspace_id = other_eo.workspace_id
+        AND r.expense_id = other_eo.expense_id
+       WHERE current_eo.workspace_id = $1
+         AND current_eo.expense_id = $2
+         AND current_eo.version = $3
+         AND r.status NOT IN ('failed', 'cancelled')
+       LIMIT 1;`,
+      [workspaceId, expenseId, currentDraft.version],
+    );
+    if (dupReceipt.rows.length > 0) {
+      const dup = dupReceipt.rows[0]!;
+      const shortHash = `${dup.sha256_hash.slice(0, 8)}...${dup.sha256_hash.slice(-6)}`;
+      throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+        message: `Cannot submit expense: attached receipt (SHA-256: ${shortHash}) has already been reimbursed or is pending reimbursement in expense '${dup.other_expense_id}'. The same receipt cannot be reimbursed more than once.`,
+      });
+    }
 
     const rawEvidence: RawEvidenceItem[] = evRes.rows.map((r) => ({
       evidenceId: r.evidence_id,
@@ -1043,6 +1084,16 @@ export class ExpenseService {
     if (currentVer.status !== "draft") {
       throw new ProtocolError("INVALID_LIFECYCLE_TRANSITION", {
         message: `Cannot reconcile expense version with status '${currentVer.status}'.`,
+      });
+    }
+
+    const checkReimb = await this.db.query<{ status: string; version: number }>(
+      `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
+      [workspaceId, expenseId],
+    );
+    if (checkReimb.rows.length > 0) {
+      throw new ProtocolError("DUPLICATE_SETTLEMENT", {
+        message: `Cannot reconcile submission: this expense has already been settled or has an active settlement in progress (version ${checkReimb.rows[0]!.version}, status '${checkReimb.rows[0]!.status}').`,
       });
     }
 

@@ -5,10 +5,11 @@ import Link from "next/link";
 import { ModeSwitcher } from "./mode-switcher";
 import { UserButton } from "../auth/user-button";
 import { MonadLogo } from "@/components/ui/crypto-icon";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, Wallet } from "lucide-react";
 import type { PlatformMode } from "@/lib/supabase/types";
 import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
 import { ClarioLogo } from "@/components/ui/clario-logo";
+import { useClarioAuth } from "@/lib/auth/use-clario-auth";
 
 export type CorePillar = "expenses" | "vault" | "insights";
 
@@ -27,6 +28,9 @@ export function ModeHeader({
   onOpenCopilot,
   onLogExpense,
 }: ModeHeaderProps) {
+  const { isAuthenticated, hasConnectedEvmWallet, connectEvmWallet } =
+    useClarioAuth();
+
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3.5 border-b-2 border-[#121212]/15">
       {/* Left: Clario Brand (Navigates to Landing Page) + Mode Selector */}
@@ -78,6 +82,18 @@ export function ModeHeader({
             Docs
           </ClarioButton>
         </Link>
+
+        {isAuthenticated && !hasConnectedEvmWallet && (
+          <button
+            type="button"
+            onClick={connectEvmWallet}
+            className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+            title="Connect your EVM wallet for on-chain actions"
+          >
+            <Wallet className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span>Connect Wallet</span>
+          </button>
+        )}
 
         <UserButton />
       </div>

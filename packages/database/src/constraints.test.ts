@@ -333,11 +333,138 @@ describe("PostgreSQL Constraints and Invariants Suite", () => {
 
     const activeCount = await client.query<{ count: string | number }>(
       `SELECT count(*) FROM reimbursements
-       WHERE workspace_id = $1 AND expense_id = $2 AND version = 1
+       WHERE workspace_id = $1 AND expense_id = $2
        AND status NOT IN ('failed', 'cancelled');`,
       [TEST_FIXTURE_WORKSPACE.workspaceId, TEST_FIXTURE_EXPENSE.expenseId],
     );
     expect(Number(activeCount.rows[0]!.count)).toBe(1);
+  });
+
+  it("enforces that different versions of the same expense cannot be actively reimbursed concurrently or twice", async () => {
+    // Setup expense with versions 1 and 2
+    await client.query(
+      `INSERT INTO expenses (workspace_id, expense_id, created_by, current_version)
+       VALUES ($1, $2, $3, NULL);`,
+      [
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        TEST_FIXTURE_EXPENSE.expenseId,
+        TEST_FIXTURE_EXPENSE.createdBy,
+      ],
+    );
+
+    await client.query(
+      `INSERT INTO expense_versions (
+         workspace_id, expense_id, version, commitment, previous_commitment,
+         salt_ciphertext, salt_key_reference, record_ciphertext, record_key_reference,
+         amount, currency, recipient, status
+       ) VALUES ($1, $2, 1, $3, NULL, 's', 'k', 'r', 'k', 500, 'USDC', $4, 'current');`,
+      [
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        TEST_FIXTURE_EXPENSE.expenseId,
+        TEST_FIXTURE_EXPENSE_VERSION_1.commitment,
+        TEST_FIXTURE_EXPENSE_VERSION_1.recipient,
+      ],
+    );
+
+    await client.query(
+      `INSERT INTO expense_versions (
+         workspace_id, expense_id, version, commitment, previous_commitment,
+         salt_ciphertext, salt_key_reference, record_ciphertext, record_key_reference,
+         amount, currency, recipient, status
+       ) VALUES ($1, $2, 2, $3, $4, 's2', 'k2', 'r2', 'k2', 500, 'USDC', $5, 'current');`,
+      [
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        TEST_FIXTURE_EXPENSE.expenseId,
+        TEST_FIXTURE_EXPENSE_VERSION_2.commitment,
+        TEST_FIXTURE_EXPENSE_VERSION_1.commitment,
+        TEST_FIXTURE_EXPENSE_VERSION_2.recipient,
+      ],
+    );
+
+    // Reimburse version 1
+    const r1Id = "00000000-0000-0000-0000-000000000021";
+    await client.query(
+      `INSERT INTO reimbursements (
+         reimbursement_id, workspace_id, expense_id, version, token_address,
+         recipient_address, amount, payment_reference, status
+       ) VALUES ($1, $2, $3, 1, $4, $5, 500, $6, 'confirmed');`,
+      [
+        r1Id,
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        TEST_FIXTURE_EXPENSE.expenseId,
+        "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        TEST_FIXTURE_EXPENSE_VERSION_1.recipient,
+        "0x1111111111111111111111111111111111111111111111111111111111111111",
+      ],
+    );
+
+    // Attempting to reimburse version 2 of the same expense MUST FAIL on duplicate active index
+    const r2Id = "00000000-0000-0000-0000-000000000022";
+    await expect(
+      client.query(
+        `INSERT INTO reimbursements (
+           reimbursement_id, workspace_id, expense_id, version, token_address,
+           recipient_address, amount, payment_reference, status
+         ) VALUES ($1, $2, $3, 2, $4, $5, 500, $6, 'submitted');`,
+        [
+          r2Id,
+          TEST_FIXTURE_WORKSPACE.workspaceId,
+          TEST_FIXTURE_EXPENSE.expenseId,
+          "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          TEST_FIXTURE_EXPENSE_VERSION_2.recipient,
+          "0x2222222222222222222222222222222222222222222222222222222222222222",
+        ],
+      ),
+    ).rejects.toThrow();
+
+    // But a legitimate SEPARATE expense MUST SUCCEED
+    const otherExpenseId = "0x9999999999999999999999999999999999999999999999999999999999999999";
+    await client.query(
+      `INSERT INTO expenses (workspace_id, expense_id, created_by, current_version)
+       VALUES ($1, $2, $3, NULL);`,
+      [
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        otherExpenseId,
+        TEST_FIXTURE_EXPENSE.createdBy,
+      ],
+    );
+    await client.query(
+      `INSERT INTO expense_versions (
+         workspace_id, expense_id, version, commitment, previous_commitment,
+         salt_ciphertext, salt_key_reference, record_ciphertext, record_key_reference,
+         amount, currency, recipient, status
+       ) VALUES ($1, $2, 1, $3, NULL, 's3', 'k3', 'r3', 'k3', 250, 'USDC', $4, 'current');`,
+      [
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        otherExpenseId,
+        "0x8888888888888888888888888888888888888888888888888888888888888888",
+        TEST_FIXTURE_EXPENSE_VERSION_1.recipient,
+      ],
+    );
+
+    const rSeparateId = "00000000-0000-0000-0000-000000000023";
+    await client.query(
+      `INSERT INTO reimbursements (
+         reimbursement_id, workspace_id, expense_id, version, token_address,
+         recipient_address, amount, payment_reference, status
+       ) VALUES ($1, $2, $3, 1, $4, $5, 250, $6, 'submitted');`,
+      [
+        rSeparateId,
+        TEST_FIXTURE_WORKSPACE.workspaceId,
+        otherExpenseId,
+        "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        TEST_FIXTURE_EXPENSE_VERSION_1.recipient,
+        "0x3333333333333333333333333333333333333333333333333333333333333333",
+      ],
+    );
+
+    const sepCount = await client.query<{ count: string | number }>(
+      `SELECT count(*) FROM reimbursements
+       WHERE workspace_id = $1 AND expense_id = $2
+       AND status NOT IN ('failed', 'cancelled');`,
+      [TEST_FIXTURE_WORKSPACE.workspaceId, otherExpenseId],
+    );
+    expect(Number(sepCount.rows[0]!.count)).toBe(1);
   });
 
   it("enforces uniqueness on source_transactions and idempotency_keys", async () => {

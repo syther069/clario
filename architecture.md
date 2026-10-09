@@ -228,7 +228,17 @@ Production should separate latency-sensitive API traffic, event ingestion, docum
 
 ### 6.1 Contract design
 
-The preferred production design uses four contracts. For hackathon delivery they may be modules behind one `ClarioRegistry` contract, provided public interfaces and events remain separated.
+Clario structures its onchain layer into two distinct, purposeful tracks:
+
+1. **`ClarioTransactionRegistry` (Live on Monad Testnet)**:
+   - **Deployment**: `0x92f9B76673C1D88c9E3c490A88eB95b08823bA87` (Chain ID `10143`, Monad Testnet).
+   - **Scope**: Single-contract high-throughput ledger powering Personal, Freelancer, and Family receipt commitments.
+   - **Key Functions**: `saveTransaction(bytes32 transactionId, bytes32 dataHash)` and `saveReceipt(bytes32 receiptId, bytes32 receiptHash, uint256 transactionCount)`.
+   - **Application Role**: Active target for the live Proof Center (`/proof`), client-side receipt bundle anchoring, and multi-chain transfer indexing verification.
+
+2. **`protocol/v1` Modular Governance Suite**:
+   - **Scope**: Multi-contract role-separated architecture for Business workspaces, corporate governance, and treasury reimbursement.
+   - **Architecture**: Separated into distinct registries (`WorkspaceRegistry`, `ExpenseRegistry`, `DecisionRegistry`, and `SettlementRegistry`) or composed behind `ClarioRegistry`. The preferred production design uses these four modular contracts, or modules behind one `ClarioRegistry` contract provided public interfaces and events remain separated.
 
 #### WorkspaceRegistry
 

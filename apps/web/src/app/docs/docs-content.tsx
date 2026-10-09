@@ -1121,7 +1121,7 @@ WITH CHECK (auth.uid() = user_id);`}
               <li>Confirm receipt: Clario canonicalizes the metadata via RFC 8785 and computes the Keccak-256 commitment.</li>
               <li>Anchor on Monad: Click "Anchor on Monad" to write the commitment to contract <code className="font-mono text-[#836EF9]">0x92f9B76673C1D88c9E3c490A88eB95b08823bA87</code>.</li>
               <li>Export package: Download <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">clario-export.zip</code>.</li>
-              <li>Verify offline: Run <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">pnpm verify:package -- ./clario-export.zip --rpc https://testnet-rpc.monad.xyz</code> to confirm zero-knowledge offline validity.</li>
+              <li>Verify offline: Run <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">pnpm verify:package -- ./clario-export.zip --rpc https://testnet-rpc.monad.xyz</code> to confirm cryptographic offline validity against onchain state.</li>
             </ol>
           </section>
         </div>
