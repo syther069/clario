@@ -10,11 +10,17 @@ export const metadata: Metadata = {
   description: "Verifiable expense workflows and cryptographic receipts on Monad.",
   icons: {
     icon: [
-      { url: "/clario-logo.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "48x48" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/clario-logo.png", type: "image/png", sizes: "1024x1024" },
       { url: "/clario-logo.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/clario-logo.png",
-    apple: "/clario-logo.png",
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
