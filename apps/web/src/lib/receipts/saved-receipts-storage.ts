@@ -51,11 +51,51 @@ export function ensureCanonicalReceiptData(
     currency: string;
     transactionIds: string[];
     createdAt: string;
+    transactions?: unknown[] | undefined;
   },
 ): CanonicalReceiptBundle {
   const d = (
     data && typeof data === "object" ? data : {}
   ) as Partial<CanonicalReceiptBundle>;
+
+  const txIds =
+    Array.isArray(d.transactionIds) && d.transactionIds.length > 0
+      ? d.transactionIds
+      : fallback.transactionIds;
+
+  let txs: any[] = [];
+  if (Array.isArray(d.transactions) && d.transactions.length > 0) {
+    txs = d.transactions;
+  } else if (
+    Array.isArray(fallback.transactions) &&
+    fallback.transactions.length > 0
+  ) {
+    txs = fallback.transactions;
+  } else if (txIds && txIds.length > 0) {
+    // Synthesize transaction items so transactions is NEVER empty if transactionIds exist
+    const total = Number(d.totalAmount ?? fallback.totalAmount) || 0;
+    const splitAmount =
+      txIds.length > 1
+        ? Number((total / txIds.length).toFixed(2))
+        : total;
+    txs = txIds.map((id, index) => ({
+      id,
+      amount:
+        index === 0 && txIds.length > 1
+          ? Number((total - splitAmount * (txIds.length - 1)).toFixed(2))
+          : splitAmount,
+      currency: d.currency || fallback.currency || "USD",
+      merchant: d.receiptName || fallback.name || "Expense",
+      category: "other",
+      date: (
+        d.createdAt ||
+        fallback.createdAt ||
+        new Date().toISOString()
+      ).slice(0, 10),
+      type: "expense",
+    }));
+  }
+
   return {
     receiptId: d.receiptId || fallback.id,
     receiptNumber: d.receiptNumber || fallback.receiptNumber,
@@ -63,55 +103,91 @@ export function ensureCanonicalReceiptData(
     createdAt: d.createdAt || fallback.createdAt,
     owner: d.owner || fallback.owner,
     transactionCount:
-      Number(d.transactionCount) || fallback.transactionIds.length || 1,
+      Number(d.transactionCount) ||
+      txIds.length ||
+      (txs.length > 0 ? txs.length : 1),
     totalAmount: Number(d.totalAmount ?? fallback.totalAmount) || 0,
     currency: d.currency || fallback.currency || "USD",
-    transactionIds: Array.isArray(d.transactionIds)
-      ? d.transactionIds
-      : fallback.transactionIds,
-    transactions: Array.isArray(d.transactions) ? d.transactions : [],
+    transactionIds: txIds,
+    transactions: txs,
     version: Number(d.version) || 1,
   };
 }
 
-const STORAGE_DIR = path.resolve(process.cwd(), ".data");
-const STORAGE_FILE = path.join(STORAGE_DIR, "saved_receipts.json");
-
-function ensureStorageDir(): void {
+function getCandidateStorageDirs(): string[] {
+  const dirs = new Set<string>();
+  // 1. Current working directory .data
+  dirs.add(path.resolve(process.cwd(), ".data"));
+  // 2. apps/web/.data from workspace root
+  dirs.add(path.resolve(process.cwd(), "apps", "web", ".data"));
+  // 3. Parent .data if running inside apps/web
+  dirs.add(path.resolve(process.cwd(), "..", ".data"));
+  // 4. Relative to this module
   try {
-    if (!fs.existsSync(STORAGE_DIR)) {
-      fs.mkdirSync(STORAGE_DIR, { recursive: true });
-    }
-  } catch (err) {
-    console.error("Failed to ensure saved receipts storage directory:", err);
+    dirs.add(path.resolve(__dirname, "..", "..", "..", ".data"));
+    dirs.add(path.resolve(__dirname, "..", "..", "..", "..", ".data"));
+  } catch {
+    // Ignore
   }
+  return Array.from(dirs);
+}
+
+function getCandidateStorageFiles(): string[] {
+  return getCandidateStorageDirs().map((d) =>
+    path.join(d, "saved_receipts.json"),
+  );
 }
 
 function readLocalStore(): Record<string, PersistedSavedReceipt> {
-  ensureStorageDir();
-  try {
-    if (!fs.existsSync(STORAGE_FILE)) {
-      return {};
+  const merged: Record<string, PersistedSavedReceipt> = {};
+  const files = getCandidateStorageFiles();
+
+  for (const file of files) {
+    try {
+      if (fs.existsSync(file)) {
+        const raw = fs.readFileSync(file, "utf-8");
+        const parsed = JSON.parse(raw) as Record<string, PersistedSavedReceipt>;
+        if (parsed && typeof parsed === "object") {
+          for (const [id, r] of Object.entries(parsed)) {
+            if (r && r.id) {
+              const existing = merged[id];
+              if (!existing) {
+                merged[id] = r;
+              } else {
+                const existingTxCount =
+                  existing.receipt_data?.transactions?.length || 0;
+                const newTxCount =
+                  r.receipt_data?.transactions?.length || 0;
+                merged[id] = newTxCount >= existingTxCount ? r : existing;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Continue to next file
     }
-    const raw = fs.readFileSync(STORAGE_FILE, "utf-8");
-    return JSON.parse(raw) as Record<string, PersistedSavedReceipt>;
-  } catch (err) {
-    console.warn(
-      "Notice: Reading saved receipts local file store fallback:",
-      err,
-    );
-    return {};
   }
+
+  return merged;
 }
 
 function writeLocalStore(store: Record<string, PersistedSavedReceipt>): void {
-  ensureStorageDir();
-  try {
-    const tempFile = `${STORAGE_FILE}.tmp.${Date.now()}`;
-    fs.writeFileSync(tempFile, JSON.stringify(store, null, 2), "utf-8");
-    fs.renameSync(tempFile, STORAGE_FILE);
-  } catch (err) {
-    console.error("Error writing to saved receipts local file store:", err);
+  const dirs = getCandidateStorageDirs();
+  const serialized = JSON.stringify(store, null, 2);
+
+  for (const dir of dirs) {
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const file = path.join(dir, "saved_receipts.json");
+      const tempFile = `${file}.tmp.${Date.now()}`;
+      fs.writeFileSync(tempFile, serialized, "utf-8");
+      fs.renameSync(tempFile, file);
+    } catch {
+      // Ignore directory write error and proceed to others
+    }
   }
 }
 
@@ -198,6 +274,9 @@ export class SavedReceiptsStorageService {
           ? bundle.transaction_ids
           : [],
         createdAt: bundle.created_at || nowIso,
+        transactions: Array.isArray(bundle.receipt_data?.transactions)
+          ? bundle.receipt_data.transactions
+          : undefined,
       }),
       name: bundle.name || bundle.receipt_name || "Untitled Receipt",
       receipt_name: bundle.receipt_name || bundle.name || "Untitled Receipt",

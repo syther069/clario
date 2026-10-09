@@ -34,8 +34,9 @@ import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 import { Magnetic } from "@/components/ui/motion/magnetic";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import { WatermelonAlert } from "@/components/ui/watermelon-alert";
-import { motion, AnimatePresence } from "motion/react";
 import { TransactionShareModal } from "@/components/dashboard/transaction-share-modal";
+import { getStoredReceiptBundles } from "@/lib/receipts/receipt-client-storage";
+import { getStoredTransactions } from "@/lib/storage/transaction-storage";
 
 export default function ReceiptsPage() {
   const router = useRouter();
@@ -89,6 +90,21 @@ export default function ReceiptsPage() {
 
         const apiData = await apiRes.json();
         const loadedBundles: ReceiptBundle[] = [];
+        const seenBundleIds = new Set<string>();
+
+        // 1. Incorporate local stored verified bundles
+        const localStoredBundles = getStoredReceiptBundles(effectiveUser);
+        for (const b of Object.values(localStoredBundles)) {
+          if (
+            (b.verification_status === "verified" ||
+              b.blockchain_status === "confirmed") &&
+            Boolean(b.blockchain_tx_hash) &&
+            b.blockchain_status !== "failed"
+          ) {
+            seenBundleIds.add(b.id);
+            loadedBundles.push(b);
+          }
+        }
 
         if (apiData.success && Array.isArray(apiData.bundles)) {
           // Strictly filter confirmed on-chain receipts
@@ -97,25 +113,30 @@ export default function ReceiptsPage() {
               (b.verification_status === "verified" ||
                 b.blockchain_status === "confirmed") &&
               Boolean(b.blockchain_tx_hash) &&
-              b.blockchain_status !== "failed"
+              b.blockchain_status !== "failed" &&
+              !seenBundleIds.has(b.id)
             ) {
+              seenBundleIds.add(b.id);
               loadedBundles.push(b);
             }
           }
         }
 
-        // Also check standalone confirmed transactions from Supabase
-        if (supabaseRes.data && Array.isArray(supabaseRes.data)) {
-          const standaloneConfirmed = (
-            supabaseRes.data as Transaction[]
-          ).filter(
-            (t) =>
-              (t.blockchain_status === "confirmed" ||
-                t.verification_status === "verified" ||
-                t.verification_state === "verified") &&
-              Boolean(t.blockchain_tx_hash || t.monad_tx_hash) &&
-              t.blockchain_status !== "failed",
-          );
+        // Also check standalone confirmed transactions from Supabase and local storage
+        const localStoredTxs = getStoredTransactions(effectiveUser);
+        const combinedCandidateTxs: Transaction[] = [
+          ...localStoredTxs,
+          ...(Array.isArray(supabaseRes.data) ? (supabaseRes.data as Transaction[]) : []),
+        ];
+
+        const standaloneConfirmed = combinedCandidateTxs.filter(
+          (t) =>
+            (t.blockchain_status === "confirmed" ||
+              t.verification_status === "verified" ||
+              t.verification_state === "verified") &&
+            Boolean(t.blockchain_tx_hash || t.monad_tx_hash) &&
+            t.blockchain_status !== "failed",
+        );
 
           const seenHashes = new Set(
             loadedBundles
@@ -182,7 +203,6 @@ export default function ReceiptsPage() {
               seenHashes.add(txHash.toLowerCase());
             }
           }
-        }
 
         if (!ignore) {
           setReceiptBundles(

@@ -26,6 +26,8 @@ import {
   CheckCircle2,
   Database,
   Cpu,
+  Zap,
+  Loader2,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import type { PlatformMode } from "@/lib/supabase/types";
@@ -47,6 +49,10 @@ export default function AccountSettingsPage() {
   // Inline Quick-Edit State for Profile Card
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [inlineNickname, setInlineNickname] = useState("");
+
+  // 1-Click Session Signing State
+  const [isDelegating, setIsDelegating] = useState(false);
+  const [delegationFeedback, setDelegationFeedback] = useState<string | null>(null);
 
   const {
     displayName,
@@ -72,6 +78,11 @@ export default function AccountSettingsPage() {
     exportWallet,
     logout,
     user,
+    isSessionDelegated,
+    canDelegate,
+    enableSessionSigning,
+    revokeSessionSigning,
+    fundWallet,
   } = useClarioAuth();
 
   const handleCopy = (address: string) => {
@@ -708,7 +719,7 @@ export default function AccountSettingsPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <button
                     onClick={() => setWalletRecovery()}
                     className="flex items-center justify-between p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbfbfc] hover:bg-[#836EF9]/10 hover:border-[#836EF9] transition text-left shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
@@ -738,9 +749,152 @@ export default function AccountSettingsPage() {
                       </p>
                     </div>
                   </button>
+
+                  <button
+                    onClick={() => {
+                      if (embeddedWalletAddress) {
+                        fundWallet({ address: embeddedWalletAddress });
+                      }
+                    }}
+                    className="flex items-center justify-between p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbfbfc] hover:bg-emerald-50 hover:border-emerald-500 transition text-left shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px]"
+                  >
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs font-black uppercase text-[#121212]">
+                        <Coins className="h-4 w-4 text-emerald-600" />
+                        Fund Wallet (Privy)
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Deposit or transfer assets via Privy native modal
+                      </p>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
+
+            {/* 1-Click Fast Anchoring (Privy Session Signer) Card */}
+            <div className="rounded-xl border-2 border-[#121212] bg-white p-5 sm:p-6 shadow-[4px_4px_0_0_#121212]">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212] mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#836EF9] text-white shadow-[1px_1px_0_0_#121212]">
+                    <Zap className="h-4 w-4 fill-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black uppercase tracking-wider text-[#121212]">
+                      1-Click Fast Anchoring (Privy Session Signer)
+                    </h2>
+                  </div>
+                </div>
+                {isSessionDelegated ? (
+                  <span className="text-[9px] font-mono uppercase bg-emerald-100 text-emerald-900 font-black px-2.5 py-0.5 rounded border border-emerald-400 flex items-center gap-1">
+                    <Zap className="h-3 w-3 fill-emerald-700" />
+                    Active
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-mono uppercase bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded border border-slate-300">
+                    Disabled
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Pre-authorizes your Privy embedded wallet to sign transaction commitments and receipt proof hashes in the background on Monad Testnet without triggering signature popup modals each time you save an entry.
+              </p>
+
+              {canDelegate ? (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl border-2 border-[#121212] bg-[#fbf9fe]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#836EF9]/10 text-[#836EF9] border border-[#836EF9]/30 shrink-0">
+                      <Zap className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase text-[#121212]">
+                        {isSessionDelegated ? "Session Signatures Authorized" : "Session Authorization Required"}
+                      </p>
+                      <p className="text-[11px] font-mono text-slate-500">
+                        {isSessionDelegated
+                          ? "All receipt anchors & ledger entries sign silently in 1 click"
+                          : "Standard prompt is currently required for every onchain anchor"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isSessionDelegated ? (
+                      <button
+                        type="button"
+                        disabled={isDelegating}
+                        onClick={async () => {
+                          setIsDelegating(true);
+                          try {
+                            await revokeSessionSigning();
+                            setDelegationFeedback("1-Click session authorization revoked.");
+                          } catch (err) {
+                            setDelegationFeedback(err instanceof Error ? err.message : "Failed to revoke authorization.");
+                          } finally {
+                            setIsDelegating(false);
+                          }
+                        }}
+                        className="w-full sm:w-auto px-3.5 py-2 rounded-lg border-2 border-red-600/40 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-600 font-mono text-xs font-black uppercase tracking-wider transition shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] cursor-pointer disabled:opacity-50"
+                      >
+                        {isDelegating ? "Revoking..." : "Revoke Fast Mode"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isDelegating}
+                        onClick={async () => {
+                          setIsDelegating(true);
+                          try {
+                            await enableSessionSigning();
+                            setDelegationFeedback("1-Click Fast Anchoring activated successfully!");
+                          } catch (err) {
+                            setDelegationFeedback(err instanceof Error ? err.message : "Failed to enable 1-Click Fast Anchoring.");
+                          } finally {
+                            setIsDelegating(false);
+                          }
+                        }}
+                        className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] text-white font-mono text-xs font-black uppercase tracking-wider transition shadow-[2px_2px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] cursor-pointer disabled:opacity-50"
+                      >
+                        {isDelegating ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Authorizing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="h-3.5 w-3.5 fill-white" />
+                            <span>Enable 1-Click Fast Mode</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl border-2 border-dashed border-[#121212]/30 bg-slate-50 text-slate-600 text-xs">
+                  <div className="flex items-center gap-2 font-bold uppercase text-[11px] text-slate-700">
+                    <Wallet className="h-4 w-4 text-[#836EF9]" />
+                    <span>Embedded Wallet Required for 1-Click Delegation</span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed">
+                    1-Click background signing uses Privy delegated actions, which are exclusive to embedded wallets. External browser extensions (e.g. MetaMask) require manual EIP-1193 confirmation for security.
+                  </p>
+                </div>
+              )}
+
+              {delegationFeedback && (
+                <div className="mt-3 p-2.5 rounded-lg border border-[#121212] bg-slate-100 text-[11px] font-mono text-[#121212] flex items-center justify-between">
+                  <span>{delegationFeedback}</span>
+                  <button
+                    onClick={() => setDelegationFeedback(null)}
+                    className="text-slate-400 hover:text-black font-bold ml-2 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Cryptographic Proof Assurance Note */}
             <div className="rounded-xl border-2 border-[#121212] bg-[#f5f3ff] p-4 sm:p-5 shadow-[3px_3px_0_0_#121212] flex items-start gap-3.5">

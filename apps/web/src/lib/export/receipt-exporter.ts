@@ -74,7 +74,7 @@ export interface NormalizedReceiptData {
  */
 export function extractCanonicalReceiptData(
   bundle: ReceiptBundle,
-  fallbackTransactions: (Transaction | CanonicalReceiptTransaction)[] = [],
+  fallbackTransactions: Array<Transaction | CanonicalReceiptTransaction | any> = [],
   contractAddressOverride?: string,
 ): NormalizedReceiptData {
   const receiptData = bundle.receipt_data;

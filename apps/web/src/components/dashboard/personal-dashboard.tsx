@@ -60,6 +60,16 @@ import {
   getMonadExplorerTxUrl,
 } from "@/lib/blockchain/registry";
 import {
+  getStoredReceiptBundles,
+  saveStoredReceiptBundle,
+  saveStoredReceiptBundles,
+  mergeReceiptBundles,
+} from "@/lib/receipts/receipt-client-storage";
+import {
+  upsertStoredTransaction,
+  upsertStoredTransactions,
+} from "@/lib/storage/transaction-storage";
+import {
   Magnetic,
   BorderTrail,
   TextShimmer,
@@ -188,7 +198,9 @@ export function PersonalDashboard({
   const [receiptSearchQuery, setReceiptSearchQuery] = useState<string>("");
   const [receiptBundles, setReceiptBundles] = useState<
     Record<string, ReceiptBundle>
-  >({});
+  >(() => {
+    return getStoredReceiptBundles(effectiveConnectedAddress || userId);
+  });
   const [savingTxId, setSavingTxId] = useState<string | null>(null);
   const [savingProgressLabel, setSavingProgressLabel] = useState<string>("");
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -244,6 +256,18 @@ export function PersonalDashboard({
 
   const activeTransactions = subLedger === "fiat" ? fiatTransactions : onChainTransactions;
   const activeCurrencySymbol = subLedger === "fiat" ? fiatCurrency.symbol : "$";
+
+  const latestTransactions = useMemo(() => {
+    return [...transactions].sort((a, b) => {
+      const timeA = new Date(
+        a.date || a.timestamp || a.created_at || 0,
+      ).getTime();
+      const timeB = new Date(
+        b.date || b.timestamp || b.created_at || 0,
+      ).getTime();
+      return timeB - timeA;
+    });
+  }, [transactions]);
 
   const handleQuickAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -367,18 +391,24 @@ export function PersonalDashboard({
   useEffect(() => {
     let ignore = false;
     async function loadVerifiedReceipts() {
-      // 1. Wait for Privy auth to be ready to avoid race conditions on page refresh
+      // 1. Initial local load for instant UI without blank flicker
+      const walletOrUser = effectiveConnectedAddress || userId;
+      const initialStored = getStoredReceiptBundles(walletOrUser);
+      if (Object.keys(initialStored).length > 0 && !ignore) {
+        setReceiptBundles((prev) => mergeReceiptBundles(prev, initialStored));
+      }
+
+      // 2. Wait for Privy auth to be ready to avoid race conditions on page refresh
       if (!auth.isReady) {
         setIsLoadingReceipts(true);
         return;
       }
 
-      // 2. If no valid EVM wallet is connected, do NOT query or flash; clear receipts and stop loading
+      // 3. If no valid EVM wallet is connected yet, retain stored receipts and stop loading
       if (
         !effectiveConnectedAddress ||
         !/^0x[a-fA-F0-9]{40}$/.test(effectiveConnectedAddress)
       ) {
-        setReceiptBundles({});
         setIsLoadingReceipts(false);
         return;
       }
@@ -386,6 +416,12 @@ export function PersonalDashboard({
       setIsLoadingReceipts(true);
       try {
         const normAddr = effectiveConnectedAddress.toLowerCase();
+        // Immediately load scoped cache
+        const localBundles = getStoredReceiptBundles(normAddr);
+        if (Object.keys(localBundles).length > 0 && !ignore) {
+          setReceiptBundles((prev) => mergeReceiptBundles(prev, localBundles));
+        }
+
         const queryParams = new URLSearchParams();
         queryParams.set("userAddress", normAddr);
         queryParams.set("verifiedOnly", "true");
@@ -399,8 +435,11 @@ export function PersonalDashboard({
           for (const b of data.bundles as ReceiptBundle[]) {
             map[b.id] = b;
           }
-          // Authoritative replacement for this specific connected wallet
-          setReceiptBundles(map);
+          setReceiptBundles((prev) => {
+            const merged = mergeReceiptBundles(prev, map);
+            saveStoredReceiptBundles(merged, normAddr);
+            return merged;
+          });
         }
       } catch (err) {
         console.warn("Failed to load verified receipt bundles:", err);
@@ -413,7 +452,7 @@ export function PersonalDashboard({
     return () => {
       ignore = true;
     };
-  }, [auth.isReady, effectiveConnectedAddress]);
+  }, [auth.isReady, effectiveConnectedAddress, userId]);
 
   // Compute verified receipts list strictly adhering to:
   // ONLY ON-CHAIN SAVED AND CONFIRMED RECEIPTS ARE INCLUDED
@@ -552,15 +591,78 @@ export function PersonalDashboard({
   };
 
   const handleReceiptBundleCreated = (bundle: ReceiptBundle) => {
+    const walletOrUser = effectiveConnectedAddress || userId;
+    saveStoredReceiptBundle(bundle, walletOrUser);
     setReceiptBundles((prev) => ({ ...prev, [bundle.id]: bundle }));
     setSelectedTxIds(new Set());
     setActiveLedgerTab("receipts");
 
-    if (onUpdateTransaction && Array.isArray(bundle.transaction_ids)) {
+    const updatedTxs: Transaction[] = [];
+
+    if (
+      Array.isArray(bundle.receipt_data?.transactions) &&
+      bundle.receipt_data.transactions.length > 0
+    ) {
+      for (const t of bundle.receipt_data.transactions) {
+        if (!t || !t.id) continue;
+        const existing = transactions.find((ex) => ex.id === t.id);
+        const fullTx: Transaction = {
+          ...(existing || {}),
+          id: t.id,
+          user_id:
+            existing?.user_id ||
+            bundle.user_id ||
+            bundle.wallet_address ||
+            walletOrUser ||
+            "user_default",
+          type:
+            (t.type as "expense" | "income" | "transfer") ||
+            existing?.type ||
+            "expense",
+          amount: Number(t.amount) || existing?.amount || 0,
+          currency: t.currency || existing?.currency || bundle.currency || "USD",
+          merchant:
+            t.merchant || existing?.merchant || bundle.name || "Expense",
+          description:
+            t.merchant || existing?.description || bundle.name || "Expense",
+          category: t.category || existing?.category || "other",
+          category_id: t.category || existing?.category_id || "other",
+          date:
+            t.date ||
+            existing?.date ||
+            bundle.created_at?.slice(0, 10) ||
+            new Date().toISOString().slice(0, 10),
+          timestamp:
+            t.date ||
+            existing?.timestamp ||
+            bundle.created_at ||
+            new Date().toISOString(),
+          payment_method: existing?.payment_method || "Onchain (Monad)",
+          receipt_bundle_id: bundle.id,
+          verification_state: "verified",
+          verification_status: "verified",
+          blockchain_status: "confirmed",
+          blockchain_tx_hash: bundle.blockchain_tx_hash || null,
+          monad_tx_hash: bundle.blockchain_tx_hash || null,
+          blockchain_data_hash: bundle.receipt_hash,
+          monad_block: bundle.monad_block || null,
+          status: "cleared",
+          source: "onchain_monad",
+          version: 1,
+          created_at:
+            existing?.created_at ||
+            bundle.created_at ||
+            new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        updatedTxs.push(fullTx);
+        onUpdateTransaction?.(fullTx);
+      }
+    } else if (Array.isArray(bundle.transaction_ids)) {
       for (const txId of bundle.transaction_ids) {
         const existing = transactions.find((t) => t.id === txId);
         if (existing) {
-          onUpdateTransaction({
+          const updated: Transaction = {
             ...existing,
             receipt_bundle_id: bundle.id,
             verification_state: "verified",
@@ -569,9 +671,17 @@ export function PersonalDashboard({
             blockchain_tx_hash: bundle.blockchain_tx_hash || null,
             monad_tx_hash: bundle.blockchain_tx_hash || null,
             blockchain_data_hash: bundle.receipt_hash,
-          });
+            monad_block: bundle.monad_block || null,
+            updated_at: new Date().toISOString(),
+          };
+          updatedTxs.push(updated);
+          onUpdateTransaction?.(updated);
         }
       }
+    }
+
+    if (updatedTxs.length > 0) {
+      upsertStoredTransactions(updatedTxs, walletOrUser);
     }
 
     setSelectedBundle(bundle);
@@ -786,7 +896,10 @@ export function PersonalDashboard({
 
         const persistedBundle = saveData.bundle || singleBundle;
 
-        // 2. Only update UI state after successful database persistence
+        // 2. Persist to local storage synchronously for zero data loss on immediate refresh
+        saveStoredReceiptBundle(persistedBundle, normWallet);
+
+        // 3. Only update UI state after successful persistence
         setReceiptBundles((prev) => ({
           ...prev,
           [persistedBundle.id]: persistedBundle,
@@ -797,6 +910,7 @@ export function PersonalDashboard({
           receipt_bundle_id: persistedBundle.id,
         };
 
+        upsertStoredTransaction(updatedTxWithBundle, normWallet);
         onUpdateTransaction?.(updatedTxWithBundle);
         setSelectedProofTx(updatedTxWithBundle);
       } else if (result.error) {
@@ -2304,10 +2418,23 @@ export function PersonalDashboard({
               </button>
             </div>
 
-            {activeTransactions.length > 0 ? (
+            {latestTransactions.length > 0 ? (
               <div className="divide-y-2 divide-[#121212] border-2 border-[#121212] rounded-lg overflow-hidden bg-white shadow-[2px_2px_0_0_#121212]">
-                {activeTransactions.slice(0, 5).map((tx) => {
+                {latestTransactions.slice(0, 5).map((tx) => {
                   const isExpense = tx.type === "expense";
+                  const isVerified =
+                    tx.verification_state === "verified" ||
+                    tx.verification_state === "anchored_onchain" ||
+                    tx.verification_status === "verified" ||
+                    tx.blockchain_status === "confirmed" ||
+                    Boolean(
+                      tx.monad_tx_hash ||
+                        tx.blockchain_tx_hash ||
+                        tx.receipt_bundle_id,
+                    );
+                  const effectiveTxHash =
+                    tx.monad_tx_hash || tx.blockchain_tx_hash || null;
+
                   return (
                     <div
                       key={tx.id}
@@ -2364,16 +2491,43 @@ export function PersonalDashboard({
                               minimumFractionDigits: 2,
                             })}
                           </div>
-                          <div className="flex items-center justify-end gap-1 mt-0.5">
-                            {tx.verification_state === "verified" || tx.verification_state === "anchored_onchain" ? (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] px-1.5 py-0.2 rounded border border-[#121212]">
-                                <ShieldCheck className="h-2.5 w-2.5 text-[#15803d]" />
-                                Monad Verified
-                              </span>
+                          <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                            {isVerified ? (
+                              effectiveTxHash ? (
+                                <a
+                                  href={getMonadExplorerTxUrl(effectiveTxHash)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] hover:bg-[#bbf7d0] px-1.5 py-0.5 rounded border border-[#121212] transition"
+                                  title="View on Monad Explorer"
+                                >
+                                  <ShieldCheck className="h-2.5 w-2.5 text-[#15803d]" />
+                                  <span>Monad Verified</span>
+                                  <ExternalLink className="h-2 w-2 text-[#15803d]" />
+                                </a>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#121212]">
+                                  <ShieldCheck className="h-2.5 w-2.5 text-[#15803d]" />
+                                  <span>Monad Verified</span>
+                                </span>
+                              )
                             ) : (
-                              <span className="text-[9px] font-mono uppercase text-slate-500 bg-[#f3f4f6] px-1.5 py-0.2 rounded border border-[#121212]">
+                              <span className="text-[9px] font-mono uppercase text-slate-500 bg-[#f3f4f6] px-1.5 py-0.5 rounded border border-[#121212]">
                                 Private Off-Chain
                               </span>
+                            )}
+
+                            {tx.receipt_bundle_id && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleViewBundle(tx.receipt_bundle_id!)
+                                }
+                                className="text-[9px] font-mono font-black uppercase text-[#836EF9] bg-[#f5f3ff] hover:bg-[#ede9fe] px-1.5 py-0.5 rounded border border-[#121212] transition"
+                                title="View Saved Receipt"
+                              >
+                                Receipt
+                              </button>
                             )}
                           </div>
                         </div>

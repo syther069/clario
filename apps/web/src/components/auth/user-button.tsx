@@ -19,6 +19,8 @@ import {
   Settings,
   Pencil,
   BookOpen,
+  Zap,
+  Coins,
 } from "lucide-react";
 import Link from "next/link";
 import { MonadLogo } from "@/components/ui/crypto-icon";
@@ -61,6 +63,11 @@ export function UserButton() {
     setActiveWallet,
     login,
     logout,
+    isSessionDelegated,
+    canDelegate,
+    enableSessionSigning,
+    revokeSessionSigning,
+    fundWallet,
   } = useClarioAuth();
 
   const [copied, setCopied] = useState(false);
@@ -453,10 +460,73 @@ export function UserButton() {
 
           {/* Account Security & Embedded Wallet Management */}
           {embeddedWalletAddress && (
-            <div className="py-2 border-b-2 border-[#121212] space-y-0.5">
+            <div className="py-2 border-b-2 border-[#121212] space-y-1">
               <span className="text-[10px] font-mono uppercase font-black text-[#121212] tracking-wider block mb-1">
-                Embedded Wallet Security
+                Embedded Wallet & Fast Signing
               </span>
+
+              {/* 1-Click Session Signing Quick Toggle */}
+              <div className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs font-bold bg-[#fbf9fe] border border-[#836EF9]/30">
+                <div className="flex items-center gap-1.5">
+                  <Zap
+                    className={`h-3.5 w-3.5 ${
+                      isSessionDelegated
+                        ? "text-[#836EF9] fill-[#836EF9]"
+                        : "text-slate-400"
+                    }`}
+                  />
+                  <div>
+                    <span className="block text-[11px] font-black uppercase text-[#121212]">
+                      1-Click Fast Mode
+                    </span>
+                    <span className="block text-[9px] font-mono text-slate-500">
+                      {isSessionDelegated ? "Silent auto-sign" : "Modal prompt"}
+                    </span>
+                  </div>
+                </div>
+                {canDelegate && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (isSessionDelegated) {
+                        await revokeSessionSigning();
+                      } else {
+                        await enableSessionSigning();
+                      }
+                    }}
+                    className={`text-[9px] font-mono uppercase font-black px-2 py-0.5 rounded border transition cursor-pointer shadow-[1px_1px_0_0_#121212] active:translate-x-[1px] active:translate-y-[1px] ${
+                      isSessionDelegated
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-400 hover:bg-red-50 hover:text-red-700 hover:border-red-400"
+                        : "bg-[#836EF9] text-white border-[#121212] hover:bg-[#7257f8]"
+                    }`}
+                  >
+                    {isSessionDelegated ? "Active" : "Enable"}
+                  </button>
+                )}
+              </div>
+
+              {/* Fund Wallet Action */}
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  if (activeWalletAddress || embeddedWalletAddress) {
+                    fundWallet({
+                      address: activeWalletAddress || embeddedWalletAddress!,
+                    });
+                  }
+                }}
+                className="flex w-full items-center justify-between rounded-lg px-2 py-1 text-xs font-bold text-[#121212] hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Coins className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Fund Wallet (Privy)</span>
+                </div>
+                <span className="text-[9px] font-mono uppercase bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200">
+                  On-Ramp
+                </span>
+              </button>
+
               <button
                 onClick={() => {
                   setDropdownOpen(false);

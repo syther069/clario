@@ -31,6 +31,13 @@ import { LogIn } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { TransactionShareModal } from "@/components/dashboard/transaction-share-modal";
 import { executeSaveTransaction } from "@/lib/blockchain/save-transaction";
+import {
+  getStoredTransactions,
+  saveStoredTransactions,
+  upsertStoredTransaction,
+  extractTransactionsFromReceiptBundles,
+} from "@/lib/storage/transaction-storage";
+import { getStoredReceiptBundles } from "@/lib/receipts/receipt-client-storage";
 
 function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const router = useRouter();
@@ -211,7 +218,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const [txModalOpen, setTxModalOpen] = useState(false);
   const [txModalSubLedger, setTxModalSubLedger] = useState<"fiat" | "onchain">("fiat");
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    return getStoredTransactions();
+  });
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
@@ -219,10 +228,36 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const effectiveUserId = user?.id || connectedEvmAddress || "demo_user";
   const userId = effectiveUserId;
 
-  // Load financial data from Supabase scoped to current user/wallet
+  // Load financial data with dual-layer fallback (localStorage + Supabase)
   useEffect(() => {
     let ignore = false;
     async function loadData() {
+      // 1. Initial local load
+      const storedTxs = getStoredTransactions(effectiveUserId);
+      const bundleTxs = extractTransactionsFromReceiptBundles(
+        getStoredReceiptBundles(effectiveUserId),
+      );
+
+      const txMap = new Map<string, Transaction>();
+      for (const t of storedTxs) txMap.set(t.id, t);
+      for (const t of bundleTxs) {
+        if (!txMap.has(t.id)) txMap.set(t.id, t);
+      }
+
+      if (txMap.size > 0 && !ignore) {
+        setTransactions(
+          Array.from(txMap.values()).sort((a, b) => {
+            const timeA = new Date(
+              a.date || a.timestamp || a.created_at || 0,
+            ).getTime();
+            const timeB = new Date(
+              b.date || b.timestamp || b.created_at || 0,
+            ).getTime();
+            return timeB - timeA;
+          }),
+        );
+      }
+
       try {
         const supabase = getSupabaseClient(effectiveUserId);
 
@@ -242,8 +277,25 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
         }
         const { data: txData } = await txQuery;
 
-        if (txData && !ignore) {
-          setTransactions(txData as Transaction[]);
+        if (Array.isArray(txData) && txData.length > 0) {
+          for (const t of txData) {
+            txMap.set(t.id, t as Transaction);
+          }
+        }
+
+        const mergedTxs = Array.from(txMap.values()).sort((a, b) => {
+          const timeA = new Date(
+            a.date || a.timestamp || a.created_at || 0,
+          ).getTime();
+          const timeB = new Date(
+            b.date || b.timestamp || b.created_at || 0,
+          ).getTime();
+          return timeB - timeA;
+        });
+
+        if (mergedTxs.length > 0 && !ignore) {
+          setTransactions(mergedTxs);
+          saveStoredTransactions(mergedTxs, effectiveUserId);
         }
 
         let subQuery = supabase.from("subscriptions").select("*");
@@ -335,6 +387,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
       commitment_hash:
         newTx.commitment_hash || newTx.blockchain_data_hash || null,
       proof_hash: newTx.proof_hash || null,
+      receipt_bundle_id: newTx.receipt_bundle_id || null,
       status: "cleared",
       source: newTx.source || "manual",
       version: newTx.version || 1,
@@ -347,6 +400,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
       fullTx,
       ...prev.filter((t) => t.id !== fullTx.id),
     ]);
+
+    // Persist immediately to localStorage
+    upsertStoredTransaction(fullTx, effectiveUserId);
 
     // Upsert to Supabase
     const supabase = getSupabaseClient();

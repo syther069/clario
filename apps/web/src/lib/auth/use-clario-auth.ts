@@ -14,6 +14,8 @@ import {
   useUnlinkPasskey,
   useSetWalletRecovery,
   useExportWallet,
+  useDelegatedActions,
+  useFundWallet,
   getEmbeddedConnectedWallet,
   type ConnectedWallet,
 } from "@privy-io/react-auth";
@@ -43,6 +45,8 @@ export function useClarioAuth() {
   const { unlink: unlinkPasskeyRaw } = useUnlinkPasskey();
   const { setWalletRecovery } = useSetWalletRecovery();
   const { exportWallet } = useExportWallet();
+  const { delegateWallet, revokeWallets } = useDelegatedActions();
+  const { fundWallet } = useFundWallet();
 
   // Reactive nickname state
   const [nicknames, setNicknames] = useState<Record<string, string>>(() =>
@@ -243,6 +247,33 @@ export function useClarioAuth() {
     [unlinkOAuthRaw, user],
   );
 
+  // 1-Click Session Signing (Privy Delegated Actions)
+  const isSessionDelegated = useMemo(() => {
+    if (!user?.linkedAccounts) return false;
+    return user.linkedAccounts.some(
+      (a) =>
+        a.type === "wallet" && (a as { delegated?: boolean }).delegated === true,
+    );
+  }, [user]);
+
+  const canDelegate = Boolean(embeddedWalletAddress);
+
+  const enableSessionSigning = useCallback(async () => {
+    if (!embeddedWalletAddress) {
+      throw new Error(
+        "No embedded wallet found. Please sign in or create an embedded wallet.",
+      );
+    }
+    await delegateWallet({
+      address: embeddedWalletAddress,
+      chainType: "ethereum",
+    });
+  }, [embeddedWalletAddress, delegateWallet]);
+
+  const revokeSessionSigning = useCallback(async () => {
+    await revokeWallets();
+  }, [revokeWallets]);
+
   const unlinkPasskey = useCallback(
     async (credentialId?: string) => {
       const passkeyAcc = user?.linkedAccounts?.find((a) => a.type === "passkey") as
@@ -403,5 +434,10 @@ export function useClarioAuth() {
     setActiveWallet,
     switchChain,
     getAccessToken,
+    isSessionDelegated,
+    canDelegate,
+    enableSessionSigning,
+    revokeSessionSigning,
+    fundWallet,
   };
 }

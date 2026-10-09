@@ -11,9 +11,11 @@ import {
   AlertTriangle,
   Sparkles,
   Layers,
+  Zap,
 } from "lucide-react";
 import type { ExtractedReceiptData } from "@/lib/ai/gemini-ocr";
 import type { Transaction } from "@/lib/supabase/types";
+import { useClarioAuth } from "@/lib/auth/use-clario-auth";
 import { ClarioBadge } from "@/components/ui/clario-ui";
 import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
@@ -32,6 +34,7 @@ export function ReceiptUploadModal({
   onTransactionCreated,
   userId = "user_default",
 }: ReceiptUploadModalProps) {
+  const { isSessionDelegated, canDelegate } = useClarioAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadStep, setUploadStep] = useState(
     "Step 1/3: Reading receipt & generating SHA-256 fingerprint...",
@@ -511,28 +514,68 @@ export function ReceiptUploadModal({
                 </div>
 
                 {/* Optional Monad Onchain Save Toggle */}
-                <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition-colors duration-150 ease-out">
-                  <input
-                    type="checkbox"
-                    checked={saveOnChain}
-                    onChange={(e) => setSaveOnChain(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9]"
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
-                      <span className="text-xs font-black uppercase tracking-wider text-[#121212]">
-                        Anchor proof to Monad Testnet
-                      </span>
-                      <span className="text-[9px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#836EF9]/30">
-                        Optional
+                <div className="space-y-2">
+                  <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition-colors duration-150 ease-out">
+                    <input
+                      type="checkbox"
+                      checked={saveOnChain}
+                      onChange={(e) => setSaveOnChain(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9]"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
+                        <span className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                          Anchor proof to Monad Testnet
+                        </span>
+                        <span className="text-[9px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#836EF9]/30">
+                          Optional
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                        Anchors cryptographic hash to Monad Testnet for tamper-proof audit verification. Private receipt evidence stays off-chain.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* 1-Click Fast Signing Callout when Anchoring is Checked */}
+                  {saveOnChain && (
+                    <div className="p-2.5 rounded-lg border-2 border-[#121212] bg-white flex items-center justify-between text-xs shadow-[1.5px_1.5px_0_0_#121212]">
+                      <div className="flex items-center gap-2">
+                        <Zap
+                          className={`h-4 w-4 shrink-0 ${
+                            isSessionDelegated
+                              ? "text-[#836EF9] fill-[#836EF9]"
+                              : "text-slate-400"
+                          }`}
+                        />
+                        <div>
+                          <span className="font-bold text-[#121212] block text-[11px] uppercase">
+                            {isSessionDelegated
+                              ? "1-Click Fast Signing Active"
+                              : "Standard Approval"}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono block">
+                            {isSessionDelegated
+                              ? "Silent background signing via Privy session signer."
+                              : canDelegate
+                                ? "Tip: Enable 1-Click Fast Mode in Settings to skip future signature popups."
+                                : "Standard browser extension approval required."}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded font-bold border shrink-0 ${
+                          isSessionDelegated
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                            : "bg-slate-100 text-slate-600 border-slate-300"
+                        }`}
+                      >
+                        {isSessionDelegated ? "⚡ 1-Click" : "Standard"}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Anchors cryptographic hash to Monad Testnet for tamper-proof audit verification. Private receipt evidence stays off-chain.
-                    </p>
-                  </div>
-                </label>
+                  )}
+                </div>
 
                 {/* Invariant Footer Note */}
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-dashed border-[#121212]/30 text-[10px] text-slate-600 font-mono">
@@ -557,12 +600,16 @@ export function ReceiptUploadModal({
                     isLoading={isSaving}
                     loadingText={
                       saveOnChain
-                        ? "Saving & Anchoring..."
+                        ? isSessionDelegated
+                          ? "⚡ 1-Click Anchoring..."
+                          : "Saving & Anchoring..."
                         : "Saving to Ledger..."
                     }
                     morphText={
                       saveOnChain
-                        ? "Confirm & Anchor to Monad"
+                        ? isSessionDelegated
+                          ? "⚡ 1-Click Anchor to Monad"
+                          : "Confirm & Anchor to Monad"
                         : "Confirm & Save to Ledger"
                     }
                     onClick={handleSaveAsTransaction}

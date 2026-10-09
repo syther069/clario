@@ -96,9 +96,55 @@ export function ReceiptBundleModal({
   const explorerUrl = txHash ? getMonadExplorerTxUrl(txHash) : null;
 
   // Filter or use embedded transactions
-  const bundledTxs =
-    activeBundle.receipt_data?.transactions ||
-    transactions.filter((t) => activeBundle.transaction_ids?.includes(t.id));
+  const rawEmbeddedTxs = activeBundle.receipt_data?.transactions;
+  const matchedTxs = Array.isArray(transactions)
+    ? transactions.filter((t) => activeBundle.transaction_ids?.includes(t.id))
+    : [];
+
+  let bundledTxs: any[] = [];
+
+  if (Array.isArray(rawEmbeddedTxs) && rawEmbeddedTxs.length > 0) {
+    bundledTxs = rawEmbeddedTxs;
+  } else if (matchedTxs.length > 0) {
+    bundledTxs = matchedTxs;
+  } else if (
+    Array.isArray(activeBundle.transaction_ids) &&
+    activeBundle.transaction_ids.length > 0
+  ) {
+    const total = Number(activeBundle.total_amount) || 0;
+    const count = activeBundle.transaction_ids.length;
+    const splitAmount = count > 1 ? Number((total / count).toFixed(2)) : total;
+    bundledTxs = activeBundle.transaction_ids.map((id, idx) => ({
+      id,
+      merchant:
+        activeBundle.name ||
+        activeBundle.receipt_name ||
+        "Recorded Transaction",
+      amount:
+        idx === 0 && count > 1
+          ? Number((total - splitAmount * (count - 1)).toFixed(2))
+          : splitAmount,
+      currency: activeBundle.currency || "USD",
+      date: (activeBundle.created_at || new Date().toISOString()).slice(0, 10),
+      category: "Recorded Expense",
+      type: "expense",
+    }));
+  } else if (activeBundle.total_amount) {
+    bundledTxs = [
+      {
+        id: activeBundle.id,
+        merchant:
+          activeBundle.name ||
+          activeBundle.receipt_name ||
+          "Recorded Transaction",
+        amount: Number(activeBundle.total_amount) || 0,
+        currency: activeBundle.currency || "USD",
+        date: (activeBundle.created_at || new Date().toISOString()).slice(0, 10),
+        category: "Recorded Expense",
+        type: "expense",
+      },
+    ];
+  }
 
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
