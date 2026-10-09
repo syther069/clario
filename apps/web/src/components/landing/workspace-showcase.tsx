@@ -114,14 +114,14 @@ export function WorkspaceShowcase() {
               type="button"
               onClick={() => handleSelectTab(mode.id)}
               onKeyDown={(e) => handleKeyDown(e, idx)}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer focus:outline-none ${
+              className={`relative flex items-center gap-2 pl-3.5 pr-4 py-2 rounded-lg font-mono text-xs font-black uppercase tracking-wider transition-colors duration-150 ease-out active:scale-[0.96] cursor-pointer focus:outline-none ${
                 isActive
                   ? "bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[1px_1px_0_0_#121212]"
                   : "!text-[#121212] hover:!text-[#836EF9] border-2 border-transparent"
               }`}
             >
               <span className="relative z-10 flex items-center gap-2">
-                <Icon className={`h-4 w-4 ${isActive ? "!text-white" : "text-[#836EF9]"}`} aria-hidden="true" />
+                <Icon className={`h-4 w-4 stroke-[2.5] ${isActive ? "!text-white" : "text-[#836EF9]"}`} aria-hidden="true" />
                 <span>{mode.name}</span>
               </span>
             </button>
@@ -136,7 +136,7 @@ export function WorkspaceShowcase() {
         aria-labelledby={`tab-${activeMode.id}`}
         className="rounded-2xl border-2 border-[#121212] bg-white p-6 sm:p-10 shadow-[6px_6px_0_0_#121212] overflow-hidden"
       >
-        <AnimatePresence mode="wait" custom={direction}>
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.div
             key={activeMode.id}
             custom={direction}
@@ -205,7 +205,7 @@ export function WorkspaceShowcase() {
             </div>
 
             {/* Right Column: Product Preview Mock */}
-            <div className="lg:col-span-5 rounded-2xl border-2 border-[#121212] bg-white overflow-hidden shadow-[4px_4px_0_0_#121212] w-full">
+            <div data-image-surface className="lg:col-span-5 rounded-2xl border-2 border-[#121212] bg-white overflow-hidden shadow-[4px_4px_0_0_#121212] w-full">
               {/* Montally Frame Header */}
               <div className="bg-[#121212] border-b-2 border-[#121212] px-3.5 py-2.5 flex items-center justify-between text-xs text-white">
                 <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ export function WorkspaceShowcase() {
                     <span className="font-mono text-[11px] text-gray-600 font-bold uppercase tracking-wider block">
                       {activeMode.preview.stat1Label}
                     </span>
-                    <span className="text-xl font-mono font-black text-[#121212] mt-1 block">
+                    <span className="text-xl font-mono font-black tabular-nums text-[#121212] mt-1 block">
                       {activeMode.preview.stat1}
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export function WorkspaceShowcase() {
                     <span className="font-mono text-[11px] text-gray-600 font-bold uppercase tracking-wider block">
                       {activeMode.preview.stat2Label}
                     </span>
-                    <span className="text-xl font-mono font-black text-[#836EF9] mt-1 block">
+                    <span className="text-xl font-mono font-black tabular-nums text-[#836EF9] mt-1 block">
                       {activeMode.preview.stat2}
                     </span>
                   </div>

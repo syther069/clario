@@ -269,7 +269,7 @@ export function ReceiptExportDropdown({
       </button>
 
       {/* Drop-up Menu */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
             id={menuId}
@@ -277,7 +277,12 @@ export function ReceiptExportDropdown({
             aria-orientation="vertical"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            exit={{
+              opacity: 0,
+              scale: 0.98,
+              y: 4,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ type: "spring", stiffness: 450, damping: 26 }}
             className={`absolute ${
               computedAlign === "left" ? "left-0" : "right-0"

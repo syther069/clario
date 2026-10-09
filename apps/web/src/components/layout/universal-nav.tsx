@@ -366,14 +366,14 @@ export function UniversalNav({
                   data-id={item.id}
                   type="button"
                   onClick={() => handleNavClick(item)}
-                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-black uppercase tracking-wider transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-lg pl-2 pr-2.5 py-1.5 text-xs font-black uppercase tracking-wider transition-colors duration-150 ease-out active:scale-[0.96] ${
                     isActive
                       ? "text-white"
                       : "text-[#121212] hover:text-[#836EF9]"
                   }`}
                 >
                   <Icon
-                    className={`h-3.5 w-3.5 ${isActive ? "text-white" : "text-[#121212]"}`}
+                    className={`h-3.5 w-3.5 stroke-[2.5] ${isActive ? "text-white" : "text-[#121212]"}`}
                     aria-hidden="true"
                   />
                   <span>{item.label}</span>
@@ -387,7 +387,7 @@ export function UniversalNav({
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-slate-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition-colors duration-150 ease-out hover:bg-slate-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none active:scale-[0.96]"
           >
             <span>Tour</span>
           </Link>
@@ -395,9 +395,9 @@ export function UniversalNav({
           <Magnetic range={70} intensity={0.35}>
             <button
               onClick={() => onOpenCopilot && onOpenCopilot()}
-              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#836EF9] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#ebe5ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] pl-3 pr-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#836EF9] shadow-[2px_2px_0_0_#121212] transition-colors duration-150 ease-out hover:bg-[#ebe5ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none active:scale-[0.96]"
             >
-              <Bot className="h-3.5 w-3.5 text-[#836EF9]" aria-hidden="true" />
+              <Bot className="h-3.5 w-3.5 text-[#836EF9] stroke-[2.5]" aria-hidden="true" />
               <span>Clario</span>
             </button>
           </Magnetic>
@@ -406,7 +406,7 @@ export function UniversalNav({
             <button
               type="button"
               onClick={connectEvmWallet}
-              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+              className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] pl-2.5 pr-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition-colors duration-150 ease-out active:translate-x-[1px] active:translate-y-[1px] active:scale-[0.96] cursor-pointer"
               title="Connect your EVM wallet for on-chain actions"
             >
               <Wallet className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -436,14 +436,14 @@ export function UniversalNav({
               key={item.id}
               type="button"
               onClick={() => handleNavClick(item)}
-              className={`flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-black uppercase tracking-wider transition ${
+              className={`flex items-center gap-1.5 shrink-0 rounded-lg pl-2 pr-2.5 py-1 text-[11px] font-black uppercase tracking-wider transition-colors duration-150 ease-out active:scale-[0.96] ${
                 isActive
                   ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[1px_1px_0_0_#121212]"
                   : "text-[#121212] border border-transparent hover:border-[#121212] hover:bg-[#f3f4f6]"
               }`}
             >
               <Icon
-                className={`h-3 w-3 ${isActive ? "text-white" : "text-[#121212]"}`}
+                className={`h-3 w-3 stroke-[2.5] ${isActive ? "text-white" : "text-[#121212]"}`}
                 aria-hidden="true"
               />
               <span>{item.label}</span>

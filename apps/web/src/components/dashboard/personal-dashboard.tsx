@@ -1487,11 +1487,11 @@ export function PersonalDashboard({
           <motion.button
             type="button"
             whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => {
               setSubLedger("fiat");
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-[background-color,border-color,box-shadow,color] duration-150 ease-out cursor-pointer ${
               subLedger === "fiat"
                 ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
                 : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
@@ -1512,7 +1512,7 @@ export function PersonalDashboard({
           <motion.button
             type="button"
             whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => {
               setSubLedger("onchain");
               if (
@@ -1524,7 +1524,7 @@ export function PersonalDashboard({
                 if (onViewChange) onViewChange("overview");
               }
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-[background-color,border-color,box-shadow,color] duration-150 ease-out cursor-pointer ${
               subLedger === "onchain"
                 ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
                 : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"

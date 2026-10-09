@@ -175,14 +175,14 @@ export function ReceiptUploadModal({
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -192,7 +192,12 @@ export function ReceiptUploadModal({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            exit={{
+              opacity: 0,
+              scale: 0.98,
+              y: -8,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-[#121212] bg-white shadow-[6px_6px_0_0_#121212] p-6 text-[#121212]"
           >
@@ -219,7 +224,7 @@ export function ReceiptUploadModal({
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition cursor-pointer"
+                className="relative rounded-lg p-1.5 text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 ease-out cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -231,7 +236,7 @@ export function ReceiptUploadModal({
               <div className="mt-6 space-y-4">
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#121212] bg-[#f8f9fa] p-8 text-center cursor-pointer transition hover:bg-[#f3f0ff]"
+                  className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#121212] bg-[#f8f9fa] p-8 text-center cursor-pointer transition-colors duration-150 ease-out hover:bg-[#f3f0ff]"
                 >
                   <input
                     ref={fileInputRef}
@@ -394,7 +399,7 @@ export function ReceiptUploadModal({
                           step="0.01"
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
-                          className="w-full rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 font-mono font-black text-[#15803d] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                          className="w-full rounded-lg border-2 border-[#121212] bg-white px-2.5 py-1.5 font-mono font-black text-[#15803d] tabular-nums focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                         />
                         <select
                           value={editCurrency}
@@ -494,7 +499,7 @@ export function ReceiptUploadModal({
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 {item.confidence && renderConfidence(item.confidence)}
-                                <span className="font-mono font-bold text-[#121212]">
+                                <span className="font-mono font-bold text-[#121212] tabular-nums">
                                   ${Number(item.total).toFixed(2)}
                                 </span>
                               </div>
@@ -506,7 +511,7 @@ export function ReceiptUploadModal({
                 </div>
 
                 {/* Optional Monad Onchain Save Toggle */}
-                <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl border-2 border-[#121212] bg-[#fbf9fe] cursor-pointer shadow-[2px_2px_0_0_#121212] hover:bg-[#f3edff] transition-colors duration-150 ease-out">
                   <input
                     type="checkbox"
                     checked={saveOnChain}

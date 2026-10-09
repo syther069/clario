@@ -2223,31 +2223,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: ADD MEMBER */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isMemberModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <UsersRound className="h-5 w-5 text-[#836EF9]" />
+                  <UsersRound className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Add Household Member
                 </h3>
                 <button
                   onClick={() => setIsMemberModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2331,31 +2337,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: SCHEDULE BILL */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isBillModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-[#836EF9]" />
+                  <CalendarDays className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Schedule Household Bill
                 </h3>
                 <button
                   onClick={() => setIsBillModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2471,31 +2483,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: INTERACTIVE SPLIT CALCULATOR */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isSplitModalOpen && selectedTxForSplit && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212] max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
+                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Split Shared Expense
                 </h3>
                 <button
                   onClick={() => setIsSplitModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2691,31 +2709,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: CREATE CATEGORY BUDGET */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isBudgetModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <ChartNoAxesCombined className="h-5 w-5 text-[#836EF9]" />
+                  <ChartNoAxesCombined className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Create Category Budget
                 </h3>
                 <button
                   onClick={() => setIsBudgetModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2749,7 +2773,7 @@ export function FamilyDashboard({
                     onChange={(e) =>
                       setBudgetForm({ ...budgetForm, limit: e.target.value })
                     }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                 </div>
 
@@ -2794,31 +2818,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: CREATE SAVINGS GOAL */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isGoalModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <Target className="h-5 w-5 text-[#836EF9]" />
+                  <Target className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Create Family Goal
                 </h3>
                 <button
                   onClick={() => setIsGoalModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2912,31 +2942,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: CONTRIBUTE TO GOAL */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isContributeModalOpen && selectedGoalForContribute && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-sm p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <Target className="h-5 w-5 text-[#836EF9]" />
+                  <Target className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Contribute Funds
                 </h3>
                 <button
                   onClick={() => setIsContributeModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2962,7 +2998,7 @@ export function FamilyDashboard({
                     placeholder="250"
                     value={contributeAmount}
                     onChange={(e) => setContributeAmount(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                 </div>
 
@@ -2987,31 +3023,37 @@ export function FamilyDashboard({
       {/* ========================================================================= */}
       {/* MODAL: MANUAL IOU / SETTLEMENT */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isManualSettlementModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9]" />
+                  <ArrowLeftRight className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Record Household IOU
                 </h3>
                 <button
                   onClick={() => setIsManualSettlementModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 

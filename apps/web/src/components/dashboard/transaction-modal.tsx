@@ -1049,27 +1049,32 @@ export function TransactionModal({
       />
 
       {/* Connect EVM Wallet Guard Popup Modal Overlay */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isNoWalletPopupOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
               onClick={() => setIsNoWalletPopupOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
               className="relative z-10 w-full max-w-md rounded-2xl border-2 border-[#121212] bg-white p-6 shadow-[6px_6px_0_0_#121212] text-[#121212]"
             >
               <div className="flex items-start justify-between pb-3 border-b-2 border-[#121212]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3f0ff] text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                    <Wallet className="h-5 w-5" />
+                    <Wallet className="h-5 w-5 stroke-[2.5]" />
                   </div>
                   <div>
                     <span className="text-[10px] font-mono font-black uppercase text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#836EF9]/30">
@@ -1086,7 +1091,7 @@ export function TransactionModal({
                   className="relative size-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-[#f3f4f6] hover:text-[#121212] border border-transparent hover:border-[#121212] transition-colors duration-150 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
                   aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 

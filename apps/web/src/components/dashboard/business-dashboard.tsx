@@ -2444,13 +2444,13 @@ export function BusinessDashboard({
       {/* ========================================================================= */}
       {/* MODAL: INVITE TEAM MEMBER */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsInviteModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2458,20 +2458,26 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <UsersRound className="h-5 w-5 text-[#836EF9]" />
+                  <UsersRound className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Invite Team Member
                 </h3>
                 <button
                   onClick={() => setIsInviteModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2569,7 +2575,7 @@ export function BusinessDashboard({
                         spending_limit_monthly: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                 </div>
 
@@ -2594,13 +2600,13 @@ export function BusinessDashboard({
       {/* ========================================================================= */}
       {/* MODAL: SUBMIT REIMBURSEMENT CLAIM */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isClaimModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsClaimModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2608,20 +2614,26 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-[#836EF9]" />
+                  <Receipt className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Submit Reimbursement Claim
                 </h3>
                 <button
                   onClick={() => setIsClaimModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2754,13 +2766,13 @@ export function BusinessDashboard({
       {/* ========================================================================= */}
       {/* MODAL: DEFINE EXPENSE POLICY */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isPolicyModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsPolicyModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2768,20 +2780,26 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="relative z-10 neo-card w-full max-w-md p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <Scale className="h-5 w-5 text-[#836EF9]" />
+                  <Scale className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Define Expense Policy
                 </h3>
                 <button
                   onClick={() => setIsPolicyModalOpen(false)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 
@@ -2835,7 +2853,7 @@ export function BusinessDashboard({
                           max_single_amount: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                     />
                   </div>
                   <div>
@@ -2851,7 +2869,7 @@ export function BusinessDashboard({
                           monthly_budget: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                     />
                   </div>
                 </div>
@@ -2870,7 +2888,7 @@ export function BusinessDashboard({
                           requires_receipt_above: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                     />
                   </div>
                   <div>
@@ -2886,7 +2904,7 @@ export function BusinessDashboard({
                           requires_approval_above: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold tabular-nums border-2 border-[#121212] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                     />
                   </div>
                 </div>
@@ -2912,13 +2930,13 @@ export function BusinessDashboard({
       {/* ========================================================================= */}
       {/* MODAL: DETAILED CLAIM REVIEW & MONAD PAYOUT */}
       {/* ========================================================================= */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {selectedClaimForReview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
               transition={{ duration: 0.2 }}
               onClick={() => setSelectedClaimForReview(null)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2926,20 +2944,26 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{
+                opacity: 0,
+                scale: 0.98,
+                y: -8,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="relative z-10 neo-card w-full max-w-lg p-6 bg-white shadow-[6px_6px_0_0_#121212]"
             >
               <div className="flex items-center justify-between pb-3 border-b-2 border-[#121212]">
                 <h3 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                  <FileCheck className="h-5 w-5 text-[#836EF9]" />
+                  <FileCheck className="h-5 w-5 text-[#836EF9] stroke-[2.5]" />
                   Corporate Claim Review
                 </h3>
                 <button
                   onClick={() => setSelectedClaimForReview(null)}
-                  className="p-1 rounded hover:bg-slate-100 border border-[#121212]"
+                  className="relative p-1 rounded hover:bg-slate-100 border border-[#121212] after:absolute after:-inset-2 after:content-['']"
+                  aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 stroke-[2.5]" />
                 </button>
               </div>
 

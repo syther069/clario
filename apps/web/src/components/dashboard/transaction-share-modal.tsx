@@ -103,13 +103,13 @@ export function TransactionShareModal({
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -117,7 +117,12 @@ export function TransactionShareModal({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            exit={{
+              opacity: 0,
+              scale: 0.98,
+              y: -8,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="relative z-10 neo-card bg-white w-full max-w-lg overflow-hidden shadow-[6px_6px_0_0_#121212]"
           >
@@ -138,7 +143,7 @@ export function TransactionShareModal({
                   {isVerified ? (
                     <MonadLogo className="h-4 w-4" />
                   ) : (
-                    <Receipt className="h-4 w-4" />
+                    <Receipt className="h-4 w-4 stroke-[2.5]" />
                   )}
                 </div>
                 <div>

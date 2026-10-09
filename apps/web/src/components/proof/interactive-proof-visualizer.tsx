@@ -304,10 +304,10 @@ export function InteractiveProofVisualizer({
                 RFC 8785 + Keccak-256
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-[#121212]">
+            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-[#121212] text-balance">
               Interactive Proof Visualizer & Tamper Simulator
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed text-pretty">
               Deconstruct how offchain cleartext receipts transform into
               zero-knowledge onchain commitments, or simulate malicious
               modifications to watch the cryptographic avalanche effect in real
@@ -320,7 +320,7 @@ export function InteractiveProofVisualizer({
             <button
               type="button"
               onClick={() => setActiveTab("pipeline")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] duration-150 ease-out ${
                 activeTab === "pipeline"
                   ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
                   : "text-[#121212] hover:text-[#836EF9]"
@@ -332,7 +332,7 @@ export function InteractiveProofVisualizer({
             <button
               type="button"
               onClick={() => setActiveTab("simulator")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-[color,background-color,border-color,box-shadow] duration-150 ease-out ${
                 activeTab === "simulator"
                   ? "bg-[#ef4444] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]"
                   : "text-[#121212] hover:text-[#ef4444]"
@@ -393,7 +393,7 @@ export function InteractiveProofVisualizer({
                     key={item.step}
                     type="button"
                     onClick={() => setActiveStep(item.step)}
-                    className={`p-3.5 rounded-xl border-2 text-left transition-all relative flex flex-col justify-between ${
+                    className={`p-3.5 rounded-xl border-2 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out relative flex flex-col justify-between ${
                       isSelected
                         ? "border-[#121212] bg-[#f5f3ff] shadow-[3px_3px_0_0_#836EF9]"
                         : "border-[#121212]/30 bg-white hover:border-[#121212] shadow-[1px_1px_0_0_#121212]"
@@ -813,13 +813,18 @@ export function InteractiveProofVisualizer({
             </div>
 
             {/* REAL-TIME CRYPTOGRAPHIC VERIFICATION STATUS BANNER */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {!currentPipeline.isTampered ? (
                 <motion.div
                   key="untampered"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.98,
+                    y: -8,
+                    transition: { duration: 0.15, ease: "easeOut" },
+                  }}
                   className="rounded-xl border-2 border-[#16a34a] bg-[#f0fdf4] p-5 shadow-[4px_4px_0_0_#16a34a] space-y-3"
                 >
                   <div className="flex items-center justify-between">
@@ -848,7 +853,12 @@ export function InteractiveProofVisualizer({
                   key="tampered"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.98,
+                    y: -8,
+                    transition: { duration: 0.15, ease: "easeOut" },
+                  }}
                   className="rounded-xl border-2 border-[#ef4444] bg-[#fef2f2] p-5 shadow-[4px_4px_0_0_#ef4444] space-y-4"
                 >
                   <div className="flex items-center justify-between">

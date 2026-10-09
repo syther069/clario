@@ -225,13 +225,13 @@ export function ReceiptBundleModal({
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -239,7 +239,12 @@ export function ReceiptBundleModal({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            exit={{
+              opacity: 0,
+              scale: 0.98,
+              y: -8,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="relative z-10 neo-card bg-white w-full max-w-xl overflow-hidden shadow-[6px_6px_0_0_#121212]"
           >
@@ -247,7 +252,7 @@ export function ReceiptBundleModal({
         <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
             <div className="h-8 w-8 rounded-lg bg-[#836EF9]/10 border border-[#121212] flex items-center justify-center text-[#836EF9] shadow-[1px_1px_0_0_#121212] shrink-0">
-              <Receipt className="h-4 w-4" />
+              <Receipt className="h-4 w-4 stroke-[2.5]" />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] truncate">
@@ -263,7 +268,7 @@ export function ReceiptBundleModal({
             className="relative size-8 flex items-center justify-center rounded-md border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] shrink-0 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
             aria-label="Close"
           >
-            <X className="h-4 w-4 text-[#121212]" />
+            <X className="h-4 w-4 stroke-[2.5] text-[#121212]" />
           </button>
         </div>
 

@@ -32,6 +32,7 @@ export interface ClarioButtonProps extends React.ButtonHTMLAttributes<HTMLButton
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   icon?: React.ReactNode;
+  isStatic?: boolean;
 }
 
 export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
@@ -46,6 +47,7 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
       leftIcon,
       rightIcon,
       icon,
+      isStatic = false,
       children,
       disabled,
       type = "button",
@@ -56,8 +58,10 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
     const isBusy = isLoading || Boolean(loading);
     const startIcon = leftIcon || icon;
 
-    const baseStyles =
-      "relative inline-flex items-center justify-center font-mono font-black uppercase tracking-wider transition-[transform,box-shadow,background-color,color,border-color] duration-150 ease-out select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9] focus-visible:ring-offset-2";
+    const baseStyles = cn(
+      "relative inline-flex items-center justify-center font-mono font-black uppercase tracking-wider transition-[transform,box-shadow,background-color,color,border-color] duration-150 ease-out select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9] focus-visible:ring-offset-2",
+      !isStatic && "active:not-disabled:scale-[0.96]",
+    );
 
     const variantStyles = {
       primary:
@@ -82,6 +86,23 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
       icon: "h-9 w-9 p-0 rounded-lg justify-center relative after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2",
     };
 
+    const opticalPadding =
+      size === "icon"
+        ? ""
+        : startIcon && !rightIcon
+          ? size === "sm"
+            ? "!pl-2 !pr-2.5"
+            : size === "md"
+              ? "!pl-3.5 !pr-4"
+              : "!pl-5 !pr-6"
+          : rightIcon && !startIcon
+            ? size === "sm"
+              ? "!pl-2.5 !pr-2"
+              : size === "md"
+                ? "!pl-4 !pr-3.5"
+                : "!pl-6 !pr-5"
+            : "";
+
     return (
       <button
         ref={ref}
@@ -91,6 +112,7 @@ export const ClarioButton = forwardRef<HTMLButtonElement, ClarioButtonProps>(
           baseStyles,
           variantStyles[variant],
           sizeStyles[size],
+          opticalPadding,
           className,
         )}
         {...props}
