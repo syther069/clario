@@ -20,7 +20,23 @@ import type {
 } from "@/lib/supabase/types";
 import { MONAD_TESTNET_CHAIN_ID, CLARIO_REGISTRY_ADDRESS } from "@/lib/blockchain/registry";
 
-export type ExportFormat = "json" | "csv" | "txt" | "pdf" | "png";
+import {
+  generateQuickBooksCsv,
+  generateXeroCsv,
+  generateScheduleCReport,
+  generateCorporateAuditPackagePdf,
+} from "./enterprise-tax-exporter";
+
+export type ExportFormat =
+  | "json"
+  | "csv"
+  | "txt"
+  | "pdf"
+  | "png"
+  | "quickbooks"
+  | "xero"
+  | "schedule_c"
+  | "corporate_audit";
 
 export interface NormalizedReceiptData {
   receiptId: string;
@@ -887,6 +903,51 @@ export async function triggerReceiptExport(
     case "png": {
       blob = await generatePngReceipt(data);
       filename = `${filePrefix}.png`;
+      break;
+    }
+    case "quickbooks": {
+      const content = generateQuickBooksCsv(data.transactions, data.receiptName);
+      blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+      filename = `${filePrefix}-quickbooks.csv`;
+      break;
+    }
+    case "xero": {
+      const content = generateXeroCsv(data.transactions);
+      blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+      filename = `${filePrefix}-xero.csv`;
+      break;
+    }
+    case "schedule_c": {
+      const report = generateScheduleCReport(data.transactions);
+      blob = new Blob([report.csvContent], { type: "text/csv;charset=utf-8" });
+      filename = `${filePrefix}-irs-schedule-c.csv`;
+      break;
+    }
+    case "corporate_audit": {
+      blob = generateCorporateAuditPackagePdf({
+        companyName: data.receiptName,
+        workspaceId: data.owner,
+        reportPeriod: `${data.createdAt.slice(0, 10)} - Present`,
+        generatedDate: new Date().toISOString().slice(0, 10),
+        totalExpensesCount: data.transactions.length,
+        totalVolumeUsd: data.totalAmount,
+        monadChainId: data.blockchain.chainId,
+        contractAddress: data.blockchain.contract,
+        transactions: data.transactions.map((t) => ({
+          id: t.id,
+          date: t.date,
+          merchant: t.merchant,
+          category: t.category,
+          amount: t.amount,
+          currency: t.currency,
+          requester: data.owner,
+          approver: data.owner,
+          sha256EvidenceDigest: data.blockchain.receiptHash || "0xsha256...",
+          monadCommitmentRoot: data.blockchain.receiptHash || "0xcommitment...",
+          monadTxHash: data.blockchain.txHash || "",
+        })),
+      });
+      filename = `${filePrefix}-corporate-audit.pdf`;
       break;
     }
   }

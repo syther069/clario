@@ -565,6 +565,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
           activeMode === "crypto" ||
           activeMode === "power_user") && (
           <PersonalDashboard
+            currentMode={activeMode}
             transactions={transactions}
             subscriptions={subscriptions}
             budgets={budgets}
@@ -573,7 +574,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
             activeView={personalView}
             onViewChange={handlePersonalViewChange}
             onAddTransaction={(subLedger) => {
-              setTxModalSubLedger(subLedger || "fiat");
+              setTxModalSubLedger(subLedger || (activeMode === "crypto" ? "onchain" : "fiat"));
               setTxModalOpen(true);
             }}
             onUploadReceipt={() => setReceiptModalOpen(true)}

@@ -63,6 +63,32 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
     expect(fixedHasConnectedWallet).toBe(true);
   });
 
+  it("activates embedded wallet for zero-friction social/passkey onboarding without external extension", () => {
+    const embeddedAddress = "0x2222222222222222222222222222222222222222";
+    const embeddedWallet = {
+      address: embeddedAddress,
+      walletClientType: "privy",
+      type: "ethereum",
+      getEthereumProvider: async () => ({}),
+    };
+    const externalWallets: any[] = [];
+
+    // When no external wallet is connected, embedded wallet becomes the active wallet
+    const activeWallet = externalWallets[0] || embeddedWallet || null;
+    expect(activeWallet).toBeDefined();
+    expect(activeWallet.address).toBe(embeddedAddress);
+
+    // Is active wallet embedded
+    const isActiveWalletEmbedded = Boolean(
+      activeWallet && activeWallet.walletClientType === "privy",
+    );
+    expect(isActiveWalletEmbedded).toBe(true);
+
+    // Connected address is correctly populated
+    const connectedEvmAddress = activeWallet?.address || null;
+    expect(connectedEvmAddress).toBe(embeddedAddress);
+  });
+
   it("server-side logout route clears clario_session cookie with expired Max-Age", async () => {
     const response = await logoutPost();
     expect(response.status).toBe(200);

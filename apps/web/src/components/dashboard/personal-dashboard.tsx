@@ -9,6 +9,7 @@ import type {
   Category,
   ReceiptBundle,
   PersonalView,
+  PlatformMode,
 } from "@/lib/supabase/types";
 import {
   TrendingUp,
@@ -124,6 +125,7 @@ type ExpenseVerificationFilter = "all" | "verified" | "unverified";
 type SubFrequency = "weekly" | "monthly" | "yearly";
 
 interface PersonalDashboardProps {
+  currentMode?: PlatformMode | undefined;
   transactions: Transaction[];
   subscriptions: Subscription[];
   budgets: Budget[];
@@ -141,6 +143,7 @@ interface PersonalDashboardProps {
 }
 
 export function PersonalDashboard({
+  currentMode = "personal",
   transactions = [],
   subscriptions = [],
   budgets = [],
@@ -192,7 +195,16 @@ export function PersonalDashboard({
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
 
   // Sub-ledger state (Personal Finance / Fiat vs On-Chain / Web3)
-  const [subLedger, setSubLedger] = useState<"fiat" | "onchain">("fiat");
+  const [subLedger, setSubLedger] = useState<"fiat" | "onchain">(
+    currentMode === "crypto" ? "onchain" : "fiat",
+  );
+
+  useEffect(() => {
+    if (currentMode === "crypto") {
+      setSubLedger("onchain");
+    }
+  }, [currentMode]);
+
   const [fiatCurrency, setFiatCurrency] = useState<{
     code: string;
     symbol: string;
@@ -1371,7 +1383,21 @@ export function PersonalDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            {subLedger === "fiat" ? (
+            {currentMode === "crypto" ? (
+              <>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
+                  Crypto & Web3 Ledger
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] flex items-center gap-1">
+                  <MonadLogo className="h-3 w-3" />
+                  Monad Testnet (10143)
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-[#121212]">
+                  Zero Private Data Onchain
+                </span>
+              </>
+            ) : subLedger === "fiat" ? (
               <>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1395,14 +1421,18 @@ export function PersonalDashboard({
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
-            {subLedger === "fiat"
-              ? "Personal Finance & Daily Living"
-              : "On-Chain & Web3 Activity"}
+            {currentMode === "crypto"
+              ? "Crypto & Web3 Treasury Ledger"
+              : subLedger === "fiat"
+                ? "Personal Finance & Daily Living"
+                : "On-Chain & Web3 Activity"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            {subLedger === "fiat"
-              ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
-              : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
+            {currentMode === "crypto"
+              ? "Multi-chain transaction indexing, token gas metrics, and Monad registry notarizations with zero private receipt leaks."
+              : subLedger === "fiat"
+                ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
+                : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
           </p>
         </div>
 
@@ -3891,11 +3921,11 @@ export function PersonalDashboard({
                     <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center mb-3 text-[#836EF9] border-2 border-[#121212] shadow-[3px_3px_0_0_#121212]">
                       <Receipt className="h-7 w-7" />
                     </div>
-                    <p className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                      NO SAVED RECEIPTS
+                    <p className="text-sm font-black text-[#121212]">
+                      No Saved Receipts Yet
                     </p>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Receipts you save and verify on Monad will appear here.
+                    <p className="text-xs text-slate-600 mt-1 max-w-sm">
+                      Receipts you save and verify on Monad will appear here. A cryptographic fingerprint proves payment authenticity while keeping invoice details private.
                     </p>
                     <div className="mt-5 flex flex-wrap justify-center gap-3">
                       <WatermelonButton
@@ -3904,9 +3934,9 @@ export function PersonalDashboard({
                         size="sm"
                         textMorph
                         leftIcon={<Plus className="h-3.5 w-3.5" />}
-                        onClick={() => onAddTransaction?.("fiat")}
+                        onClick={() => onAddTransaction?.(subLedger)}
                       >
-                        LOG EXPENSE
+                        Log Expense
                       </WatermelonButton>
                       {onUploadReceipt && (
                         <WatermelonButton
@@ -3917,7 +3947,7 @@ export function PersonalDashboard({
                           leftIcon={<UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />}
                           onClick={onUploadReceipt}
                         >
-                          SCAN RECEIPT WITH AI
+                          Scan Receipt
                         </WatermelonButton>
                       )}
                     </div>
@@ -3928,21 +3958,20 @@ export function PersonalDashboard({
                     <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center mb-3 text-[#836EF9] border-2 border-[#121212] shadow-[3px_3px_0_0_#121212]">
                       <ShieldCheck className="h-7 w-7" />
                     </div>
-                    <p className="text-sm font-black uppercase tracking-wider text-[#121212]">
-                      NO VERIFIED RECEIPTS YET
+                    <p className="text-sm font-black text-[#121212]">
+                      No Verified Receipts Yet
                     </p>
-                    <p className="text-xs text-slate-500 mt-1 max-w-md">
+                    <p className="text-xs text-slate-600 mt-1 max-w-md">
                       You have {transactions.length} local transaction
-                      {transactions.length === 1 ? "" : "s"}, but none have been
-                      saved as receipts yet.
+                      {transactions.length === 1 ? "" : "s"}. Select transactions in the ledger and click "Create Receipt" or "Save on Chain" to record an immutable Monad proof.
                     </p>
                     <div className="mt-5 flex gap-3">
                       <button
                         type="button"
                         onClick={() => setActiveLedgerTab("transactions")}
-                        className="neo-btn neo-btn-primary flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                        className="neo-btn neo-btn-primary flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212] cursor-pointer"
                       >
-                        <span>VIEW TRANSACTIONS</span>
+                        <span>View Transactions</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </button>
                     </div>

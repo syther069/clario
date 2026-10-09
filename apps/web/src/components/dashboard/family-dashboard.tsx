@@ -905,10 +905,10 @@ export function FamilyDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-[#121212] font-mono">
+            <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
               Household Financial Hub
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 font-mono">
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
               Shared household expenses, bill scheduling, split calculations,
               and non-custodial settlements.
             </p>
@@ -2519,9 +2519,16 @@ export function FamilyDashboard({
                 </div>
               </div>
 
-              <form onSubmit={handleConfirmSplit} className="mt-5 space-y-4">
+              <div className="mt-3 p-2.5 rounded-lg border border-[#836EF9]/30 bg-[#fbf9fe] text-xs text-slate-600 flex items-start gap-2">
+                <span className="font-bold text-[#836EF9] shrink-0">Note:</span>
+                <span>
+                  Splitting calculates exact IOU balances between family members. No funds are moved automatically — each member simply records when their share has been reimbursed.
+                </span>
+              </div>
+
+              <form onSubmit={handleConfirmSplit} className="mt-4 space-y-4">
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Who Paid the Bill?
                   </label>
                   <NeoSelect
@@ -2535,7 +2542,7 @@ export function FamilyDashboard({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Split Methodology
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -2552,7 +2559,7 @@ export function FamilyDashboard({
                             method.id as "equal" | "custom_percentage" | "exact",
                           )
                         }
-                        className={`py-1.5 px-2 rounded-lg text-[10px] font-black uppercase tracking-wider border-2 border-[#121212] transition ${
+                        className={`py-1.5 px-2 rounded-lg text-xs font-bold border-2 border-[#121212] transition ${
                           splitType === method.id
                             ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
                             : "bg-white text-[#121212] hover:bg-slate-100"
@@ -2565,8 +2572,8 @@ export function FamilyDashboard({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1">
-                    Included Members & Shares
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Included Members &amp; Shares
                   </label>
                   <div className="space-y-2 max-h-48 overflow-y-auto p-1">
                     {members.map((m) => {

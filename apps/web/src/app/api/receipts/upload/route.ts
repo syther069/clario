@@ -44,7 +44,9 @@ export async function POST(req: Request) {
     }
 
     // 3. Extract receipt data via Gemini OCR
-    const ocrResult = await extractReceiptWithGemini(buffer, file.type);
+    const ocrResult = await extractReceiptWithGemini(buffer, file.type, undefined, {
+      allowFallback: true,
+    });
 
     // 4. Try saving into Supabase 'receipts' table if it exists
     let dbRecordId: string | null = null;

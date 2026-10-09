@@ -7,8 +7,9 @@ import {
   UsersRound,
   Building2,
   ChevronDown,
+  Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface ModeSwitcherProps {
   currentMode: PlatformMode;
@@ -46,6 +47,13 @@ const MODES: Array<{
     description: "Team reimbursements, policies & audit log",
     icon: Building2,
   },
+  {
+    id: "crypto",
+    label: "Crypto",
+    description: "Onchain transfers, token spend & Monad proofs",
+    icon: Wallet,
+    badge: "Web3",
+  },
 ];
 
 import { motion, AnimatePresence } from "motion/react";
@@ -53,18 +61,40 @@ import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 
 export function ModeSwitcher({ currentMode, onModeChange }: ModeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const active = MODES.find((m) => m.id === currentMode) ?? MODES[0]!;
   const Icon = active.icon;
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && isOpen) {
+        setIsOpen(false);
+      }
+    }
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={`Switch platform mode. Currently in ${active.label} mode`}
-        className="flex items-center gap-2 rounded-lg border-2 border-[#121212] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#f3f4f6] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none min-h-[36px] cursor-pointer"
+        className="flex items-center gap-2 rounded-lg border-2 border-[#121212] bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition hover:bg-[#f3f4f6] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none min-h-[36px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9]"
       >
         <Icon className="h-3.5 w-3.5 text-[#836EF9]" aria-hidden="true" />
         <span>{active.label}</span>

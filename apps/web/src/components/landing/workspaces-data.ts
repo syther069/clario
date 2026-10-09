@@ -1,5 +1,5 @@
 export interface WorkspaceModeData {
-  id: "personal" | "freelancer" | "family" | "business";
+  id: "personal" | "freelancer" | "family" | "business" | "crypto";
   name: string;
   promise: string;
   description: string;
@@ -112,6 +112,30 @@ export const WORKSPACES_DATA: WorkspaceModeData[] = [
       badge: "99.8% Policy Adherence",
       recent: "AWS Cloud Compute Clusters — $2,840.00",
       recentStatus: "Approved by Treasury",
+    },
+  },
+  {
+    id: "crypto",
+    name: "Crypto",
+    promise: "Track onchain payments, token outflows, and Monad proofs in one ledger.",
+    description:
+      "Ingest multi-chain transfers from Monad, Base, and Ethereum via Alchemy or direct RPC. Anchor immutable receipt commitments on Monad Testnet without exposing private data.",
+    bestFor:
+      "Crypto natives, protocol contributors, and DAOs tracking onchain token payments and gas.",
+    useCases: [
+      "You send USDC or MON on Monad Testnet and want verifiable expense records with explorer links.",
+      "You import recent wallet transactions across chains without sharing private transaction context.",
+      "You want zero duplicate reimbursements: smart contracts enforce payment uniqueness onchain.",
+    ],
+    linkText: "Open in Crypto mode",
+    preview: {
+      stat1: "1,240 MON",
+      stat1Label: "Onchain Volume",
+      stat2: "100% Anchored",
+      stat2Label: "Monad Proof Status",
+      badge: "Monad 10143",
+      recent: "USDC Transfer to Contributor — 450.00 USDC",
+      recentStatus: "Verified on Monad",
     },
   },
 ];

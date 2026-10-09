@@ -114,44 +114,42 @@ export function useClarioAuth() {
     return externalEvmWallets[0] || null;
   }, [externalEvmWallets]);
 
-  // Has ANY connected external EVM wallet (MetaMask, Coinbase, Rabby, etc.)
+  // Has ANY connected EVM wallet (MetaMask, Coinbase, Rabby, or Embedded Privy wallet)
   const hasConnectedEvmWallet: boolean = useMemo(() => {
     if (externalEvmWallets.length > 0) return true;
-    if (activeConnectedWallet && activeConnectedWallet.walletClientType !== "privy") {
-      return true;
-    }
+    if (activeConnectedWallet) return true;
+    if (embeddedWallet) return true;
     return false;
-  }, [externalEvmWallets, activeConnectedWallet]);
+  }, [externalEvmWallets, activeConnectedWallet, embeddedWallet]);
 
   const hasAnyWallet: boolean = hasConnectedEvmWallet;
 
-  // Active wallet: prioritize active external wallet, then first external wallet
+  // Active wallet: prioritize active connected wallet, then first external wallet, then embedded wallet
   const activeWallet: ConnectedWallet | null = useMemo(() => {
     if (
       activeConnectedWallet &&
-      activeConnectedWallet.walletClientType !== "privy" &&
       "getEthereumProvider" in activeConnectedWallet
     ) {
       return activeConnectedWallet as ConnectedWallet;
     }
     if (externalEvmWallet) return externalEvmWallet;
+    if (embeddedWallet) return embeddedWallet;
     return null;
-  }, [activeConnectedWallet, externalEvmWallet]);
+  }, [activeConnectedWallet, externalEvmWallet, embeddedWallet]);
 
-  // Active connected EVM wallet address - strictly null for email-only users without connected wallet
+  // Active connected EVM wallet address - strictly null for email-only users without any wallet
   const connectedEvmAddress: string | null = useMemo(() => {
     if (!hasConnectedEvmWallet) return null;
     const addr =
       activeWallet?.address ||
       externalEvmWallet?.address ||
-      (activeConnectedWallet && activeConnectedWallet.walletClientType !== "privy"
-        ? activeConnectedWallet.address
-        : null);
+      embeddedWalletAddress ||
+      (activeConnectedWallet ? activeConnectedWallet.address : null);
     if (addr && /^0x[a-fA-F0-9]{40}$/.test(addr)) {
       return addr;
     }
     return null;
-  }, [hasConnectedEvmWallet, activeWallet, externalEvmWallet, activeConnectedWallet]);
+  }, [hasConnectedEvmWallet, activeWallet, externalEvmWallet, embeddedWalletAddress, activeConnectedWallet]);
 
   const activeWalletAddress: string | null = connectedEvmAddress;
   const primaryWalletAddress: string | null = connectedEvmAddress;
@@ -162,7 +160,14 @@ export function useClarioAuth() {
   );
 
   // Is active wallet the embedded one?
-  const isActiveWalletEmbedded: boolean = false;
+  const isActiveWalletEmbedded: boolean = useMemo(() => {
+    return Boolean(
+      activeWallet &&
+        (activeWallet.walletClientType === "privy" ||
+          (embeddedWalletAddress &&
+            activeWallet.address.toLowerCase() === embeddedWalletAddress.toLowerCase())),
+    );
+  }, [activeWallet, embeddedWalletAddress]);
 
   // Are all wallets embedded? (User has not connected external wallet yet)
   const isEmbeddedWalletOnly: boolean = Boolean(

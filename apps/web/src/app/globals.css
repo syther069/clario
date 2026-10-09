@@ -123,6 +123,11 @@
   user-select: none;
 }
 
+.neo-btn:focus-visible {
+  outline: 2px solid #836ef9;
+  outline-offset: 2px;
+}
+
 .neo-btn:active:not(:disabled) {
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 0 #121212;

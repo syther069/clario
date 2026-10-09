@@ -610,7 +610,7 @@ export function TransactionModal({
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               {subLedger === "fiat" && (
                 <div className="sm:col-span-5">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
                     Currency
                   </label>
                   <NeoSelect
@@ -625,7 +625,7 @@ export function TransactionModal({
               )}
 
               <div className={subLedger === "fiat" ? "sm:col-span-7" : "sm:col-span-12"}>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   Amount ({subLedger === "fiat" ? currentCurrencySymbol : "$ USD"})
                 </label>
                 <div className="relative">
@@ -647,7 +647,7 @@ export function TransactionModal({
 
             {/* Description / Merchant */}
             <div>
-              <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">
                 {subLedger === "fiat" ? "Merchant / Description" : "Asset / Transfer Description"}
               </label>
               <input
@@ -667,7 +667,7 @@ export function TransactionModal({
             {/* Category & Date */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   Category
                 </label>
                 <NeoSelect
@@ -698,7 +698,7 @@ export function TransactionModal({
               </div>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   Date
                 </label>
                 <NeoDatePicker value={date} onChange={setDate} />
@@ -708,7 +708,7 @@ export function TransactionModal({
             {/* Payment Method Section */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-bold text-slate-700">
                   Payment Method
                 </label>
                 <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
@@ -733,7 +733,7 @@ export function TransactionModal({
                       whileHover={{ y: -1 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setPaymentMethod(item.name)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono font-bold rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
                         paymentMethod === item.name
                           ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
                           : "bg-white text-slate-800 shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
@@ -760,7 +760,7 @@ export function TransactionModal({
                       whileHover={{ y: -1 }}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setPaymentMethod(coin.name)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg border-2 border-[#121212] transition-all cursor-pointer ${
                         paymentMethod === coin.name
                           ? "bg-[#836EF9] text-white shadow-[2px_2px_0_0_#121212]"
                           : "bg-white text-slate-800 shadow-[1.5px_1.5px_0_0_#121212] hover:bg-[#f3f4f6]"
@@ -793,12 +793,12 @@ export function TransactionModal({
                   type="checkbox"
                   checked={anchorToMonad}
                   onChange={(e) => setAnchorToMonad(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9]"
+                  className="mt-0.5 h-4 w-4 rounded border-2 border-[#121212] accent-[#836EF9] focus:ring-2 focus:ring-[#836EF9]"
                 />
                 <div>
                   <div className="flex items-center gap-1.5">
                     <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
-                    <span className="text-xs font-black uppercase tracking-wider text-[#121212]">
+                    <span className="text-xs font-bold text-[#121212]">
                       Anchor Proof to Monad Testnet
                     </span>
                     <span className="text-[9px] font-mono font-bold uppercase text-[#836EF9] bg-[#f3f0ff] px-1.5 py-0.2 rounded border border-[#836EF9]/30">
@@ -806,7 +806,7 @@ export function TransactionModal({
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                    Personal data remains 100% private. Creates an immutable cryptographic hash commitment for audit & reimbursement proof.
+                    Stores a tamper-proof digital fingerprint on the Monad blockchain. Your personal receipts and details remain completely private on your device; only a mathematical hash is registered to prevent tampering.
                   </p>
                 </div>
               </label>

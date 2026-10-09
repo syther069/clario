@@ -87,10 +87,10 @@ export function ModeHeader({
           <button
             type="button"
             onClick={connectEvmWallet}
-            className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#836EF9] hover:bg-[#7257f8] px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-white shadow-[2px_2px_0_0_#121212] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer"
+            className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-white hover:bg-[#f3f4f6] px-3 py-1.5 text-xs font-mono font-black uppercase tracking-wider text-[#121212] shadow-[2px_2px_0_0_#121212] transition active:translate-x-[1px] active:translate-y-[1px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#836EF9]"
             title="Connect your EVM wallet for on-chain actions"
           >
-            <Wallet className="h-3.5 w-3.5 stroke-[2.5]" />
+            <Wallet className="h-3.5 w-3.5 text-[#836EF9] stroke-[2.5]" />
             <span>Connect Wallet</span>
           </button>
         )}

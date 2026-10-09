@@ -5,9 +5,15 @@ import { GUIDE_SLIDES } from "./how-clario-works-modal";
 
 describe("Landing Components Suite", () => {
   describe("WORKSPACES_DATA typed metadata", () => {
-    it("defines specifications for all 4 core workspaces", () => {
+    it("defines specifications for all core workspaces", () => {
       const modeIds = WORKSPACES_DATA.map((m) => m.id);
-      expect(modeIds).toEqual(["personal", "freelancer", "family", "business"]);
+      expect(modeIds).toEqual([
+        "personal",
+        "freelancer",
+        "family",
+        "business",
+        "crypto",
+      ]);
     });
 
     it("includes a one-line promise, description, bestFor, and exactly 3 real-life situations per mode", () => {
@@ -37,13 +43,20 @@ describe("Landing Components Suite", () => {
   describe("FOLLOW_RECEIPT_STEPS story pipeline", () => {
     it("provides exactly 4 plain-language steps", () => {
       expect(FOLLOW_RECEIPT_STEPS).toHaveLength(4);
-      expect(FOLLOW_RECEIPT_STEPS.map((s) => s.step)).toEqual(["01", "02", "03", "04"]);
+      expect(FOLLOW_RECEIPT_STEPS.map((s) => s.step)).toEqual([
+        "01",
+        "02",
+        "03",
+        "04",
+      ]);
     });
 
     it("matches the 4 founder invariants translated to plain English", () => {
       expect(FOLLOW_RECEIPT_STEPS[0]!.title).toContain("stays on your device");
       expect(FOLLOW_RECEIPT_STEPS[1]!.title).toContain("fingerprint");
-      expect(FOLLOW_RECEIPT_STEPS[2]!.title).toContain("AI can suggest, but only people decide");
+      expect(FOLLOW_RECEIPT_STEPS[2]!.title).toContain(
+        "AI can suggest, but only people decide",
+      );
       expect(FOLLOW_RECEIPT_STEPS[3]!.title).toContain("never be paid twice");
     });
 

@@ -10,6 +10,10 @@ import {
   FileCheck2,
   Check,
   Image as ImageIcon,
+  Briefcase,
+  Landmark,
+  Receipt,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -33,6 +37,7 @@ interface FormatOption {
   icon: React.ReactNode;
   badgeBg: string;
   badgeColor: string;
+  isEnterprise?: boolean;
 }
 
 const FORMAT_OPTIONS: FormatOption[] = [
@@ -46,17 +51,57 @@ const FORMAT_OPTIONS: FormatOption[] = [
     badgeColor: "text-red-600 border-red-200",
   },
   {
-    format: "csv",
-    label: "CSV Spreadsheet",
+    format: "corporate_audit",
+    label: "Corporate Audit Package",
+    extension: ".PDF",
+    description: "GAAP/SOC-2 package with Monad block heights & explorer links",
+    icon: <ShieldCheck className="h-4 w-4 text-[#836EF9]" />,
+    badgeBg: "bg-[#f3f0ff]",
+    badgeColor: "text-[#836EF9] border-[#836EF9]/40",
+    isEnterprise: true,
+  },
+  {
+    format: "quickbooks",
+    label: "QuickBooks Online CSV",
     extension: ".CSV",
-    description: "Itemized transactions with metadata",
+    description: "Pre-mapped accounting import with explorer URLs",
+    icon: <Briefcase className="h-4 w-4 text-[#0284c7]" />,
+    badgeBg: "bg-sky-50",
+    badgeColor: "text-sky-700 border-sky-200",
+    isEnterprise: true,
+  },
+  {
+    format: "xero",
+    label: "Xero Statement CSV",
+    extension: ".CSV",
+    description: "Pre-mapped reconciliation CSV with Monad reference hashes",
+    icon: <Landmark className="h-4 w-4 text-[#0d9488]" />,
+    badgeBg: "bg-teal-50",
+    badgeColor: "text-teal-700 border-teal-200",
+    isEnterprise: true,
+  },
+  {
+    format: "schedule_c",
+    label: "IRS Schedule C Tax Organizer",
+    extension: ".CSV",
+    description: "Form 1040 Part II mapping with 50% meal reduction limits",
+    icon: <Receipt className="h-4 w-4 text-[#d97706]" />,
+    badgeBg: "bg-amber-50",
+    badgeColor: "text-amber-700 border-amber-200",
+    isEnterprise: true,
+  },
+  {
+    format: "csv",
+    label: "Standard CSV",
+    extension: ".CSV",
+    description: "Raw itemized transactions with metadata",
     icon: <FileSpreadsheet className="h-4 w-4 text-[#15803d]" />,
     badgeBg: "bg-emerald-50",
     badgeColor: "text-emerald-700 border-emerald-200",
   },
   {
     format: "png",
-    label: "PNG Image",
+    label: "PNG Image Card",
     extension: ".PNG",
     description: "Visual high-DPI receipt card image",
     icon: <ImageIcon className="h-4 w-4 text-[#836EF9]" />,
