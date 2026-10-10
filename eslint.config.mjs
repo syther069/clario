@@ -4,7 +4,13 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypeScript from "eslint-config-next/typescript";
 import tseslint from "typescript-eslint";
 
-const webFiles = ["apps/web/**/*.{js,mjs,cjs,ts,tsx}"];
+const webFiles = [
+  "apps/web/**/*.js",
+  "apps/web/**/*.mjs",
+  "apps/web/**/*.cjs",
+  "apps/web/**/*.ts",
+  "apps/web/**/*.tsx",
+];
 
 export default defineConfig([
   globalIgnores([
@@ -16,7 +22,10 @@ export default defineConfig([
   ...nextCoreWebVitals.map((config) => ({ ...config, files: webFiles })),
   ...nextTypeScript.map((config) => ({ ...config, files: webFiles })),
   {
-    files: ["apps/web/src/components/ui/motion/**/*.{ts,tsx}"],
+    files: [
+      "apps/web/src/components/ui/motion/**/*.ts",
+      "apps/web/src/components/ui/motion/**/*.tsx",
+    ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "off",
