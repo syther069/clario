@@ -33,7 +33,8 @@ Clario is deployed and active on **Monad Testnet**:
 |---|---|
 | **Network** | Monad Testnet |
 | **Chain ID** | `10143` |
-| **RPC Endpoint** | `https://testnet-rpc.monad.xyz` |
+| **RPC Endpoint (Primary)** | `https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}` |
+| **RPC Endpoint (Fallback)** | `https://testnet-rpc.monad.xyz` |
 | **Currency** | `MON` |
 | **Contract Address** | [`0x92f9B76673C1D88c9E3c490A88eB95b08823bA87`](https://testnet.monadexplorer.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) |
 | **Monad Explorer** | [View on MonadExplorer](https://testnet.monadexplorer.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) |
@@ -208,16 +209,20 @@ node scripts/deploy-registry.mjs --pk <YOUR_PRIVATE_KEY>
 
 ## Alchemy Integration (Metropolis Bounty)
 
-Clario integrates Alchemy as its primary **Onchain Transaction Ingestion & Historical Valuation Engine**:
+Clario deeply integrates Alchemy across infrastructure, simulation, real-time events, and data:
 
-1. **Alchemy Asset Transfers API (`alchemy_getAssetTransfers`)**:
+1. **Alchemy Monad Testnet RPC & Smart WebSockets**:
+   - Primary high-throughput RPC transport (`https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`) and real-time WebSocket stream (`wss://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`).
+   - Subscribes to Monad contract events (`ReceiptSaved`, `TransactionSaved`) for sub-second UI updates on 1-second block finalization.
+2. **Pre-Flight Transaction Simulation (`simulation.ts`)**:
+   - Dry-runs contract calls (`saveReceipt`, `saveTransaction`, token settlement) on Alchemy Monad RPC before prompting user wallet signatures to prevent reverts and measure gas.
+3. **Multi-Asset Treasury Runway & Portfolio Engine (`portfolio.ts`)**:
+   - Fetches live balances on Monad (Native MON and Monad Testnet USDC) with real-time USD portfolio valuation.
+4. **Alchemy Asset Transfers API (`alchemy_getAssetTransfers`)**:
    - Performs bidirectional transfer queries (`fromAddress` and `toAddress`) for connected EVM wallets.
-   - Operates across **Monad Testnet (`10143`)**, Monad Mainnet (`143`), Ethereum (`1`), and Base (`8453`).
-   - Automatically filters failed transactions, zero-value contract interactions, and spam tokens.
-2. **Alchemy Token Prices API**:
-   - Resolves exact historical USD valuations at historical block timestamps (`pricing.ts`), ensuring ledger entries are never recorded with $0 or guessed figures.
-3. **Alchemy Monad Testnet RPC**:
-   - High-throughput RPC connectivity (`eth_getTransactionByHash`, `eth_getTransactionReceipt`, `eth_blockNumber`) over `https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`.
+   - Operates across Monad Testnet (`10143`), Monad Mainnet (`143`), Ethereum (`1`), and Base (`8453`) with spam token filtering and provenance tracking.
+5. **Alchemy Token Prices API**:
+   - Resolves exact historical USD valuations at block timestamps (`pricing.ts`), ensuring ledger entries are never recorded with $0 or guessed figures.
 
 ---
 
