@@ -109,4 +109,23 @@ describe("AlchemyImportAdapter", () => {
     expect(item.provenance.provider).toBe("alchemy");
     expect(item.provenance.disclaimer).toBe(IMPORTED_FACTS_DISCLAIMER);
   });
+
+  it("routes Monad queries directly to Monad fallback without calling alchemy_getAssetTransfers", async () => {
+    const adapter = new AlchemyImportAdapter(dummyKey);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const monadFallbackSpy = vi.spyOn((adapter as any).monadFallback, "fetchTransactions").mockResolvedValue({
+      items: [],
+      nextCursor: null,
+    });
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy;
+
+    await adapter.fetchTransactions({
+      address: testAddress,
+      chainId: 10143,
+    });
+
+    expect(monadFallbackSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

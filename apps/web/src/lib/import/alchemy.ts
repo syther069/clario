@@ -60,6 +60,27 @@ export function getAlchemyEndpoint(
 }
 
 /**
+ * Chains where Alchemy Transfers API (`alchemy_getAssetTransfers`) is officially supported:
+ * Ethereum, Base, Polygon, Arbitrum, Optimism (and testnets).
+ * Monad and Hyperliquid are NOT supported by alchemy_getAssetTransfers.
+ */
+export const ALCHEMY_TRANSFERS_SUPPORTED_CHAINS = [
+  1, // Ethereum Mainnet
+  11155111, // Sepolia
+  8453, // Base Mainnet
+  84532, // Base Sepolia
+  137, // Polygon Mainnet
+  42161, // Arbitrum One
+  10, // Optimism Mainnet
+] as const;
+
+export function isAlchemyTransfersSupported(chainId: number): boolean {
+  return (ALCHEMY_TRANSFERS_SUPPORTED_CHAINS as readonly number[]).includes(
+    chainId,
+  );
+}
+
+/**
  * Returns Alchemy asset transfer categories supported for a specific chain.
  * "internal" is only supported on Ethereum Mainnet, Sepolia, and Polygon.
  */
@@ -286,17 +307,31 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
 
     const targetAddress = filter.address.toLowerCase() as `0x${string}`;
 
-    // Target chains: if a specific chain is requested (and > 0), use it; otherwise scan all supported chains in priority order
+    // If a Monad chain is explicitly queried, route directly to Monad RPC & Explorer fallback
+    // (alchemy_getAssetTransfers is not supported on Monad)
+    if (filter.chainId === 143 || filter.chainId === 10143) {
+      return this.monadFallback.fetchTransactions({
+        address: targetAddress,
+        chainId: filter.chainId,
+        limit: filter.limit ?? 50,
+      });
+    }
+
+    // Determine target chains for Alchemy Transfers API
     let targetChainIds: number[];
+    let shouldIncludeMonadFallback = false;
+
     if (filter.chainId && filter.chainId > 0) {
-      if (getAlchemyEndpoint(filter.chainId, this.apiKey)) {
+      if (isAlchemyTransfersSupported(filter.chainId)) {
         targetChainIds = [filter.chainId];
       } else {
-        targetChainIds = [filter.chainId];
+        // Chain is unsupported by Alchemy Transfers API
+        return { items: [], nextCursor: null };
       }
     } else {
-      // Order: Monad (10143, 143), Base (8453), Ethereum (1), Sepolia (11155111), Hyperliquid (999), Arbitrum (42161), Optimism (10), Polygon (137), Base Sepolia (84532)
-      targetChainIds = [10143, 143, 8453, 1, 11155111, 999, 42161, 10, 137, 84532];
+      // Documented supported chains for Alchemy Transfers API: Base, Ethereum, Sepolia, Arbitrum, Optimism, Polygon, Base Sepolia
+      targetChainIds = [8453, 1, 11155111, 42161, 10, 137, 84532];
+      shouldIncludeMonadFallback = true;
     }
 
 async function fetchWithTimeout(
@@ -444,20 +479,12 @@ async function fetchWithTimeout(
         (tx): tx is NormalizedTransaction => tx !== null,
       );
 
-      // Monad Direct RPC & Explorer Fallback:
-      // Only invoke heavy RPC log scanner fallback if a specific Monad chain was explicitly selected and Alchemy returned 0 transfers.
-      // Do NOT run heavy RPC fallback during All-Chains discovery since Alchemy already indexes Monad mainnet/testnet.
-      const isExplicitMonadQuery = filter.chainId === 143 || filter.chainId === 10143;
-      const targetMonadChain = filter.chainId === 10143 ? 10143 : 143;
-      const hasMonadTxs = validTransactions.some(
-        (tx) => tx.sourceChainId === targetMonadChain,
-      );
-
-      if (isExplicitMonadQuery && !hasMonadTxs) {
+      // Include Monad activity via direct Monad RPC & Explorer fallback during multi-chain discovery
+      if (shouldIncludeMonadFallback) {
         try {
           const monadRes = await this.monadFallback.fetchTransactions({
             address: targetAddress,
-            chainId: targetMonadChain,
+            chainId: 10143,
             limit: filter.limit ?? 25,
           });
           if (monadRes.items.length > 0) {

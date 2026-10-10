@@ -34,6 +34,30 @@ export const MONAD_TESTNET_RPC =
     ? ALCHEMY_MONAD_TESTNET_RPC
     : (process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC || "https://testnet-rpc.monad.xyz");
 
+export const IS_ALCHEMY_MONAD_RPC_ACTIVE: boolean = Boolean(
+  effectiveAlchemyKey && ALCHEMY_MONAD_TESTNET_RPC
+);
+
+export function getMonadRpcProviderInfo(): {
+  isAlchemy: boolean;
+  providerName: string;
+  endpointHost: string;
+} {
+  const isAlchemy = IS_ALCHEMY_MONAD_RPC_ACTIVE;
+  let endpointHost = "testnet-rpc.monad.xyz";
+  try {
+    const url = new URL(MONAD_TESTNET_RPC);
+    endpointHost = url.host;
+  } catch {
+    endpointHost = isAlchemy ? "monad-testnet.g.alchemy.com" : "testnet-rpc.monad.xyz";
+  }
+  return {
+    isAlchemy,
+    providerName: isAlchemy ? "Alchemy Monad RPC" : "Monad Public RPC (Fallback)",
+    endpointHost,
+  };
+}
+
 export const MONAD_TESTNET_EXPLORER = "https://testnet.monadexplorer.com";
 
 // Default or configured registry contract address (Monad Testnet official deployment)

@@ -4,7 +4,7 @@
 
 Clario is a verifiable financial intelligence and expense management platform built for crypto-native individuals, freelancers, households, and enterprises. Private evidence stays encrypted and offchain while immutable state commitments, authorized decisions, receipt bundles, and settlement references are anchored and independently verifiable on **Monad**.
 
-Built and verified for the **Monad Metropolis Hackathon**, Clario combines Monad's 10,000 TPS parallel EVM execution and sub-second finality with zero-leak cryptographic privacy, multi-chain transaction ingestion via Alchemy, and five purpose-built operating modes.
+Built and verified for the **Monad Metropolis Hackathon**, Clario combines Monad's parallel EVM execution and sub-second finality with zero-leak cryptographic privacy, multi-chain transaction ingestion via Alchemy, and five purpose-built operating modes.
 
 ---
 
@@ -17,8 +17,8 @@ Built and verified for the **Monad Metropolis Hackathon**, Clario combines Monad
   - **Freelancer**: Client CRM, sequential invoice generator with printable Neo-Brutalist invoice documents, tax write-off ledger, and Schedule C quarterly tax organizer.
   - **Family**: Multi-member household split engine (equal, custom %, exact amounts), shared budget alerts, recurring utilities tracker, and non-custodial IOU settlements.
   - **Business**: Role-separated team roster, corporate spend policy engine, receipt-attached reimbursement queue, manager approvals with reason commitments, and immutable audit logs.
-  - **Crypto / Monad**: Onchain transaction ingestion via Alchemy (`alchemy_getAssetTransfers`), multi-tier Monad RPC fallback, historical USD block valuation via DeFiLlama & Alchemy Prices, and onchain transaction registry.
-- **Alchemy Multi-Chain Ingestion Engine**: Bidirectional transfer queries across Monad Testnet (`10143`), Monad Mainnet (`143`), Ethereum (`1`), and Base (`8453`) with spam token filtering and historical price resolution.
+  - **Crypto / Monad**: Multi-tier Monad RPC fallback, historical USD block valuation via DeFiLlama & Alchemy Prices, and onchain transaction registry.
+- **Alchemy Multi-Chain Ingestion Engine**: Bidirectional transfer queries across supported chains (Ethereum, Base, Arbitrum, Optimism, Polygon) via Alchemy Transfers API with spam token filtering and historical price resolution. Monad activity is ingested via direct Monad RPC & Explorer adapters.
 - **Advisory Grounded AI Financial Copilot**: Context-aware financial copilot powered by Groq and Gemini with automatic PII anonymization (`anonymizeCopilotContext`), scrubbing names, emails, phones, and wallet addresses before external transmission.
 - **Privy 1-Click Fast Signing & Embedded Wallets**: Seedless non-custodial EVM onboarding via Shamir Secret Sharing, 1-Click Session Signing (Privy Delegated Actions via `useDelegatedActions`) for zero-popup instantaneous onchain anchoring to Monad Testnet, native in-app wallet funding modal (`useFundWallet`), FIDO2 Passkeys, and progressive multi-account linking.
 - **Montally Neo-Brutalist Design System**: High-contrast `border-2 border-black` borders, hard 2D offset box-shadows (`shadow-[4px_4px_0px_#000]`), monospace tracking badges, `.bg-grid` canvas, and Monad electric purple accent (`#836EF9`).
@@ -209,20 +209,25 @@ node scripts/deploy-registry.mjs --pk <YOUR_PRIVATE_KEY>
 
 ## Alchemy Integration (Metropolis Bounty)
 
-Clario deeply integrates Alchemy across infrastructure, simulation, real-time events, and data:
+Clario integrates Alchemy across blockchain infrastructure, pre-flight simulation, real-time events, and multi-chain data ingestion, with explicit separation between Monad-native services and multi-chain indexing:
 
-1. **Alchemy Monad Testnet RPC & Smart WebSockets**:
-   - Primary high-throughput RPC transport (`https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`) and real-time WebSocket stream (`wss://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`).
-   - Subscribes to Monad contract events (`ReceiptSaved`, `TransactionSaved`) for sub-second UI updates on 1-second block finalization.
-2. **Pre-Flight Transaction Simulation (`simulation.ts`)**:
-   - Dry-runs contract calls (`saveReceipt`, `saveTransaction`, token settlement) on Alchemy Monad RPC before prompting user wallet signatures to prevent reverts and measure gas.
-3. **Multi-Asset Treasury Runway & Portfolio Engine (`portfolio.ts`)**:
-   - Fetches live balances on Monad (Native MON and Monad Testnet USDC) with real-time USD portfolio valuation.
-4. **Alchemy Asset Transfers API (`alchemy_getAssetTransfers`)**:
-   - Performs bidirectional transfer queries (`fromAddress` and `toAddress`) for connected EVM wallets.
-   - Operates across Monad Testnet (`10143`), Monad Mainnet (`143`), Ethereum (`1`), and Base (`8453`) with spam token filtering and provenance tracking.
-5. **Alchemy Token Prices API**:
-   - Resolves exact historical USD valuations at block timestamps (`pricing.ts`), ensuring ledger entries are never recorded with $0 or guessed figures.
+### 1. Services on Monad Testnet (`chainId: 10143`)
+- **Alchemy Monad Testnet RPC Transport**: High-throughput JSON-RPC endpoint (`https://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`) for read calls, gas estimation (`eth_estimateGas`), transaction receipts, and live status measurement. When no Alchemy key is configured, Clario automatically and transparently falls back to public Monad RPC without downtime.
+- **Pre-Flight Contract Call Simulation (`simulation.ts`)**: Before asking the user's wallet to sign any registry transaction (`saveReceipt`, `saveTransaction`), Clario executes a dry-run `eth_call` and `eth_estimateGas` over Alchemy Monad RPC. This verifies that state commitments, nonces, and calldata will succeed onchain, estimating exact gas limits and preventing reverted transactions.
+- **Alchemy Monad WebSockets (`wss://monad-testnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`)**: Clario opens a live WebSocket stream listening to contract events (`ReceiptSaved`, `TransactionSaved`) emitted by the deployed `ClarioTransactionRegistry` contract (`0x92f9B76673C1D88c9E3c490A88eB95b08823bA87`). This delivers real-time UI confirmation matching Monad's 1-second block finalization.
+- **Monad Ingestion Architecture**: Because Alchemy's historical Transfers API does not index Monad Testnet, Clario routes Monad historical wallet activity directly to `MonadFallbackImportAdapter` (Viem direct RPC event log scanner and Monad Explorer API). Clario never issues failing or unsupported `alchemy_getAssetTransfers` requests to Monad endpoints.
+
+### 2. Services on Supported Multi-Chains (Ethereum `1`, Sepolia `11155111`, Base `8453`, Polygon `137`, Arbitrum `42161`, Optimism `10`)
+- **Alchemy Asset Transfers API (`alchemy_getAssetTransfers`)**: Automated bidirectional historical asset transfer ingestion (`fromAddress` and `toAddress`) across documented supported EVM chains for comprehensive multi-chain treasury and expense imports.
+- **Alchemy Token Prices API**: Exact historical USD valuation lookup at transaction block timestamps (`pricing.ts`), ensuring multi-chain ledger items are backed by verified pricing.
+
+### 3. Bounty Demo & Submission Evidence Checklist
+To verify the Alchemy on Monad integration during hackathon judging:
+1. **Live App URL**: [https://clario.money](https://clario.money) (or configured custom deployment).
+2. **Runtime Provider Indicator**: The Neo-Brutalist RPC badge in the top navigation dynamically confirms active provider status (`Monad Testnet • Alchemy` when `NEXT_PUBLIC_ALCHEMY_API_KEY` is active, or `Monad Testnet • Public RPC` on fallback) with live measured latency and active transport host.
+3. **Alchemy Pre-Flight Simulation**: Save a receipt or record a transaction; verify the pre-flight simulation step dry-runs via Alchemy RPC before wallet prompt.
+4. **Onchain Monad Contract Transaction**: Real transaction executed against `ClarioTransactionRegistry` on Monad Testnet (`0x92f9B76673C1D88c9E3c490A88eB95b08823bA87` on [Monad Explorer](https://testnet.monadexplorer.com)).
+5. **Alchemy WebSockets Event Confirmation**: Inspect client logs to observe immediate receipt of `TransactionSaved` or `ReceiptSaved` emitted through Alchemy WebSocket subscription.
 
 ---
 

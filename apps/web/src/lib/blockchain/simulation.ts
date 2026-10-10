@@ -6,14 +6,14 @@ import {
   BaseError,
   ContractFunctionRevertedError,
 } from "viem";
-import { monadTestnet, MONAD_TESTNET_RPC } from "./registry";
+import { monadTestnet, MONAD_TESTNET_RPC, IS_ALCHEMY_MONAD_RPC_ACTIVE } from "./registry";
 
 export interface SimulationResult {
   readonly success: boolean;
   readonly gasEstimate: bigint;
   readonly gasCostGwei?: string;
   readonly errorReason?: string;
-  readonly provider: "alchemy";
+  readonly provider: "alchemy" | "monad-public";
   readonly simulatedAt: string;
 }
 
@@ -56,11 +56,15 @@ export async function simulateMonadTransaction(params: {
       Number((gasEstimate * gasPrice) / 1_000_000_000n) / 1e9
     ).toFixed(6);
 
+    const provider: "alchemy" | "monad-public" = IS_ALCHEMY_MONAD_RPC_ACTIVE
+      ? "alchemy"
+      : "monad-public";
+
     return {
       success: true,
       gasEstimate,
       gasCostGwei,
-      provider: "alchemy",
+      provider,
       simulatedAt,
     };
   } catch (err: unknown) {
@@ -79,11 +83,15 @@ export async function simulateMonadTransaction(params: {
       errorReason = err.message;
     }
 
+    const provider: "alchemy" | "monad-public" = IS_ALCHEMY_MONAD_RPC_ACTIVE
+      ? "alchemy"
+      : "monad-public";
+
     return {
       success: false,
       gasEstimate: 0n,
       errorReason,
-      provider: "alchemy",
+      provider,
       simulatedAt,
     };
   }

@@ -1,5 +1,6 @@
 import { createWalletClient, custom, encodeFunctionData, type Address, type Hash } from "viem";
-import { simulateMonadTransaction } from "./simulation";
+import { simulateMonadTransaction, type SimulationResult } from "./simulation";
+import { listenToMonadEvents } from "./websocket-listener";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import type {
   Transaction,
@@ -26,8 +27,10 @@ export type ReceiptBundleStep =
   | "generating"
   | "uploading"
   | "hashing"
+  | "simulating"
   | "submitting_monad"
   | "confirming"
+  | "event_received"
   | "verified"
   | "failed";
 
@@ -40,6 +43,8 @@ export interface SaveReceiptBundleResult {
   explorerUrl?: string;
   error?: string;
   isBlockchainVerified: boolean;
+  simulationResult?: SimulationResult | null;
+  wsEventReceived?: boolean;
 }
 
 export interface SaveReceiptBundleParams {
@@ -234,7 +239,9 @@ export async function executeSaveReceiptBundle({
     });
 
     // Pre-flight simulation via Alchemy Monad RPC to verify valid state transitions
+    let simulationResult: SimulationResult | null = null;
     try {
+      step("simulating", "Simulating bundle anchor via Alchemy Monad RPC...");
       const simData = encodeFunctionData({
         abi: CLARIO_REGISTRY_ABI,
         functionName: "saveReceipt",
@@ -244,13 +251,44 @@ export async function executeSaveReceiptBundle({
           BigInt(canonicalBundle.transactionCount),
         ],
       });
-      await simulateMonadTransaction({
+      simulationResult = await simulateMonadTransaction({
         from: userAddress as Address,
         to: CLARIO_REGISTRY_ADDRESS,
         data: simData,
       });
+      if (simulationResult.success) {
+        step(
+          "simulating",
+          `✓ Simulation passed via ${simulationResult.provider} (${simulationResult.gasEstimate.toString()} gas est.)`,
+        );
+      }
     } catch (simErr) {
       console.warn("Alchemy simulation note:", simErr);
+    }
+
+    step(
+      "submitting_monad",
+      "Signing & anchoring receipt bundle to Monad Testnet...",
+    );
+
+    // Active real-time WebSocket subscription via Alchemy WebSockets
+    let stopListening: (() => void) | undefined;
+    let wsEventReceived = false;
+    try {
+      stopListening = listenToMonadEvents({
+        userAddress: userAddress as Address,
+        onReceiptSaved: (ev) => {
+          if (ev.receiptId.toLowerCase() === receiptIdBytes32.toLowerCase()) {
+            wsEventReceived = true;
+            step(
+              "event_received",
+              "⚡ ReceiptSaved event received via Alchemy WebSockets!",
+            );
+          }
+        },
+      });
+    } catch (wsErr) {
+      console.warn("Alchemy WebSocket listener initialization note:", wsErr);
     }
 
     // Execute saveReceipt(bytes32 receiptId, bytes32 receiptHash, uint256 transactionCount)
@@ -266,13 +304,20 @@ export async function executeSaveReceiptBundle({
       ],
     });
 
-    step("confirming", "Waiting for confirmation...");
+    step("confirming", "Waiting for Monad block confirmation...");
 
     const publicClient = getMonadPublicClient();
     const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash,
       confirmations: 1,
     });
+
+    // Cleanup WebSocket listener
+    if (stopListening) {
+      try {
+        stopListening();
+      } catch {}
+    }
 
     if (receipt.status !== "success") {
       try {
@@ -348,6 +393,8 @@ export async function executeSaveReceiptBundle({
       receiptIdBytes32,
       explorerUrl: getMonadExplorerTxUrl(txHash),
       isBlockchainVerified: true,
+      simulationResult,
+      wsEventReceived,
     };
   } catch (err: unknown) {
     const errorMsg =

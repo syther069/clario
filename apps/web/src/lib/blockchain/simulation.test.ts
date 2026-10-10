@@ -34,7 +34,7 @@ describe("Alchemy Monad Pre-Flight Transaction Simulation", () => {
 
     expect(res.success).toBe(true);
     expect(res.gasEstimate).toBe(42000n);
-    expect(res.provider).toBe("alchemy");
+    expect(["alchemy", "monad-public"]).toContain(res.provider);
     expect(res.gasCostGwei).toBeDefined();
     expect(res.simulatedAt).toBeDefined();
     expect(mockCall).toHaveBeenCalledTimes(1);
@@ -58,6 +58,6 @@ describe("Alchemy Monad Pre-Flight Transaction Simulation", () => {
     expect(res.success).toBe(false);
     expect(res.gasEstimate).toBe(0n);
     expect(res.errorReason).toContain("ReceiptAlreadyExists");
-    expect(res.provider).toBe("alchemy");
+    expect(["alchemy", "monad-public"]).toContain(res.provider);
   });
 });
