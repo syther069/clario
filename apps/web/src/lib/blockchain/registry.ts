@@ -14,11 +14,26 @@ import type {
 
 // Official Monad Testnet configuration (Chain ID: 10143)
 export const MONAD_TESTNET_CHAIN_ID = 10143;
+
+const effectiveAlchemyKey =
+  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ||
+  process.env.ALCHEMY_API_KEY ||
+  "";
+
+export const ALCHEMY_MONAD_TESTNET_RPC = effectiveAlchemyKey
+  ? `https://monad-testnet.g.alchemy.com/v2/${effectiveAlchemyKey}`
+  : "";
+
+export const ALCHEMY_MONAD_TESTNET_WSS = effectiveAlchemyKey
+  ? `wss://monad-testnet.g.alchemy.com/v2/${effectiveAlchemyKey}`
+  : "";
+
+// Alchemy Monad RPC is primary when key is available, with resilient public fallback
 export const MONAD_TESTNET_RPC =
-  process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC ||
-  (process.env.ALCHEMY_API_KEY
-    ? `https://monad-testnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
-    : "https://testnet-rpc.monad.xyz");
+  effectiveAlchemyKey
+    ? ALCHEMY_MONAD_TESTNET_RPC
+    : (process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC || "https://testnet-rpc.monad.xyz");
+
 export const MONAD_TESTNET_EXPLORER = "https://testnet.monadexplorer.com";
 
 // Default or configured registry contract address (Monad Testnet official deployment)

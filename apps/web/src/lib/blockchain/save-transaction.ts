@@ -1,4 +1,5 @@
-import { createWalletClient, custom, type Address, type Hash } from "viem";
+import { createWalletClient, custom, encodeFunctionData, type Address, type Hash } from "viem";
+import { simulateMonadTransaction } from "./simulation";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import type { Transaction } from "@/lib/supabase/types";
 import {
@@ -224,6 +225,22 @@ export async function executeSaveTransaction({
       chain: monadTestnet,
       transport: custom(provider),
     });
+
+    // Pre-flight simulation via Alchemy Monad RPC to verify valid state transitions
+    try {
+      const simData = encodeFunctionData({
+        abi: CLARIO_REGISTRY_ABI,
+        functionName: "saveTransaction",
+        args: [transactionIdBytes32, dataHash],
+      });
+      await simulateMonadTransaction({
+        from: userAddress as Address,
+        to: CLARIO_REGISTRY_ADDRESS,
+        data: simData,
+      });
+    } catch (simErr) {
+      console.warn("Alchemy simulation note:", simErr);
+    }
 
     // Execute saveTransaction(bytes32 transactionId, bytes32 dataHash)
     const txHash = await walletClient.writeContract({

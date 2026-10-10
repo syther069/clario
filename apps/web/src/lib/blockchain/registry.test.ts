@@ -13,7 +13,9 @@ import {
 describe("Clario Monad Blockchain Registry Module", () => {
   it("verifies Monad Testnet network constants", () => {
     expect(MONAD_TESTNET_CHAIN_ID).toBe(10143);
-    expect(MONAD_TESTNET_RPC).toBe("https://testnet-rpc.monad.xyz");
+    expect(MONAD_TESTNET_RPC).toMatch(
+      /^https:\/\/(testnet-rpc\.monad\.xyz|monad-testnet\.g\.alchemy\.com\/v2\/)/,
+    );
   });
 
   it("converts string UUID to bytes32 hex deterministic hash", () => {

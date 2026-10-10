@@ -10,6 +10,7 @@ import type { PlatformMode } from "@/lib/supabase/types";
 import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
 import { ClarioLogo } from "@/components/ui/clario-logo";
 import { useClarioAuth } from "@/lib/auth/use-clario-auth";
+import { AlchemyNetworkBadge } from "../alchemy/alchemy-network-badge";
 
 export type CorePillar = "expenses" | "vault" | "insights";
 
@@ -25,7 +26,6 @@ interface ModeHeaderProps {
 export function ModeHeader({
   currentMode,
   onModeChange,
-  onOpenCopilot,
   onLogExpense,
 }: ModeHeaderProps) {
   const { isAuthenticated, hasConnectedEvmWallet, connectEvmWallet } =
@@ -72,6 +72,8 @@ export function ModeHeader({
             <span>Log Expense</span>
           </button>
         )}
+
+        <AlchemyNetworkBadge />
 
         <Link href="/docs">
           <ClarioButton

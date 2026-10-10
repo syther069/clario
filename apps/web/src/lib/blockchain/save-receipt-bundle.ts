@@ -1,4 +1,5 @@
-import { createWalletClient, custom, type Address, type Hash } from "viem";
+import { createWalletClient, custom, encodeFunctionData, type Address, type Hash } from "viem";
+import { simulateMonadTransaction } from "./simulation";
 import type { ConnectedWallet } from "@privy-io/react-auth";
 import type {
   Transaction,
@@ -231,6 +232,26 @@ export async function executeSaveReceiptBundle({
       chain: monadTestnet,
       transport: custom(provider),
     });
+
+    // Pre-flight simulation via Alchemy Monad RPC to verify valid state transitions
+    try {
+      const simData = encodeFunctionData({
+        abi: CLARIO_REGISTRY_ABI,
+        functionName: "saveReceipt",
+        args: [
+          receiptIdBytes32,
+          receiptHash,
+          BigInt(canonicalBundle.transactionCount),
+        ],
+      });
+      await simulateMonadTransaction({
+        from: userAddress as Address,
+        to: CLARIO_REGISTRY_ADDRESS,
+        data: simData,
+      });
+    } catch (simErr) {
+      console.warn("Alchemy simulation note:", simErr);
+    }
 
     // Execute saveReceipt(bytes32 receiptId, bytes32 receiptHash, uint256 transactionCount)
     // Exactly ONE Monad transaction for all bundled transactions
