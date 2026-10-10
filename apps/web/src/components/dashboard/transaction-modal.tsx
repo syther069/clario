@@ -20,6 +20,8 @@ import {
   ExternalLink,
   AlertTriangle,
   Zap,
+  Hash,
+  CheckCircle2,
 } from "lucide-react";
 import type { Transaction } from "@/lib/supabase/types";
 import { TransactionImportDialog } from "@/components/transaction-import-dialog";
@@ -114,6 +116,16 @@ export function TransactionModal({
   const [paymentMethod, setPaymentMethod] = useState("Credit Card");
   const [anchorToMonad, setAnchorToMonad] = useState(false);
 
+  // On-Chain Transaction Hash auto-fetch states
+  const [txHash, setTxHash] = useState("");
+  const [isFetchingHash, setIsFetchingHash] = useState(false);
+  const [hashError, setHashError] = useState<string | null>(null);
+  const [fetchedSuccess, setFetchedSuccess] = useState(false);
+  const [detectedChainInfo, setDetectedChainInfo] = useState<{
+    chainId: number;
+    chainName: string;
+  } | null>(null);
+
   // Sync subledger and view on fresh open
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
@@ -129,6 +141,11 @@ export function TransactionModal({
       setIsReceiptModalOpen(false);
       setIsNoWalletPopupOpen(false);
       setIsImportOpen(false);
+      setTxHash("");
+      setIsFetchingHash(false);
+      setHashError(null);
+      setFetchedSuccess(false);
+      setDetectedChainInfo(null);
       if (mode === "fiat") {
         setPaymentMethod("Credit Card");
         setCategory("food_dining");
@@ -138,6 +155,119 @@ export function TransactionModal({
       }
     }
   }
+
+  const handleTxHashChange = async (val: string) => {
+    setTxHash(val);
+    setHashError(null);
+    setFetchedSuccess(false);
+    setDetectedChainInfo(null);
+
+    const clean = val.trim();
+    // Valid 66-character EVM transaction hash regex
+    if (/^0x[a-fA-F0-9]{64}$/.test(clean)) {
+      setIsFetchingHash(true);
+      try {
+        const url = new URL(
+          `/api/workspaces/${workspaceId}/import/lookup`,
+          window.location.origin,
+        );
+        url.searchParams.set("hash", clean);
+        url.searchParams.set("chainId", "0");
+
+        const res = await fetch(url.toString(), {
+          headers: {
+            "Content-Type": "application/json",
+            "x-wallet-address":
+              effectiveConnectedAddress ||
+              "0x0000000000000000000000000000000000000000",
+          },
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(
+            data?.error?.message ||
+              "Transaction not found on supported chains via Alchemy.",
+          );
+        }
+
+        const data = await res.json();
+        const tx = data?.transaction as NormalizedTransaction | undefined;
+        if (!tx) {
+          throw new Error("No transaction details returned.");
+        }
+
+        // 1. Populate exact token amount directly
+        if (tx.formattedAmount) {
+          setAmount(tx.formattedAmount);
+        }
+
+        // 2. Populate token and transfer description
+        const hashShort = `${clean.slice(0, 8)}...${clean.slice(-6)}`;
+        const assetName = tx.assetSymbol || "Token";
+        const desc = `${tx.formattedAmount ? `${tx.formattedAmount} ` : ""}${assetName} Transfer (${hashShort})`;
+        setDescription(desc);
+
+        // 3. Populate Date & Time from blockTimestamp
+        if (tx.blockTimestamp) {
+          const parsedDate = new Date(tx.blockTimestamp);
+          if (!isNaN(parsedDate.getTime())) {
+            setDate(parsedDate.toISOString().split("T")[0]!);
+          }
+        }
+
+        // 4. Determine chain name & payment method
+        const chainName =
+          tx.sourceChainId === 10143
+            ? "Monad Testnet"
+            : tx.sourceChainId === 143
+              ? "Monad"
+              : tx.sourceChainId === 8453
+                ? "Base"
+                : tx.sourceChainId === 1
+                  ? "Ethereum"
+                  : tx.sourceChainId === 999
+                    ? "Hyperliquid"
+                    : tx.sourceChainId === 42161
+                      ? "Arbitrum"
+                      : tx.sourceChainId === 10
+                        ? "Optimism"
+                        : tx.sourceChainId === 137
+                          ? "Polygon"
+                          : tx.sourceChainId === 11155111
+                            ? "Sepolia"
+                            : tx.sourceChainId === 84532
+                              ? "Base Sepolia"
+                              : "EVM";
+
+        setPaymentMethod(`Onchain (${chainName} - ${tx.assetSymbol || "Native"})`);
+        setDetectedChainInfo({
+          chainId: tx.sourceChainId,
+          chainName,
+        });
+
+        // 5. Inflow / Outflow auto-detection based on connected wallet
+        if (effectiveConnectedAddress) {
+          const userLower = effectiveConnectedAddress.toLowerCase();
+          if (tx.recipient && tx.recipient.toLowerCase() === userLower) {
+            setType("income");
+          } else if (tx.sender && tx.sender.toLowerCase() === userLower) {
+            setType("expense");
+          }
+        }
+
+        setFetchedSuccess(true);
+      } catch (err) {
+        setHashError(
+          err instanceof Error
+            ? err.message
+            : "Transaction not found on supported chains. You can still fill fields manually.",
+        );
+      } finally {
+        setIsFetchingHash(false);
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -232,9 +362,22 @@ export function TransactionModal({
       verification_state: anchorToMonad || isCrypto ? "anchored_onchain" : "unverified",
       verification_status: anchorToMonad || isCrypto ? "anchored" : "unverified",
       blockchain_status: anchorToMonad || isCrypto ? "unverified" : null,
-      blockchain_network: anchorToMonad || isCrypto ? "Monad Testnet" : null,
-      blockchain_chain_id: anchorToMonad || isCrypto ? 10143 : null,
-      source: isCrypto ? "onchain_monad" : "manual",
+      blockchain_network: detectedChainInfo?.chainName || (anchorToMonad || isCrypto ? "Monad Testnet" : null),
+      blockchain_chain_id: detectedChainInfo?.chainId || (anchorToMonad || isCrypto ? 10143 : null),
+      blockchain_tx_hash: txHash ? (txHash.toLowerCase() as `0x${string}`) : null,
+      monad_tx_hash:
+        (detectedChainInfo?.chainId === 10143 || detectedChainInfo?.chainId === 143) && txHash
+          ? (txHash.toLowerCase() as `0x${string}`)
+          : isCrypto && txHash
+            ? (txHash.toLowerCase() as `0x${string}`)
+            : null,
+      blockchain_timestamp: isCrypto && txHash ? new Date(date).toISOString() : null,
+      source:
+        detectedChainInfo?.chainId === 10143
+          ? "onchain_monad"
+          : isCrypto
+            ? "onchain_other"
+            : "manual",
       version: 1,
       status: "cleared",
       created_at: new Date().toISOString(),
@@ -248,6 +391,10 @@ export function TransactionModal({
     // 2. Clear inputs and transition to post-save options
     setAmount("");
     setDescription("");
+    setTxHash("");
+    setHashError(null);
+    setFetchedSuccess(false);
+    setDetectedChainInfo(null);
     setView("saved_action");
   }
 
@@ -603,6 +750,63 @@ export function TransactionModal({
                 Income (Inflow)
               </motion.button>
             </div>
+
+            {/* On-Chain Transaction Hash Auto-Fetch Field */}
+            {subLedger === "onchain" && (
+              <div className="p-3 bg-[#fbf9fe] rounded-xl border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-mono font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+                    <Hash className="h-3.5 w-3.5 text-[#836EF9]" />
+                    <span>Transaction Hash</span>
+                    <span className="text-[9px] font-mono font-bold uppercase text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-[#121212]/20">
+                      Auto-Fill
+                    </span>
+                  </label>
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-black uppercase text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded-md border border-[#0052FF]/30 shadow-[1px_1px_0_0_#0052FF]">
+                    <AlchemyLogo className="h-3 w-3" />
+                    Alchemy Verified
+                  </span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={txHash}
+                    onChange={(e) => void handleTxHashChange(e.target.value)}
+                    placeholder="0x... paste transaction hash to auto-fetch"
+                    className={`w-full neo-input font-mono text-xs pr-9 ${
+                      hashError ? "!border-rose-500 !bg-rose-50/40" : ""
+                    }`}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    {isFetchingHash ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-[#836EF9]" />
+                    ) : fetchedSuccess ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+                    ) : (
+                      <Zap className="h-3.5 w-3.5 text-slate-400" />
+                    )}
+                  </div>
+                </div>
+                {/* Live Feedback: Error or Detected Success */}
+                {hashError && (
+                  <p className="mt-1.5 text-[11px] font-mono font-bold text-rose-600 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 shrink-0" />
+                    <span>{hashError}</span>
+                  </p>
+                )}
+                {fetchedSuccess && detectedChainInfo && (
+                  <p className="mt-1.5 text-[11px] font-mono font-bold text-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    <span>
+                      Detected on {detectedChainInfo.chainName} via Alchemy • Amount, token & date auto-filled
+                    </span>
+                  </p>
+                )}
+                <p className="text-[10px] text-slate-500 mt-1 font-mono">
+                  Paste any EVM tx hash (Monad, Base, Ethereum, etc.) — Alchemy automatically extracts amount, token, timestamp & flow direction.
+                </p>
+              </div>
+            )}
 
             {/* Currency & Amount */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">

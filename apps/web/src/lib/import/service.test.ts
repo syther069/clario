@@ -206,6 +206,13 @@ describe("TransactionImportService", () => {
       expect(tx?.isClaimed).toBe(false);
     });
 
+    it("auto-detects transaction across supported chains when chainId is 0", async () => {
+      const tx = await service.lookupByHash(workspaceA, 0, validHash);
+      expect(tx).not.toBeNull();
+      expect(tx?.sourceTransactionHash).toBe(validHash);
+      expect(tx?.isClaimed).toBe(false);
+    });
+
     it("reflects claim status in lookup result", async () => {
       const tx = (await service.lookupByHash(workspaceA, 10143, validHash))!;
       await service.claimTransaction({

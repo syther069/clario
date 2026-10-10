@@ -153,7 +153,7 @@ export class TransactionImportService {
         message: "Workspace ID is required.",
       });
     }
-    if (!Number.isInteger(chainId) || chainId <= 0) {
+    if (!Number.isInteger(chainId) || chainId < 0) {
       throw new ProtocolError("UNSUPPORTED_CHAIN", {
         message: "Invalid chain ID.",
       });
@@ -168,11 +168,34 @@ export class TransactionImportService {
 
     const normalizedHash = cleanHash.toLowerCase() as `0x${string}`;
 
-    // 1. Fetch transaction details via adapter
-    const tx = await this.adapter.fetchTransactionByHash(
-      chainId,
-      normalizedHash,
-    );
+    // 1. Fetch transaction details via adapter (with multi-chain auto-detect if chainId is 0)
+    let tx: NormalizedTransaction | null = null;
+    let resolvedChainId = chainId;
+
+    if (chainId === 0) {
+      const probeChainIds = [
+        10143, 143, 8453, 1, 999, 42161, 10, 137, 11155111, 84532,
+      ];
+      const results = await Promise.all(
+        probeChainIds.map((cid) =>
+          this.adapter
+            .fetchTransactionByHash(cid, normalizedHash)
+            .catch(() => null),
+        ),
+      );
+      const matchedIdx = results.findIndex((res) => res !== null);
+      if (matchedIdx !== -1) {
+        tx = results[matchedIdx]!;
+        resolvedChainId = probeChainIds[matchedIdx]!;
+      }
+    } else {
+      tx = await this.adapter.fetchTransactionByHash(
+        chainId,
+        normalizedHash,
+      );
+      resolvedChainId = chainId;
+    }
+
     if (!tx) {
       return null;
     }
@@ -185,7 +208,7 @@ export class TransactionImportService {
           `SELECT id, workspace_id, expense_id, source_chain_id, source_transaction_hash, claim_slot, provider, status, imported_at
            FROM source_transactions
            WHERE workspace_id = $1 AND source_chain_id = $2 AND source_transaction_hash = $3 AND claim_slot = $4`,
-          [workspaceId, chainId, normalizedHash, tx.claimSlot],
+          [workspaceId, resolvedChainId, normalizedHash, tx.claimSlot],
         );
         existing = claimRes.rows[0];
       } catch {

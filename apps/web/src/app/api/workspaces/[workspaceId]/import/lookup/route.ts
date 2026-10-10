@@ -73,7 +73,9 @@ export async function GET(
       );
     }
 
-    const chainId = parseInt(chainIdParam, 10);
+    const parsedChainId =
+      chainIdParam === "auto" ? 0 : parseInt(chainIdParam, 10);
+    const chainId = Number.isNaN(parsedChainId) ? 0 : parsedChainId;
     const service = new TransactionImportService(db);
     const candidate = await service.lookupByHash(
       workspaceId,
