@@ -5,7 +5,6 @@ import {
   X,
   Check,
   Copy,
-  Download,
   ExternalLink,
   ShieldCheck,
   AlertTriangle,
@@ -16,11 +15,10 @@ import {
   RefreshCw,
   Pencil,
 } from "lucide-react";
-import type { ReceiptBundle, Transaction } from "@/lib/supabase/types";
+import type { ReceiptBundle, Transaction, CanonicalReceiptTransaction } from "@/lib/supabase/types";
 import {
   getMonadExplorerTxUrl,
   CLARIO_REGISTRY_ADDRESS,
-  MONAD_TESTNET_CHAIN_ID,
   computeReceiptHash,
   fetchOnchainReceipt,
   toBytes32Id,
@@ -101,12 +99,20 @@ export function ReceiptBundleModal({
     ? transactions.filter((t) => activeBundle.transaction_ids?.includes(t.id))
     : [];
 
-  let bundledTxs: any[] = [];
+  let bundledTxs: CanonicalReceiptTransaction[] = [];
 
   if (Array.isArray(rawEmbeddedTxs) && rawEmbeddedTxs.length > 0) {
     bundledTxs = rawEmbeddedTxs;
   } else if (matchedTxs.length > 0) {
-    bundledTxs = matchedTxs;
+    bundledTxs = matchedTxs.map((t) => ({
+      id: t.id,
+      merchant: t.merchant,
+      amount: Number(t.amount) || 0,
+      currency: t.currency || "USD",
+      date: (t.date || t.timestamp || new Date().toISOString()).slice(0, 10),
+      category: typeof t.category === "string" ? t.category : t.category?.name || "General",
+      type: t.type || "expense",
+    }));
   } else if (
     Array.isArray(activeBundle.transaction_ids) &&
     activeBundle.transaction_ids.length > 0
@@ -150,40 +156,6 @@ export function ReceiptBundleModal({
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
-  };
-
-  const handleDownloadReceiptFile = () => {
-    const payload = activeBundle.receipt_data || {
-      receiptId: activeBundle.id,
-      receiptNumber: activeBundle.receipt_number,
-      receiptName: receiptName,
-      createdAt: activeBundle.created_at,
-      owner: activeBundle.user_id,
-      transactionCount: activeBundle.transaction_count,
-      totalAmount: activeBundle.total_amount,
-      currency: activeBundle.currency,
-      transactionIds: activeBundle.transaction_ids,
-      transactions: bundledTxs,
-      blockchain: {
-        network: "Monad Testnet",
-        chainId: MONAD_TESTNET_CHAIN_ID,
-        contract: contractAddress,
-        txHash,
-        receiptHash,
-      },
-    };
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `clario-receipt-${activeBundle.receipt_number || activeBundle.id.slice(0, 8)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const handleConfirmRename = async () => {

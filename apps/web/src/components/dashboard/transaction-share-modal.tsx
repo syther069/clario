@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Receipt,
   Link as LinkIcon,
-  Layers,
 } from "lucide-react";
 import type { Transaction } from "@/lib/supabase/types";
 import {

@@ -65,16 +65,22 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
 
   it("activates embedded wallet for zero-friction social/passkey onboarding without external extension", () => {
     const embeddedAddress = "0x2222222222222222222222222222222222222222";
-    const embeddedWallet = {
+    interface MockWallet {
+      address: string;
+      walletClientType?: string;
+      type?: string;
+      getEthereumProvider?: () => Promise<unknown>;
+    }
+    const embeddedWallet: MockWallet = {
       address: embeddedAddress,
       walletClientType: "privy",
       type: "ethereum",
       getEthereumProvider: async () => ({}),
     };
-    const externalWallets: any[] = [];
+    const externalWallets: MockWallet[] = [];
 
     // When no external wallet is connected, embedded wallet becomes the active wallet
-    const activeWallet = externalWallets[0] || embeddedWallet || null;
+    const activeWallet: MockWallet = externalWallets[0] || embeddedWallet;
     expect(activeWallet).toBeDefined();
     expect(activeWallet.address).toBe(embeddedAddress);
 
@@ -108,7 +114,7 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
         email: { address: email },
         wallet: undefined,
       };
-      const activeWallets: any[] = [];
+      const activeWallets: Array<{ address: string; chainType?: string; type?: string }> = [];
 
       const externalEvmWallets = activeWallets.filter(
         (w) =>
@@ -165,7 +171,6 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
     });
 
     it("preserves stable Clario account identity when wallet disconnects", () => {
-      const email = "founder@clario.xyz";
       const privyUserId = "did:privy:clario-founder-1";
       let connectedEvmAddress: string | null = "0x836EF91234567890123456789012345678901234";
 

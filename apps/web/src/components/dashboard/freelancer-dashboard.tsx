@@ -53,12 +53,12 @@ import { ReceiptBundleModal } from "./receipt-bundle-modal";
 import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 import { Magnetic } from "@/components/ui/motion/magnetic";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { motion, AnimatePresence } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";
 import { NeoDatePicker } from "@/components/ui/neo-date-picker";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { TransactionShareModal } from "./transaction-share-modal";
+import { downloadCsv } from "@/lib/utils";
 
 interface FreelancerDashboardProps {
   transactions: Transaction[];
@@ -701,28 +701,20 @@ export function FreelancerDashboard({
       "Monad Tx Hash",
     ];
     const rows = deductibleExpenses.map((tx) => [
-      tx.date || tx.timestamp?.split("T")[0],
-      `"${tx.merchant.replace(/"/g, '""')}"`,
-      `"${tx.tax_category || tx.category || "General"}"`,
-      `"${tx.client_name || tx.project_name || "General Business"}"`,
+      tx.date || tx.timestamp?.split("T")[0] || "",
+      tx.merchant || "",
+      typeof tx.tax_category === "string" ? tx.tax_category : typeof tx.category === "string" ? tx.category : tx.category?.name || "General",
+      tx.client_name || tx.project_name || "General Business",
       tx.amount,
       tx.currency || "USD",
       "Yes",
       tx.monad_tx_hash || tx.blockchain_tx_hash || "",
     ]);
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
+    downloadCsv(
       `clario_freelance_deductions_${new Date().getFullYear()}.csv`,
+      headers,
+      rows,
     );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 
   return (

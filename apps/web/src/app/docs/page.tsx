@@ -14,7 +14,6 @@ import { ScrollProgress } from "@/components/ui/motion/scroll-progress";
 import {
   Search,
   Menu,
-  ChevronRight,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
@@ -38,20 +37,24 @@ function DocsMainContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const initialSection = searchParams.get("s") || "overview";
-  const [activeSectionId, setActiveSectionId] = useState<string>(initialSection);
+  const paramSection = searchParams.get("s");
+  const [activeSectionId, setActiveSectionId] = useState<string>(
+    paramSection && DOC_SECTIONS.some((sec) => sec.id === paramSection)
+      ? paramSection
+      : "overview",
+  );
+  const [prevParamSection, setPrevParamSection] = useState(paramSection);
+  if (paramSection !== prevParamSection) {
+    setPrevParamSection(paramSection);
+    if (paramSection && DOC_SECTIONS.some((sec) => sec.id === paramSection)) {
+      setActiveSectionId(paramSection);
+    }
+  }
+
   const [activeSubsectionId, setActiveSubsectionId] = useState<string>("");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  // Sync state if query changes
-  useEffect(() => {
-    const s = searchParams.get("s");
-    if (s && DOC_SECTIONS.some((sec) => sec.id === s)) {
-      setActiveSectionId(s);
-    }
-  }, [searchParams]);
 
   const activeSection: DocSection =
     DOC_SECTIONS.find((sec) => sec.id === activeSectionId) ?? DOC_SECTIONS[0]!;
@@ -224,9 +227,9 @@ function DocsMainContent() {
             <Link href="/docs" className="hover:text-[#121212] font-black uppercase">
               SPEC
             </Link>
-            <span>//</span>
+            <span>{"//"}</span>
             <span className="font-bold text-slate-600 uppercase">{activeSection.group}</span>
-            <span>//</span>
+            <span>{"//"}</span>
             <span className="font-black text-[#836EF9] uppercase tracking-wider">
               {activeSection.title}
             </span>

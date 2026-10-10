@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Tag, Check, X, Trash2, Wallet } from "lucide-react";
 
@@ -21,13 +21,12 @@ export function EditNicknameModal({
   onSave,
   title = "Set Wallet Nickname",
 }: EditNicknameModalProps) {
-  const [nicknameInput, setNicknameInput] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      setNicknameInput(currentNickname || "");
-    }
-  }, [isOpen, currentNickname]);
+  const [nicknameInput, setNicknameInput] = useState(currentNickname || "");
+  const [prevCurrent, setPrevCurrent] = useState(currentNickname);
+  if (currentNickname !== prevCurrent) {
+    setPrevCurrent(currentNickname);
+    setNicknameInput(currentNickname || "");
+  }
 
   if (!isOpen) return null;
 

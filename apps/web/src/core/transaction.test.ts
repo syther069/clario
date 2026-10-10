@@ -23,7 +23,7 @@ const localStorageMock = {
     for (const key in store) delete store[key];
   },
   length: 0,
-  key: (_idx: number) => null,
+  key: () => null,
 };
 
 // Polyfill test globals safely

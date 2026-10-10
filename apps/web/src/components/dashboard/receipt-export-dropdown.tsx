@@ -135,7 +135,6 @@ export function ReceiptExportDropdown({
   align = "auto",
 }: ReceiptExportDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeFormat, setActiveFormat] = useState<ExportFormat | null>(null);
   const [downloadSuccess, setDownloadSuccess] = useState<ExportFormat | null>(
     null,
   );
@@ -227,7 +226,6 @@ export function ReceiptExportDropdown({
   }, [isOpen, align]);
 
   const handleSelectFormat = async (fmt: ExportFormat) => {
-    setActiveFormat(fmt);
     try {
       await triggerReceiptExport(receiptData, fmt);
       setDownloadSuccess(fmt);

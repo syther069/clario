@@ -14,8 +14,8 @@ describe("Input Validation & Prototype Pollution Defense (SEC-09)", () => {
 
     expect(parsed.title).toBe("Lunch");
     // Verify __proto__ was stripped and not set on Object.prototype
-    expect((parsed as any).__proto__.polluted).toBeUndefined();
-    expect((({} as any).polluted)).toBeUndefined();
+    expect((parsed as Record<string, unknown>).__proto__).not.toHaveProperty("polluted");
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
   });
 
   it("handles parseSafeJson with clean payloads", async () => {

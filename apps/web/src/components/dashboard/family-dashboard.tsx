@@ -60,6 +60,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
 import { TransactionShareModal } from "./transaction-share-modal";
+import { downloadCsv } from "@/lib/utils";
 
 interface FamilyDashboardProps {
   transactions: Transaction[];
@@ -91,9 +92,6 @@ export function FamilyDashboard({
   onViewReceipt,
   onSaveOnChain,
   userId = "demo_user",
-  userAddress,
-  hasConnectedWallet,
-  onConnectWallet,
   currencySymbol = "$",
 }: FamilyDashboardProps) {
   const householdId = `household_${userId}`;
@@ -874,29 +872,19 @@ export function FamilyDashboard({
     ];
     const rows = householdExpenses.map((tx) => [
       tx.date || tx.timestamp?.split("T")[0] || "",
-      `"${tx.merchant.replace(/"/g, '""')}"`,
-      tx.category || "General",
+      tx.merchant || "",
+      typeof tx.category === "string" ? tx.category : tx.category?.name || "General",
       tx.amount,
       tx.currency,
       tx.status,
       "Yes",
     ]);
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.join(",")),
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
+    downloadCsv(
       `family_household_expenses_${new Date().toISOString().split("T")[0]}.csv`,
+      headers,
+      rows,
     );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 
   return (

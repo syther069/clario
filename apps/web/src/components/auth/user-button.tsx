@@ -48,8 +48,6 @@ export function UserButton() {
     hasConnectedEvmWallet,
     connectEvmWallet,
     disconnectWallet,
-    isEmailOnlyUser,
-    accountType,
     linkWallet,
     linkEmail,
     linkGoogle,

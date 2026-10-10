@@ -23,17 +23,14 @@ import {
   IdentityScope,
   ClientEntity,
   InvoiceEntity,
-  FamilyMemberEntity,
   FamilyBillEntity,
   FamilySettlementEntity,
-  BusinessTeamMemberEntity,
   BusinessReimbursementEntity,
   ExpensePolicyEntity,
   BusinessAuditEventEntity,
   BudgetEntity,
   SubscriptionEntity,
   EVENT_CLIENTS_UPDATED,
-  EVENT_INVOICES_UPDATED,
   EVENT_FAMILY_UPDATED,
   EVENT_BUSINESS_UPDATED,
   EVENT_PERSONAL_MODE_UPDATED,
@@ -52,7 +49,7 @@ const localStorageMock = {
     for (const key in store) delete store[key];
   },
   length: 0,
-  key: (_idx: number) => null,
+  key: () => null,
 };
 
 Object.defineProperty(globalThis, "localStorage", {

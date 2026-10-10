@@ -13,8 +13,6 @@
  * - All exports include Monad explorer URLs for instant external auditor verification.
  */
 
-import type { Transaction } from "@/lib/supabase/types";
-import type { NormalizedReceiptData } from "./receipt-exporter";
 import { CLARIO_REGISTRY_ADDRESS, MONAD_TESTNET_CHAIN_ID, getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
 
 export type ExportableTransaction = {
@@ -498,7 +496,7 @@ export function generateCorporateAuditPackagePdf(
   c("ET");
 
   // Table Header
-  let tableY = 595;
+  const tableY = 595;
   c("0.9 0.9 0.92 rg");
   c(`36 ${tableY} 540 22 re f`);
   c("0.07 0.07 0.07 RG");

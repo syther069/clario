@@ -38,7 +38,6 @@ import { TreasuryQueueView } from "../treasury-queue-view";
 import { AnimatedBackground } from "@/components/ui/motion/animated-background";
 import { Magnetic } from "@/components/ui/motion/magnetic";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
-import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getBusinessTeam,
@@ -58,6 +57,7 @@ import { NeoSelect } from "@/components/ui/neo-select";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
 import { TransactionShareModal } from "./transaction-share-modal";
+import { downloadCsv } from "@/lib/utils";
 
 interface BusinessDashboardProps {
   transactions: Transaction[];
@@ -698,8 +698,8 @@ export function BusinessDashboard({
     const rows = businessExpenses.map((t) => [
       t.id,
       t.date || t.timestamp.split("T")[0],
-      `"${(t.merchant || "").replace(/"/g, '""')}"`,
-      `"${(t.description || "").replace(/"/g, '""')}"`,
+      t.merchant || "",
+      t.description || "",
       t.department || "General",
       typeof t.category === "string"
         ? t.category
@@ -708,21 +708,11 @@ export function BusinessDashboard({
       t.currency || "USD",
       t.status || "cleared",
     ]);
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.join(",")),
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
+    downloadCsv(
       `corporate-expenses-${new Date().toISOString().split("T")[0]}.csv`,
+      headers,
+      rows,
     );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 
   function exportAuditCSV() {
@@ -743,28 +733,18 @@ export function BusinessDashboard({
     const rows = auditEvents.map((evt) => [
       evt.id,
       evt.timestamp,
-      `"${(evt.actor_name || "").replace(/"/g, '""')}"`,
+      evt.actor_name || "",
       evt.action,
       evt.entity_type,
       evt.entity_id || "",
       evt.severity,
-      `"${(evt.details || "").replace(/"/g, '""')}"`,
+      evt.details || "",
     ]);
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.join(",")),
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
+    downloadCsv(
       `corporate-audit-trail-${new Date().toISOString().split("T")[0]}.csv`,
+      headers,
+      rows,
     );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 
   return (

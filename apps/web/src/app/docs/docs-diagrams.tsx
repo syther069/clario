@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  ShieldCheck,
-  Cpu,
-  Lock,
-  ArrowRight,
-  Database,
-  FileCheck,
-  Fingerprint,
-} from "lucide-react";
+import { Cpu, Lock } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
 export function ClarioPipelineDiagram() {

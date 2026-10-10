@@ -3,16 +3,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
-import { DOC_SECTIONS, type DocSection } from "./docs-data";
+import { DOC_SECTIONS } from "./docs-data";
 import { ClarioLogo } from "@/components/ui/clario-logo";
 import {
   Search,
   ArrowLeft,
   ChevronRight,
   X,
-  Compass,
 } from "lucide-react";
-import { MonadLogo } from "@/components/ui/crypto-icon";
 
 interface DocsSidebarProps {
   activeSectionId: string;
@@ -133,7 +131,7 @@ export function DocsSidebar({
                   <div className="px-2 py-0.5 mb-1 border-b border-[#121212]/10 flex items-center justify-between">
                     <span className="font-mono text-[10px] font-bold tracking-wider text-slate-500 uppercase flex items-center gap-1.5">
                       <span className="text-[#836EF9] font-black">{groupNum}</span>
-                      <span className="text-slate-300">//</span>
+                      <span className="text-slate-300">{"//"}</span>
                       <span>{group}</span>
                     </span>
                   </div>

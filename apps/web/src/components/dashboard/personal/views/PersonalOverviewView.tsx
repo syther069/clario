@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ArrowRight, TrendingUp, TrendingDown, ShieldCheck } from "lucide-react";
-import { MonadLogo, CryptoBadge } from "@/components/ui/crypto-icon";
+import { MonadLogo } from "@/components/ui/crypto-icon";
 import { formatCategoryName } from "@/domain/analytics/financial-metrics";
 import type { SpendingCategoryItem } from "@/domain/analytics/financial-metrics";
 import type { BudgetStatusItem } from "@/domain/budgets/budget-engine";

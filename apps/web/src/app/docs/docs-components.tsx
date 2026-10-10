@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, Copy, AlertCircle, Info, ShieldAlert, CheckCircle2, Terminal } from "lucide-react";
+import { Check, Copy, AlertCircle, Info, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { ContextualIconSwap } from "@/components/ui/motion";
 
 // ==========================================
@@ -164,7 +164,7 @@ export function DocTable({ headers, rows, caption }: DocTableProps) {
     <div className="my-6 overflow-hidden rounded-md border-2 border-[#121212] bg-white shadow-[4px_4px_0_0_#121212]">
       {caption && (
         <div className="border-b-2 border-[#121212] bg-[#F4F4F0] px-4 py-2 font-mono text-[11px] font-black uppercase tracking-wider text-[#121212] flex items-center justify-between">
-          <span>// {caption}</span>
+          <span>{"//"} {caption}</span>
           <span className="text-slate-500 font-mono text-[10px]">[ ROWS: {rows.length} ]</span>
         </div>
       )}
@@ -219,7 +219,7 @@ export function DocStatGrid({ items }: { items: DocStatItem[] }) {
           className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212] flex flex-col justify-between"
         >
           <div className="flex items-center justify-between text-xs font-mono uppercase text-slate-500 font-bold mb-1">
-            <span>// {item.label}</span>
+            <span>{"//"} {item.label}</span>
             {item.badge && (
               <span className="rounded border border-[#121212] bg-[#836EF9] px-1.5 py-0.5 text-[9px] font-mono font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
                 {item.badge}

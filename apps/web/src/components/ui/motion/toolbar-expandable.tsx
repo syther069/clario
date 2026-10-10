@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect } from "react";
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, type Transition } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ export interface ToolbarExpandableProps {
 
 const DEFAULT_SPRING: Transition = {
   type: "spring",
-  stiffness: 400,
+  stiffness: 450,
   damping: 32,
 };
 
@@ -52,12 +52,12 @@ export function ToolbarExpandable({
   const isControlled = controlledExpanded !== undefined;
   const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
 
-  const setIsExpanded = (next: boolean) => {
+  const setIsExpanded = useCallback((next: boolean) => {
     if (!isControlled) {
       setUncontrolledExpanded(next);
     }
     onExpandedChange?.(next);
-  };
+  }, [isControlled, onExpandedChange]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -67,7 +67,7 @@ export function ToolbarExpandable({
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isExpanded]);
+  }, [isExpanded, setIsExpanded]);
 
   return (
     <ToolbarExpandableContext.Provider value={{ isExpanded, setIsExpanded }}>

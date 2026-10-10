@@ -217,65 +217,6 @@ const MODE_NAV_CONFIG: Record<PlatformMode, NavItem[]> = {
       href: "/?mode=business&view=governance",
     },
   ],
-  crypto: [
-    {
-      id: "overview",
-      label: "Overview",
-      icon: LayoutDashboard,
-      href: "/?mode=personal&view=overview",
-    },
-    {
-      id: "expenses",
-      label: "Expenses",
-      icon: TrendingDown,
-      href: "/?mode=personal&view=expenses",
-    },
-    {
-      id: "income",
-      label: "Income",
-      icon: TrendingUp,
-      href: "/?mode=personal&view=income",
-    },
-    {
-      id: "budgets",
-      label: "Budgets",
-      icon: ChartNoAxesCombined,
-      href: "/?mode=personal&view=budgets",
-    },
-    {
-      id: "recurring",
-      label: "Recurring",
-      icon: RotateCcw,
-      href: "/?mode=personal&view=recurring",
-    },
-    {
-      id: "receipts",
-      label: "Saved Receipts",
-      icon: Receipt,
-      href: "/?mode=personal&view=receipts",
-    },
-  ],
-  power_user: [
-    { id: "overview", label: "Overview", icon: LayoutDashboard, href: "/" },
-    {
-      id: "receipts",
-      label: "Receipts (OCR)",
-      icon: Receipt,
-      href: "/receipts",
-    },
-    {
-      id: "subscriptions",
-      label: "Subscriptions",
-      icon: RotateCcw,
-      href: "/subscriptions",
-    },
-    {
-      id: "budgets",
-      label: "Budgets & Goals",
-      icon: ChartNoAxesCombined,
-      href: "/budgets",
-    },
-  ],
 };
 
 interface UniversalNavProps {

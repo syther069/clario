@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, Hash, ArrowRight, CornerDownLeft } from "lucide-react";
+import { X, Hash, ArrowRight } from "lucide-react";
 import { DOC_SECTIONS, type DocSection } from "./docs-data";
 
 interface DocsSearchModalProps {
@@ -16,13 +16,18 @@ export function DocsSearchModal({
   onSelectSection,
 }: DocsSearchModalProps) {
   const [query, setQuery] = useState("");
+  const [prevOpen, setPrevOpen] = useState(isOpen);
+  if (!isOpen && prevOpen) {
+    setPrevOpen(false);
+    setQuery("");
+  } else if (isOpen && !prevOpen) {
+    setPrevOpen(true);
+  }
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
     }
   }, [isOpen]);
 

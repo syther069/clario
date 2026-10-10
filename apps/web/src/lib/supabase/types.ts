@@ -1,5 +1,4 @@
-export type PlatformMode =
-  "personal" | "power_user" | "freelancer" | "family" | "business" | "crypto";
+export type PlatformMode = "personal" | "freelancer" | "family" | "business";
 
 export type PersonalView =
   "overview" | "expenses" | "income" | "budgets" | "recurring" | "receipts";

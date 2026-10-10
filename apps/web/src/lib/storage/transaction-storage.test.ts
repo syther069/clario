@@ -1,18 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   getStoredTransactions,
-  saveStoredTransactions,
   upsertStoredTransaction,
-  upsertStoredTransactions,
   extractTransactionsFromReceiptBundles,
-  STORAGE_KEY_TRANSACTIONS,
 } from "./transaction-storage";
 import {
   getStoredReceiptBundles,
   saveStoredReceiptBundle,
-  saveStoredReceiptBundles,
   mergeReceiptBundles,
-  STORAGE_KEY_RECEIPTS,
 } from "@/lib/receipts/receipt-client-storage";
 import type { Transaction, ReceiptBundle } from "@/lib/supabase/types";
 

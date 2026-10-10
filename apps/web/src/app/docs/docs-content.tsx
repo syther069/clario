@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import {
   DocCodeBlock,
   DocCallout,
@@ -15,22 +14,18 @@ import {
 } from "./docs-diagrams";
 import {
   ShieldCheck,
-  CheckCircle2,
   Terminal,
   ExternalLink,
   Cpu,
   Layers,
   Lock,
-  ArrowRight,
   Database,
-  FileCheck,
   Wallet,
   Code2,
   Zap,
   Coins,
   Fingerprint,
   KeyRound,
-  Sparkles,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
@@ -74,21 +69,21 @@ export function DocSectionContent({ sectionId }: SectionContentProps) {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
               <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
-                <div className="font-mono text-xs font-black uppercase text-[#836EF9] mb-1">// LAYER 01</div>
+                <div className="font-mono text-xs font-black uppercase text-[#836EF9] mb-1">{"//"} LAYER 01</div>
                 <div className="font-mono font-black text-sm text-[#121212] mb-1">Financial Intelligence</div>
                 <p className="text-xs text-slate-600 font-medium">
                   Automated categorization, multi-chain indexing via Alchemy, and multimodal receipt OCR powered by Gemini 2.5 Flash.
                 </p>
               </div>
               <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
-                <div className="font-mono text-xs font-black uppercase text-[#121212] mb-1">// LAYER 02</div>
+                <div className="font-mono text-xs font-black uppercase text-[#121212] mb-1">{"//"} LAYER 02</div>
                 <div className="font-mono font-black text-sm text-[#121212] mb-1">Financial Operations</div>
                 <p className="text-xs text-slate-600 font-medium">
                   Unified multi-mode ledger spanning Personal, Freelancer, Family, and Business accounts with shared budgets and invoices.
                 </p>
               </div>
               <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
-                <div className="font-mono text-xs font-black uppercase text-[#836EF9] mb-1">// LAYER 03</div>
+                <div className="font-mono text-xs font-black uppercase text-[#836EF9] mb-1">{"//"} LAYER 03</div>
                 <div className="font-mono font-black text-sm text-[#121212] mb-1">Cryptographic Verification</div>
                 <p className="text-xs text-slate-600 font-medium">
                   Canonical RFC 8785 JSON bundling, Keccak-256 commitments anchored on Monad Testnet, and offline verification CLI.
@@ -127,25 +122,25 @@ export function DocSectionContent({ sectionId }: SectionContentProps) {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-md border-2 border-[#121212] bg-white shadow-[3px_3px_0_0_#121212]">
-                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">// FREELANCERS & CONTRACTORS</h4>
+                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">{"//"} FREELANCERS & CONTRACTORS</h4>
                 <p className="text-xs text-slate-600 font-medium">
                   Issue verifiable milestone invoices, track project expenses, and calculate estimated quarterly tax obligations with audit-proof export packages.
                 </p>
               </div>
               <div className="p-4 rounded-md border-2 border-[#121212] bg-white shadow-[3px_3px_0_0_#121212]">
-                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">// WEB3 STARTUPS & DAOS</h4>
+                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">{"//"} WEB3 STARTUPS & DAOS</h4>
                 <p className="text-xs text-slate-600 font-medium">
                   Manage team expense reimbursements in USDC on Monad, guarantee non-duplication onchain, and maintain strict offchain evidence privacy.
                 </p>
               </div>
               <div className="p-4 rounded-md border-2 border-[#121212] bg-white shadow-[3px_3px_0_0_#121212]">
-                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">// MODERN HOUSEHOLDS</h4>
+                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">{"//"} MODERN HOUSEHOLDS</h4>
                 <p className="text-xs text-slate-600 font-medium">
                   Collaborative family budgeting, shared recurring subscription monitoring, and automated anomaly warnings when utility bills spike.
                 </p>
               </div>
               <div className="p-4 rounded-md border-2 border-[#121212] bg-white shadow-[3px_3px_0_0_#121212]">
-                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">// CRYPTO NATIVES & INVESTORS</h4>
+                <h4 className="font-mono font-black text-sm text-[#121212] mb-1">{"//"} CRYPTO NATIVES & INVESTORS</h4>
                 <p className="text-xs text-slate-600 font-medium">
                   Aggregate multi-chain EVM wallet activities into a consolidated net worth view without sacrificing custody or private keys.
                 </p>
@@ -891,7 +886,7 @@ function reimburseExpense(
               <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-[#836EF9] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
                 <Zap className="h-3 w-3" /> Flagship UX
               </span>
-              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Privy Delegated Actions</span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">{"//"} Privy Delegated Actions</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
               <span className="text-[#836EF9]">#</span> 1-Click Session Signing (Delegated Actions)
@@ -987,7 +982,7 @@ export function useClarioAuth() {
               <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-emerald-600 px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
                 <Coins className="h-3 w-3" /> Native Onramp
               </span>
-              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Privy useFundWallet</span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">{"//"} Privy useFundWallet</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
               <span className="text-[#836EF9]">#</span> Native Wallet Funding (useFundWallet)
@@ -1062,7 +1057,7 @@ export const monadTestnet = defineChain({
               <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-indigo-600 px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
                 <Fingerprint className="h-3 w-3" /> FIDO2 & Security
               </span>
-              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Passkeys & Recovery</span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">{"//"} Passkeys & Recovery</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
               <span className="text-[#836EF9]">#</span> Passkeys, Recovery & Self-Custody
@@ -1465,7 +1460,7 @@ WITH CHECK (auth.uid() = user_id);`}
               <li>Switch to <strong>Business Mode</strong> or <strong>Personal Mode</strong>.</li>
               <li>Upload a sample receipt in the <strong>Receipts</strong> tab. Gemini 2.5 Flash extracts fields in real time.</li>
               <li>Confirm receipt: Clario canonicalizes the metadata via RFC 8785 and computes the Keccak-256 commitment.</li>
-              <li>Anchor on Monad: Click "Anchor on Monad" to write the commitment to contract <code className="font-mono text-[#836EF9]">0x92f9B76673C1D88c9E3c490A88eB95b08823bA87</code>.</li>
+              <li>Anchor on Monad: Click &quot;Anchor on Monad&quot; to write the commitment to contract <code className="font-mono text-[#836EF9]">0x92f9B76673C1D88c9E3c490A88eB95b08823bA87</code>.</li>
               <li>Export package: Download <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">clario-export.zip</code>.</li>
               <li>Verify offline: Run <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">pnpm verify:package -- ./clario-export.zip --rpc https://testnet-rpc.monad.xyz</code> to confirm cryptographic offline validity against onchain state.</li>
             </ol>

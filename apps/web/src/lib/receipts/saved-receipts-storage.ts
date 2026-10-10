@@ -4,6 +4,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import type {
   ReceiptBundle,
   CanonicalReceiptBundle,
+  CanonicalReceiptTransaction,
 } from "@/lib/supabase/types";
 import {
   CLARIO_REGISTRY_ADDRESS,
@@ -63,14 +64,14 @@ export function ensureCanonicalReceiptData(
       ? d.transactionIds
       : fallback.transactionIds;
 
-  let txs: any[] = [];
+  let txs: CanonicalReceiptTransaction[] = [];
   if (Array.isArray(d.transactions) && d.transactions.length > 0) {
-    txs = d.transactions;
+    txs = d.transactions as CanonicalReceiptTransaction[];
   } else if (
     Array.isArray(fallback.transactions) &&
     fallback.transactions.length > 0
   ) {
-    txs = fallback.transactions;
+    txs = fallback.transactions as CanonicalReceiptTransaction[];
   } else if (txIds && txIds.length > 0) {
     // Synthesize transaction items so transactions is NEVER empty if transactionIds exist
     const total = Number(d.totalAmount ?? fallback.totalAmount) || 0;

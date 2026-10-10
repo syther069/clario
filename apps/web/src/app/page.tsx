@@ -70,7 +70,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
 
   // Sync mode and view from searchParams
   useEffect(() => {
-    const urlMode = searchParams.get("mode") as PlatformMode | null;
+    const urlMode = searchParams.get("mode");
     const validModes: PlatformMode[] = [
       "personal",
       "freelancer",
@@ -81,8 +81,12 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     const normalizedMode =
       urlMode === "crypto" || urlMode === "power_user" ? "personal" : urlMode;
 
-    if (normalizedMode && validModes.includes(normalizedMode) && normalizedMode !== activeMode) {
-      setActiveMode(normalizedMode);
+    if (
+      normalizedMode &&
+      validModes.includes(normalizedMode as PlatformMode) &&
+      normalizedMode !== activeMode
+    ) {
+      setActiveMode(normalizedMode as PlatformMode);
     }
 
     const urlView = searchParams.get("view");
@@ -640,8 +644,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
           />
         )}
 
-        {(activeMode === "personal" ||
-          activeMode === "power_user") && (
+        {activeMode === "personal" && (
           <PersonalDashboard
             currentMode={activeMode}
             transactions={transactions}
@@ -712,7 +715,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const urlMode = searchParams.get("mode") as PlatformMode | null;
+  const urlMode = searchParams.get("mode");
   const urlTxId = searchParams.get("txId");
 
   const validModes: PlatformMode[] = [
@@ -724,7 +727,7 @@ function HomeContent() {
 
   const isDashboard =
     (!!urlMode &&
-      (validModes.includes(urlMode) ||
+      (validModes.includes(urlMode as PlatformMode) ||
         urlMode === "crypto" ||
         urlMode === "power_user")) ||
     !!urlTxId;
@@ -734,7 +737,9 @@ function HomeContent() {
   }
 
   const effectiveInitialMode: PlatformMode =
-    urlMode && validModes.includes(urlMode) ? urlMode : "personal";
+    urlMode && validModes.includes(urlMode as PlatformMode)
+      ? (urlMode as PlatformMode)
+      : "personal";
 
   return <DashboardContent initialMode={effectiveInitialMode} />;
 }

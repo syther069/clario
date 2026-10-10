@@ -4,7 +4,6 @@ import React from "react";
 import { TrendingUp, TrendingDown, ChartNoAxesCombined, Calendar } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { BorderTrail, SlidingNumber } from "@/components/ui/motion";
-import type { Subscription } from "@/lib/supabase/types";
 
 export interface PersonalKpiCardsProps {
   subLedger: "all" | "fiat" | "onchain";

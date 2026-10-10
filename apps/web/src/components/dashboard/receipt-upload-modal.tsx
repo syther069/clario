@@ -130,7 +130,6 @@ export function ReceiptUploadModal({
     setIsSaving(true);
     const ext = result.extractedData;
     const numAmount = parseFloat(editAmount) || ext.totalAmount || 0;
-    const numTax = editTaxAmount ? parseFloat(editTaxAmount) : ext.taxAmount;
 
     const newTx: Partial<Transaction> = {
       user_id: userId,

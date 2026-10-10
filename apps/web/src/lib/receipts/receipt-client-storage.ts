@@ -1,5 +1,5 @@
 import type { ReceiptBundle, CanonicalReceiptBundle } from "@/lib/supabase/types";
-import { normalizeIdentityKey, getScopedKey } from "@/lib/storage/transaction-storage";
+import { getScopedKey } from "@/lib/storage/transaction-storage";
 
 export const STORAGE_KEY_RECEIPTS = "clario_saved_receipts";
 

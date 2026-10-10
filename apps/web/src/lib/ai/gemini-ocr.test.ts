@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   extractReceiptWithGemini,
   sanitizeAndEnrichReceiptData,
-  generateFallbackOcrResult,
   type ExtractedReceiptData,
 } from "./gemini-ocr";
 

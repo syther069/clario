@@ -32,11 +32,8 @@ import {
   UsdcLogo,
   UsdtLogo,
   AlchemyLogo,
-  detectCryptoIdentity,
-  CryptoChainIcon,
-  CryptoCoinIcon,
 } from "@/components/ui/crypto-icon";
-import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { ClarioButton } from "@/components/ui/clario-ui";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import { motion, AnimatePresence } from "motion/react";
 import { NeoSelect } from "@/components/ui/neo-select";

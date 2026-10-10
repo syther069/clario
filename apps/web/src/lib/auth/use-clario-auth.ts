@@ -54,7 +54,6 @@ export function useClarioAuth() {
   );
 
   useEffect(() => {
-    setNicknames(getAllNicknames());
     return subscribeNicknameUpdates(() => {
       setNicknames(getAllNicknames());
     });
@@ -346,7 +345,7 @@ export function useClarioAuth() {
       return nicknames[`user_${user.id}`]!;
     }
     return getWalletNickname(activeWalletAddress);
-  }, [activeWalletAddress, nicknames, user?.id]);
+  }, [activeWalletAddress, nicknames, user]);
 
   // Primary display identifier (Nickname > Google Name > Email Prefix > Wallet Address > User ID)
   const displayName: string = useMemo(() => {
@@ -372,7 +371,7 @@ export function useClarioAuth() {
         setWalletNicknameStorage(`user_${user.id}`, name, user.id);
       }
     },
-    [activeWalletAddress, user?.id],
+    [activeWalletAddress, user],
   );
 
   const getNickname = useCallback(

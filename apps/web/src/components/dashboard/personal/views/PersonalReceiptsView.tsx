@@ -25,6 +25,7 @@ import {
   MonadLogo,
 } from "@/components/ui/crypto-icon";
 import { MONAD_TESTNET_CHAIN_ID, getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
+import type { ReceiptBundle } from "@/lib/supabase/types";
 import type { DashboardTransaction } from "../types";
 
 export interface PersonalReceiptsViewProps {
@@ -32,8 +33,8 @@ export interface PersonalReceiptsViewProps {
   activeLedgerTab: "transactions" | "receipts";
   setActiveLedgerTab: (tab: "transactions" | "receipts") => void;
   transactions: DashboardTransaction[];
-  verifiedReceipts: any[];
-  filteredVerifiedReceipts: any[];
+  verifiedReceipts: ReceiptBundle[];
+  filteredVerifiedReceipts: ReceiptBundle[];
   displayedTransactions: DashboardTransaction[];
   hasData: boolean;
   saveError: string | null;
@@ -49,7 +50,7 @@ export interface PersonalReceiptsViewProps {
   currencySymbol: string;
   formatTransactionDateTime: (t?: string | null) => string;
   formatCategoryName: (cat?: string | import("@/lib/supabase/types").Category | null, catId?: string | null) => string;
-  receiptBundles: Record<string, any>;
+  receiptBundles: Record<string, ReceiptBundle>;
   savingTxId: string | null;
   savingProgressLabel: string;
   handleSaveReceipt: (tx: DashboardTransaction) => void;

@@ -28,12 +28,6 @@ export function ClarioAssistantTrigger({
     return () => clearTimeout(timer);
   }, [isDismissed, isOpen]);
 
-  // When drawer opens, hide greeting popup
-  useEffect(() => {
-    if (isOpen) {
-      setShowGreeting(false);
-    }
-  }, [isOpen]);
 
   const handleDismissGreeting = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -18,7 +18,7 @@ import {
   type ReceiptBundleStep,
 } from "@/lib/blockchain/save-receipt-bundle";
 import type { ConnectedWallet } from "@privy-io/react-auth";
-import { ClarioButton, ClarioBadge } from "@/components/ui/clario-ui";
+import { ClarioButton } from "@/components/ui/clario-ui";
 import { motion, AnimatePresence } from "motion/react";
 
 interface ReceiptPreviewModalProps {

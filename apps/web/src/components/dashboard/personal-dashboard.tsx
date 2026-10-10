@@ -57,7 +57,7 @@ import { PersonalReceiptsView } from "./personal/views/PersonalReceiptsView";
 import { WalletGuardModal } from "./personal/modals/WalletGuardModal";
 import { CreateBudgetModal } from "./personal/modals/CreateBudgetModal";
 import { AddSubscriptionModal } from "./personal/modals/AddSubscriptionModal";
-import type { SubFrequency, DashboardTransaction } from "./personal/types";
+import type { SubFrequency } from "./personal/types";
 
 export interface PersonalDashboardProps {
   currentMode?: PlatformMode | undefined;
@@ -78,7 +78,6 @@ export interface PersonalDashboardProps {
 }
 
 export function PersonalDashboard({
-  currentMode = "personal",
   transactions = [],
   subscriptions = [],
   budgets = [],
@@ -134,9 +133,7 @@ export function PersonalDashboard({
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
 
   // Sub-ledger state (All vs Personal Finance vs On-Chain)
-  const [subLedger, setSubLedger] = useState<"all" | "fiat" | "onchain">(
-    currentMode === "crypto" ? "onchain" : "all",
-  );
+  const [subLedger, setSubLedger] = useState<"all" | "fiat" | "onchain">("all");
 
   const [fiatCurrency, setFiatCurrency] = useState<{ code: string; symbol: string }>({
     code: "USD",
@@ -198,19 +195,25 @@ export function PersonalDashboard({
     const stored = getStoredBudgets(userId);
     return stored.length > 0 ? stored : budgets;
   });
-
-  useEffect(() => {
-    if (budgets && budgets.length > 0) setLocalBudgets(budgets);
-  }, [budgets]);
+  const [prevBudgets, setPrevBudgets] = useState(budgets);
+  if (budgets !== prevBudgets) {
+    setPrevBudgets(budgets);
+    if (budgets.length > 0) {
+      setLocalBudgets(budgets);
+    }
+  }
 
   const [localSubscriptions, setLocalSubscriptions] = useState<Subscription[]>(() => {
     const stored = getStoredSubscriptions(userId);
     return stored.length > 0 ? stored : subscriptions;
   });
-
-  useEffect(() => {
-    if (subscriptions && subscriptions.length > 0) setLocalSubscriptions(subscriptions);
-  }, [subscriptions]);
+  const [prevSubs, setPrevSubs] = useState(subscriptions);
+  if (subscriptions !== prevSubs) {
+    setPrevSubs(subscriptions);
+    if (subscriptions.length > 0) {
+      setLocalSubscriptions(subscriptions);
+    }
+  }
 
   // Cash flow period
   const [cashFlowPeriod, setCashFlowPeriod] = useState<"7D" | "30D" | "3M" | "6M" | "1Y">("30D");
