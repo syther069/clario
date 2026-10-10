@@ -14,6 +14,7 @@ import {
 } from "./docs-diagrams";
 import {
   ShieldCheck,
+  CheckCircle2,
   Terminal,
   ExternalLink,
   Cpu,
@@ -1169,7 +1170,110 @@ export const monadTestnet = defineChain({
                   "Settings > Linked Identities",
                   "Unifies Google, Email, SMS, & multiple external EVM wallets to 1 DID",
                 ],
+                [
+                  "Security Webhooks",
+                  "Svix HMAC-SHA256 (/api/webhooks/privy)",
+                  "user.wallet_created & private_key.exported",
+                  "Automated wallet audit tracking & instant alert on self-custody key export",
+                ],
               ]}
+            />
+          </section>
+
+          {/* 7. privy-webhooks */}
+          <section id="privy-webhooks" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-[#121212] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
+                <ShieldCheck className="h-3 w-3 text-emerald-400" /> Server-to-Server Audit
+              </span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Privy Webhooks (/api/webhooks/privy)</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> Privy Webhooks & Security Audit Trail
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              To provide enterprise-grade auditability and real-time security tracking, Clario exposes an authenticated webhook ingestion endpoint at <code className="font-mono text-xs font-bold text-[#836EF9]">/api/webhooks/privy</code>.
+            </p>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Every incoming webhook is cryptographically verified against Privy&apos;s signing secret using the <strong>Svix HMAC-SHA256 standard</strong> with automatic 5-minute replay attack windows and timing-safe signature comparison.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-[#836EF9] mb-1">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Wallet Lifecycle</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                  Listens for <code className="font-mono text-[10px] font-bold">user.wallet_created</code> (provisions embedded wallet) and <code className="font-mono text-[10px] font-bold">wallet.restored</code> (re-activates archived wallets).
+                </p>
+              </div>
+
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-rose-600 mb-1">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Key Export Security</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                  Triggers an immediate <strong>CRITICAL ALERT</strong> log for <code className="font-mono text-[10px] font-bold">wallet.private_key_export</code> when a user exports raw keys for self-custody.
+                </p>
+              </div>
+
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-emerald-600 mb-1">
+                  <Zap className="h-3.5 w-3.5" />
+                  <span>Onchain Transactions (7/7)</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                  Tracks <code className="font-mono text-[10px] font-bold">transaction.broadcasted</code>, <code className="font-mono text-[10px] font-bold">transaction.confirmed</code>, reverts, timeouts, and replacements.
+                </p>
+              </div>
+            </div>
+
+            <DocCallout type="info" title="PRIVY DASHBOARD CONFIGURATION">
+              <ol className="list-decimal pl-4 space-y-1 text-xs font-medium">
+                <li>Go to <strong>Privy Dashboard ➔ Settings ➔ Webhooks</strong>.</li>
+                <li>Set Destination URL: <code className="font-mono font-bold text-[#836EF9]">https://www.useclario.xyz/api/webhooks/privy</code>.</li>
+                <li>Subscribe to <strong>Transactions (7/7)</strong>: broadcasted, confirmed, execution_reverted, still_pending, failed, replaced, provider_error.</li>
+                <li>Subscribe to <strong>Wallet Lifecycle</strong>: user.wallet_created, wallet.restored, wallet.private_key_export.</li>
+                <li>Copy the <strong>Signing Key</strong> (<code className="font-mono">whsec_...</code>) and save it as <code className="font-mono font-bold">PRIVY_WEBHOOK_SECRET</code> in your environment variables.</li>
+              </ol>
+            </DocCallout>
+
+            <DocCodeBlock
+              filename="apps/web/src/app/api/webhooks/privy/route.ts"
+              language="typescript"
+              code={`import { verifyPrivyWebhook } from "@/lib/auth/privy-webhook";
+
+export async function POST(req: Request) {
+  const rawBody = await req.text();
+  const headers = {
+    svixId: req.headers.get("svix-id"),
+    svixTimestamp: req.headers.get("svix-timestamp"),
+    svixSignature: req.headers.get("svix-signature"),
+  };
+
+  // Cryptographic Svix HMAC-SHA256 verification with 5m replay guard
+  const verification = verifyPrivyWebhook(rawBody, headers, process.env.PRIVY_WEBHOOK_SECRET);
+  if (!verification.isValid) {
+    return Response.json({ error: verification.error }, { status: 401 });
+  }
+
+  const event = JSON.parse(rawBody);
+
+  if (event.type.startsWith("transaction.")) {
+    // Updates transaction status (pending -> confirmed / reverted) and logs audit trail
+    await handleTransactionEvent(event.type, event.data);
+  } else if (event.type === "wallet.private_key_export") {
+    // Critical security audit alert for self-custody private key export
+    await logSecurityAlert("PRIVY_PRIVATE_KEY_EXPORTED", event.data);
+  } else if (event.type === "user.wallet_created") {
+    // Automated embedded wallet provisioning audit record
+    await logWalletLifecycle("PRIVY_WALLET_CREATED", event.data);
+  }
+
+  return Response.json({ received: true, status: "processed", event: event.type });
+}`}
             />
           </section>
         </div>
