@@ -70,6 +70,12 @@ import {
   upsertStoredTransactions,
 } from "@/lib/storage/transaction-storage";
 import {
+  getStoredBudgets,
+  saveStoredBudgets,
+  getStoredSubscriptions,
+  saveStoredSubscriptions,
+} from "@/lib/modes/mode-storage";
+import {
   Magnetic,
   BorderTrail,
   TextShimmer,
@@ -206,9 +212,9 @@ export function PersonalDashboard({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isNoWalletPopupOpen, setIsNoWalletPopupOpen] = useState(false);
 
-  // Sub-ledger state (Personal Finance / Fiat vs On-Chain / Web3)
-  const [subLedger, setSubLedger] = useState<"fiat" | "onchain">(
-    currentMode === "crypto" ? "onchain" : "fiat",
+  // Sub-ledger state (All Activity vs Personal Finance / Fiat vs On-Chain / Web3)
+  const [subLedger, setSubLedger] = useState<"all" | "fiat" | "onchain">(
+    currentMode === "crypto" ? "onchain" : "all",
   );
 
   const [fiatCurrency, setFiatCurrency] = useState<{
@@ -227,6 +233,18 @@ export function PersonalDashboard({
   // Helper to distinguish On-Chain vs Fiat
   const isTxOnChain = (t: Transaction): boolean => {
     const pm = (t.payment_method || "").toLowerCase();
+    const isExplicitFiat =
+      pm.includes("cash") ||
+      pm.includes("upi") ||
+      pm.includes("credit card") ||
+      pm.includes("debit card") ||
+      pm.includes("bank transfer") ||
+      pm.includes("card");
+
+    if (isExplicitFiat) {
+      return false;
+    }
+
     return Boolean(
       t.blockchain_tx_hash ||
       t.monad_tx_hash ||
@@ -254,8 +272,15 @@ export function PersonalDashboard({
     [transactions],
   );
 
-  const activeTransactions = subLedger === "fiat" ? fiatTransactions : onChainTransactions;
-  const activeCurrencySymbol = subLedger === "fiat" ? fiatCurrency.symbol : "$";
+  const activeTransactions =
+    subLedger === "all"
+      ? transactions
+      : subLedger === "fiat"
+        ? fiatTransactions
+        : onChainTransactions;
+
+  const displayedTransactions = activeTransactions;
+  const activeCurrencySymbol = subLedger === "onchain" ? "$" : fiatCurrency.symbol;
 
   const latestTransactions = useMemo(() => {
     return [...transactions].sort((a, b) => {
@@ -299,7 +324,6 @@ export function PersonalDashboard({
     setQuickAmount("");
   };
 
-  const displayedTransactions = transactions;
   const isAllSelected =
     displayedTransactions.length > 0 &&
     displayedTransactions.every((t) => selectedTxIds.has(t.id));
@@ -926,23 +950,30 @@ export function PersonalDashboard({
     }
   }
 
-  // Local state for interactive Budgets & Subscriptions
-  const [prevBudgets, setPrevBudgets] = useState<Budget[]>(budgets);
-  const [localBudgets, setLocalBudgets] = useState<Budget[]>(budgets);
-  if (budgets !== prevBudgets) {
-    setPrevBudgets(budgets);
-    if (budgets && budgets.length > 0) setLocalBudgets(budgets);
-  }
+  // Local state for interactive Budgets & Subscriptions with persistent storage
+  const [localBudgets, setLocalBudgets] = useState<Budget[]>(() => {
+    const stored = getStoredBudgets(userId);
+    if (stored.length > 0) return stored;
+    return budgets;
+  });
 
-  const [prevSubscriptions, setPrevSubscriptions] =
-    useState<Subscription[]>(subscriptions);
-  const [localSubscriptions, setLocalSubscriptions] =
-    useState<Subscription[]>(subscriptions);
-  if (subscriptions !== prevSubscriptions) {
-    setPrevSubscriptions(subscriptions);
-    if (subscriptions && subscriptions.length > 0)
+  useEffect(() => {
+    if (budgets && budgets.length > 0) {
+      setLocalBudgets(budgets);
+    }
+  }, [budgets]);
+
+  const [localSubscriptions, setLocalSubscriptions] = useState<Subscription[]>(() => {
+    const stored = getStoredSubscriptions(userId);
+    if (stored.length > 0) return stored;
+    return subscriptions;
+  });
+
+  useEffect(() => {
+    if (subscriptions && subscriptions.length > 0) {
       setLocalSubscriptions(subscriptions);
-  }
+    }
+  }, [subscriptions]);
 
   // Cash flow time period selector: 7D, 30D, 3M, 6M, 1Y
   const [cashFlowPeriod, setCashFlowPeriod] = useState<
@@ -977,7 +1008,7 @@ export function PersonalDashboard({
     useState<SubFrequency>("monthly");
   const [subNextBillingInput, setSubNextBillingInput] = useState("");
 
-  // Real metrics from scoped transactions
+  // Real metrics from active transactions
   const totalIncome = useMemo(() => {
     return activeTransactions
       .filter((t) => t.type === "income")
@@ -986,7 +1017,7 @@ export function PersonalDashboard({
 
   const totalExpenses = useMemo(() => {
     return activeTransactions
-      .filter((t) => t.type === "expense")
+      .filter((t) => t.type === "expense" || !t.type)
       .reduce((sum, t) => sum + Number(t.amount || 0), 0);
   }, [activeTransactions]);
 
@@ -1008,7 +1039,7 @@ export function PersonalDashboard({
   const monthlySpending = useMemo(() => {
     return activeTransactions
       .filter((t) => {
-        if (t.type !== "expense") return false;
+        if (t.type === "income") return false;
         const d = new Date(t.date || t.timestamp || t.created_at);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
       })
@@ -1114,7 +1145,9 @@ export function PersonalDashboard({
   // Cash flow chart dynamically driven by time period selector
   const chartData = useMemo(() => {
     const now = new Date();
+    now.setHours(23, 59, 59, 999);
     const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
     let numBuckets = 7;
     let formatLabel = (d: Date) =>
       d.toLocaleDateString("en-US", { weekday: "short" });
@@ -1171,31 +1204,13 @@ export function PersonalDashboard({
           buckets.find((b) => txTime >= b.start && txTime <= b.end) ||
           buckets[buckets.length - 1];
         if (bucket) {
-          if (tx.type === "income") bucket.income += Number(tx.amount || 0);
-          if (tx.type === "expense") bucket.expenses += Number(tx.amount || 0);
+          if (tx.type === "income") {
+            bucket.income += Number(tx.amount || 0);
+          } else {
+            bucket.expenses += Number(tx.amount || 0);
+          }
         }
       }
-    }
-
-    const hasAny = buckets.some((b) => b.income > 0 || b.expenses > 0);
-    if (!hasAny && activeTransactions.length > 0) {
-      return [
-        {
-          name: "Period Start",
-          income: totalIncome * 0.4,
-          expenses: totalExpenses * 0.3,
-        },
-        {
-          name: "Mid Period",
-          income: totalIncome * 0.3,
-          expenses: totalExpenses * 0.4,
-        },
-        {
-          name: "Current",
-          income: totalIncome * 0.3,
-          expenses: totalExpenses * 0.3,
-        },
-      ];
     }
 
     return buckets.map((b) => ({
@@ -1203,7 +1218,7 @@ export function PersonalDashboard({
       income: Number(b.income.toFixed(2)),
       expenses: Number(b.expenses.toFixed(2)),
     }));
-  }, [activeTransactions, cashFlowPeriod, totalIncome, totalExpenses]);
+  }, [activeTransactions, cashFlowPeriod]);
 
   // Filtered expenses for Expenses view
   const filteredExpenses = useMemo(() => {
@@ -1400,7 +1415,11 @@ export function PersonalDashboard({
       period: "monthly",
       created_at: new Date().toISOString(),
     };
-    setLocalBudgets((prev) => [...prev, newBudget]);
+    setLocalBudgets((prev) => {
+      const updated = [...prev, newBudget];
+      saveStoredBudgets(updated, userId);
+      return updated;
+    });
     setIsAddBudgetOpen(false);
     setBudgetLimitInput("");
 
@@ -1413,7 +1432,11 @@ export function PersonalDashboard({
   }
 
   async function handleDeleteBudget(budgetId: string) {
-    setLocalBudgets((prev) => prev.filter((b) => b.id !== budgetId));
+    setLocalBudgets((prev) => {
+      const updated = prev.filter((b) => b.id !== budgetId);
+      saveStoredBudgets(updated, userId);
+      return updated;
+    });
     try {
       const supabase = getSupabaseClient();
       await supabase.from("budgets").delete().eq("id", budgetId);
@@ -1437,7 +1460,11 @@ export function PersonalDashboard({
       status: "active",
       created_at: new Date().toISOString(),
     };
-    setLocalSubscriptions((prev) => [...prev, newSub]);
+    setLocalSubscriptions((prev) => {
+      const updated = [...prev, newSub];
+      saveStoredSubscriptions(updated, userId);
+      return updated;
+    });
     setIsAddSubOpen(false);
     setSubNameInput("");
     setSubAmountInput("");
@@ -1452,13 +1479,16 @@ export function PersonalDashboard({
   }
 
   async function handleToggleSubscriptionStatus(subId: string) {
-    setLocalSubscriptions((prev) =>
-      prev.map((s) => {
+    setLocalSubscriptions((prev) => {
+      const updated = prev.map((s) => {
         if (s.id !== subId) return s;
-        const nextStatus = s.status === "active" ? "paused" : "active";
+        const nextStatus: Subscription["status"] =
+          s.status === "active" ? "paused" : "active";
         return { ...s, status: nextStatus };
-      }),
-    );
+      });
+      saveStoredSubscriptions(updated, userId);
+      return updated;
+    });
     const sub = localSubscriptions.find((s) => s.id === subId);
     if (sub) {
       try {
@@ -1474,7 +1504,11 @@ export function PersonalDashboard({
   }
 
   async function handleDeleteSubscription(subId: string) {
-    setLocalSubscriptions((prev) => prev.filter((s) => s.id !== subId));
+    setLocalSubscriptions((prev) => {
+      const updated = prev.filter((s) => s.id !== subId);
+      saveStoredSubscriptions(updated, userId);
+      return updated;
+    });
     try {
       const supabase = getSupabaseClient();
       await supabase.from("subscriptions").delete().eq("id", subId);
@@ -1483,7 +1517,7 @@ export function PersonalDashboard({
     }
   }
 
-  const hasData = transactions.length > 0;
+  const hasData = displayedTransactions.length > 0;
 
   return (
     <div className="space-y-8">
@@ -1491,17 +1525,7 @@ export function PersonalDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            {subLedger === "fiat" ? (
-              <>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Personal Finance Ledger
-                </span>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]">
-                  100% Private & Off-Chain
-                </span>
-              </>
-            ) : (
+            {subLedger === "onchain" ? (
               <>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#836EF9] bg-[#f3f0ff] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-[#836EF9] animate-pulse" />
@@ -1515,42 +1539,34 @@ export function PersonalDashboard({
                   Zero Private Data Onchain
                 </span>
               </>
+            ) : (
+              <>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {subLedger === "all" ? "Complete Financial Ledger" : "Personal Finance Ledger"}
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]">
+                  100% Private & Off-Chain
+                </span>
+              </>
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#121212]">
-            {subLedger === "fiat"
-              ? "Personal Finance & Daily Living"
-              : "On-Chain & Web3 Activity"}
+            {subLedger === "onchain"
+              ? "On-Chain & Web3 Activity"
+              : subLedger === "fiat"
+                ? "Personal Finance & Daily Living"
+                : "Personal Finance & Activity"}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            {subLedger === "fiat"
-              ? "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."
-              : "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."}
+            {subLedger === "onchain"
+              ? "Multi-chain transaction indexing, gas metrics, and Monad registry notarizations across EVM networks."
+              : "Track daily spending, rent, groceries, cards, and subscriptions with optional 1-click Monad cryptographic proof."}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {subLedger === "fiat" ? (
-            <>
-              <Magnetic range={60} intensity={0.35}>
-                <WatermelonButton
-                  onClick={onUploadReceipt}
-                  variant="secondary"
-                  icon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
-                  morphText="Scan Receipt"
-                />
-              </Magnetic>
-
-              <Magnetic range={70} intensity={0.4}>
-                <WatermelonButton
-                  onClick={() => onAddTransaction?.("fiat")}
-                  variant="primary"
-                  icon={<Plus className="h-4 w-4" />}
-                  morphText="Add Expense"
-                />
-              </Magnetic>
-            </>
-          ) : (
+          {subLedger === "onchain" ? (
             <>
               <Magnetic range={60} intensity={0.35}>
                 <WatermelonButton
@@ -1570,20 +1586,62 @@ export function PersonalDashboard({
                 />
               </Magnetic>
             </>
+          ) : (
+            <>
+              <Magnetic range={60} intensity={0.35}>
+                <WatermelonButton
+                  onClick={onUploadReceipt}
+                  variant="secondary"
+                  icon={<Receipt className="h-4 w-4 text-[#836EF9]" />}
+                  morphText="Scan Receipt"
+                />
+              </Magnetic>
+
+              <Magnetic range={70} intensity={0.4}>
+                <WatermelonButton
+                  onClick={() => onAddTransaction?.("fiat")}
+                  variant="primary"
+                  icon={<Plus className="h-4 w-4" />}
+                  morphText="Add Expense"
+                />
+              </Magnetic>
+            </>
           )}
         </div>
       </div>
 
-      {/* 2. Two-Tier Sub-Ledger Switcher: Personal Finance (Fiat) vs On-Chain (Web3) */}
+      {/* 2. Sub-Ledger Switcher: All Activity vs Personal Finance (Fiat) vs On-Chain (Web3) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] rounded-2xl">
-        <div className="flex items-center gap-2 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl">
+        <div className="flex items-center gap-2 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex-wrap">
           <motion.button
             type="button"
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.96 }}
-            onClick={() => {
-              setSubLedger("fiat");
-            }}
+            onClick={() => setSubLedger("all")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-[background-color,border-color,box-shadow,color] duration-150 ease-out cursor-pointer ${
+              subLedger === "all"
+                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
+            }`}
+          >
+            <Layers className={`h-3.5 w-3.5 ${subLedger === "all" ? "text-white" : "text-[#836EF9]"}`} />
+            <span>All Activity</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                subLedger === "all"
+                  ? "bg-white/20 text-white border-white/40"
+                  : "bg-slate-100 text-slate-700 border-slate-300"
+              }`}
+            >
+              Unified
+            </span>
+          </motion.button>
+
+          <motion.button
+            type="button"
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setSubLedger("fiat")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-[background-color,border-color,box-shadow,color] duration-150 ease-out cursor-pointer ${
               subLedger === "fiat"
                 ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
@@ -1602,6 +1660,7 @@ export function PersonalDashboard({
               Fiat
             </span>
           </motion.button>
+
           <motion.button
             type="button"
             whileHover={{ y: -1 }}
@@ -1639,7 +1698,7 @@ export function PersonalDashboard({
 
         {/* Dynamic Controls */}
         <div className="flex items-center gap-2.5">
-          {subLedger === "fiat" ? (
+          {subLedger !== "onchain" ? (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-500">
                 Currency:
@@ -1693,41 +1752,8 @@ export function PersonalDashboard({
             damping: 30,
           }}
         >
-          {(subLedger === "fiat"
+          {(subLedger === "onchain"
             ? [
-                { id: "overview", label: "Overview", icon: LayoutDashboard },
-                {
-                  id: "expenses",
-                  label: "Expenses",
-                  icon: TrendingDown,
-                  count: fiatTransactions.filter((t) => t.type === "expense").length,
-                },
-                {
-                  id: "income",
-                  label: "Income",
-                  icon: TrendingUp,
-                  count: fiatTransactions.filter((t) => t.type === "income").length,
-                },
-                {
-                  id: "budgets",
-                  label: "Budgets",
-                  icon: ChartNoAxesCombined,
-                  count: budgets.length,
-                },
-                {
-                  id: "recurring",
-                  label: "Recurring",
-                  icon: RotateCcw,
-                  count: subscriptions.length,
-                },
-                {
-                  id: "receipts",
-                  label: "Saved Receipts",
-                  icon: Receipt,
-                  count: verifiedReceipts.length,
-                },
-              ]
-            : [
                 { id: "overview", label: "Web3 Overview", icon: LayoutDashboard },
                 {
                   id: "expenses",
@@ -1739,6 +1765,39 @@ export function PersonalDashboard({
                   id: "receipts",
                   label: "Monad Proofs",
                   icon: ShieldCheck,
+                  count: verifiedReceipts.length,
+                },
+              ]
+            : [
+                { id: "overview", label: "Overview", icon: LayoutDashboard },
+                {
+                  id: "expenses",
+                  label: "Expenses",
+                  icon: TrendingDown,
+                  count: activeTransactions.filter((t) => t.type === "expense" || !t.type).length,
+                },
+                {
+                  id: "income",
+                  label: "Income",
+                  icon: TrendingUp,
+                  count: activeTransactions.filter((t) => t.type === "income").length,
+                },
+                {
+                  id: "budgets",
+                  label: "Budgets",
+                  icon: ChartNoAxesCombined,
+                  count: localBudgets.length,
+                },
+                {
+                  id: "recurring",
+                  label: "Recurring",
+                  icon: RotateCcw,
+                  count: localSubscriptions.length,
+                },
+                {
+                  id: "receipts",
+                  label: "Saved Receipts",
+                  icon: Receipt,
                   count: verifiedReceipts.length,
                 },
               ]
@@ -1797,7 +1856,7 @@ export function PersonalDashboard({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500 bg-[#f8f9fa] px-2.5 py-1 rounded-md border-1.5 border-[#121212]">
-                      {subLedger === "fiat" ? "Personal Net Cashflow" : "Web3 Net Position"}
+                      {subLedger === "onchain" ? "Web3 Net Position" : "Personal Net Cashflow"}
                     </span>
                     <span
                       className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded border border-[#121212] ${
@@ -1809,12 +1868,7 @@ export function PersonalDashboard({
                       {netCashFlow >= 0 ? "Surplus" : "Deficit"}
                     </span>
                   </div>
-                  {subLedger === "fiat" ? (
-                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-[#121212]">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                      <span>Private Ledger</span>
-                    </div>
-                  ) : (
+                  {subLedger === "onchain" ? (
                     <div className="relative overflow-hidden flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 bg-[#f3f4f6] px-2.5 py-1 rounded border border-[#121212]">
                       <MonadLogo className="h-3.5 w-3.5" />
                       <span>Monad Ledger</span>
@@ -1827,6 +1881,11 @@ export function PersonalDashboard({
                           ease: "linear",
                         }}
                       />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-[#121212]">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span>Private Ledger</span>
                     </div>
                   )}
                 </div>
@@ -1841,9 +1900,9 @@ export function PersonalDashboard({
                     />
                   </div>
                   <p className="mt-1 text-xs text-slate-500 font-medium text-pretty">
-                    {subLedger === "fiat"
-                      ? "Net recorded personal cashflow across cash, cards & bank accounts"
-                      : "Net crypto balance across Monad, Base, Ethereum & Arbitrum"}
+                    {subLedger === "onchain"
+                      ? "Net crypto balance across Monad, Base, Ethereum & Arbitrum"
+                      : "Net recorded personal cashflow across cash, cards & bank accounts"}
                   </p>
                 </div>
               </div>
@@ -1975,8 +2034,8 @@ export function PersonalDashboard({
             </div>
           </div>
 
-          {/* Quick Log Personal Expense Bar (Personal Finance Exclusive) */}
-          {subLedger === "fiat" && (
+          {/* Quick Log Personal Expense Bar (Personal Finance / All Activity) */}
+          {subLedger !== "onchain" && (
             <div className="neo-card p-5 bg-[#fbf9fe] border-2 border-[#121212] shadow-[4px_4px_0_0_#121212]">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
@@ -2614,7 +2673,7 @@ export function PersonalDashboard({
                   size="sm"
                   textMorph
                   leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={() => onAddTransaction(subLedger)}
+                  onClick={() => onAddTransaction(subLedger === "onchain" ? "onchain" : "fiat")}
                 >
                   {subLedger === "onchain" ? "Log On-Chain TX" : "Add Expense"}
                 </WatermelonButton>
@@ -4067,7 +4126,7 @@ export function PersonalDashboard({
                         size="sm"
                         textMorph
                         leftIcon={<Plus className="h-3.5 w-3.5" />}
-                        onClick={() => onAddTransaction?.(subLedger)}
+                        onClick={() => onAddTransaction?.(subLedger === "onchain" ? "onchain" : "fiat")}
                       >
                         Log Expense
                       </WatermelonButton>

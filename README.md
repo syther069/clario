@@ -20,6 +20,7 @@ Built and verified for the **Monad Metropolis Hackathon**, Clario combines Monad
   - **Crypto / Monad**: Onchain transaction ingestion via Alchemy (`alchemy_getAssetTransfers`), multi-tier Monad RPC fallback, historical USD block valuation via DeFiLlama & Alchemy Prices, and onchain transaction registry.
 - **Alchemy Multi-Chain Ingestion Engine**: Bidirectional transfer queries across Monad Testnet (`10143`), Monad Mainnet (`143`), Ethereum (`1`), and Base (`8453`) with spam token filtering and historical price resolution.
 - **Advisory Grounded AI Financial Copilot**: Context-aware financial copilot powered by Groq and Gemini with automatic PII anonymization (`anonymizeCopilotContext`), scrubbing names, emails, phones, and wallet addresses before external transmission.
+- **Privy 1-Click Fast Signing & Embedded Wallets**: Seedless non-custodial EVM onboarding via Shamir Secret Sharing, 1-Click Session Signing (Privy Delegated Actions via `useDelegatedActions`) for zero-popup instantaneous onchain anchoring to Monad Testnet, native in-app wallet funding modal (`useFundWallet`), FIDO2 Passkeys, and progressive multi-account linking.
 - **Montally Neo-Brutalist Design System**: High-contrast `border-2 border-black` borders, hard 2D offset box-shadows (`shadow-[4px_4px_0px_#000]`), monospace tracking badges, `.bg-grid` canvas, and Monad electric purple accent (`#836EF9`).
 
 ---
@@ -92,7 +93,7 @@ clario/
 - **Blockchain**: Monad Testnet (Parallel EVM, Chain ID `10143`), Foundry, Viem
 - **Onchain Data Ingestion**: Alchemy Asset Transfers API (`alchemy_getAssetTransfers`), Alchemy Prices API, Monad Fallback RPC Scanner
 - **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS v4, Lucide Icons
-- **Identity & Wallets**: Privy (Embedded Wallets, External EVM Wallets, Linked Accounts)
+- **Identity & Wallets**: Privy (Embedded Wallets, Shamir Secret Sharing, 1-Click Delegated Session Signing via `useDelegatedActions`, Native `useFundWallet` Modal, FIDO2 Passkeys, Multi-Account Linking, External EVM Connectors)
 - **Database & Storage**: Supabase (PostgreSQL with Row Level Security, Storage Buckets)
 - **AI & Copilot**: Groq, Google Gemini 2.5 Flash, Client-Side PII Redaction Engine
 - **Quality Toolchain**: TypeScript (strict, `exactOptionalPropertyTypes`), Vitest, Forge, ESLint, Prettier

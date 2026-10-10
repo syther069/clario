@@ -54,6 +54,23 @@ function isValidEvmAddress(address?: string | null): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
 }
 
+function formatCryptoAmount(amountStr: string): string {
+  if (!amountStr) return "0";
+  const num = Number.parseFloat(amountStr);
+  if (Number.isNaN(num)) return amountStr;
+  if (num === 0) return "0";
+  if (num >= 1000) {
+    return num.toLocaleString("en-US", { maximumFractionDigits: 4 });
+  }
+  if (num < 0.000001) {
+    return "< 0.000001";
+  }
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 6,
+  });
+}
+
 export interface TransactionImportDialogProps {
   isOpen: boolean;
   workspaceId: string;
@@ -295,7 +312,7 @@ export function TransactionImportDialog({
                 id="import-dialog-title"
                 className="text-base font-black uppercase tracking-wider text-[#121212]"
               >
-                Import Attributable Transaction
+                Import Transactions
               </h3>
             </div>
           </div>
@@ -303,62 +320,72 @@ export function TransactionImportDialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="relative rounded-lg border-2 border-[#121212] p-1.5 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+            className="relative rounded-xl border-2 border-[#121212] p-2 hover:bg-slate-100 shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Disclaimer Banner */}
-        <div className="px-5 py-2 bg-[#f3f0ff] border-b-2 border-[#121212] flex items-center justify-between gap-2 text-xs font-mono text-[#836EF9]">
-          <div className="flex items-center gap-1.5 truncate">
-            <span className="font-bold">ℹ</span>
-            <span className="truncate">{IMPORTED_FACTS_DISCLAIMER}</span>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] font-mono font-black uppercase text-[#15803d] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212]">
-              MIN VALUE: ≥ $1.00 USD
+        {/* Info Banner */}
+        <div className="px-5 py-2.5 bg-[#f5f3ff] border-b-2 border-[#121212] flex items-center justify-between gap-3 text-xs font-mono text-slate-700">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#836EF9] text-white text-[10px] font-bold">
+              i
             </span>
-            <span className="text-[10px] font-black uppercase bg-white px-2 py-0.5 rounded border border-[#836EF9]">
-              MONAD &amp; MAINNETS
+            <span
+              className="truncate text-xs text-slate-600 font-medium"
+              title={IMPORTED_FACTS_DISCLAIMER}
+            >
+              Transactions are indexed directly from external blockchain networks.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[10px] font-mono font-bold uppercase text-[#15803d] bg-[#dcfce7] px-2 py-0.5 rounded-md border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+              Min $1.00 USD
+            </span>
+            <span className="text-[10px] font-mono font-bold uppercase text-slate-700 bg-white px-2 py-0.5 rounded-md border border-[#121212] shadow-[1px_1px_0_0_#121212]">
+              Multi-Chain
             </span>
           </div>
         </div>
 
-        {/* Tabs & Filters */}
-        <div className="p-5 border-b-2 border-[#121212] bg-[#fbfbfb] flex flex-col gap-4">
-          <div className="flex gap-2">
+        {/* Tabs & Controls */}
+        <div className="p-5 border-b-2 border-[#121212] bg-[#fbfbfb] flex flex-col gap-4 relative z-20">
+          {/* Tab Selection */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("wallet")}
-              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out ${
+              className={`border-2 border-[#121212] font-mono font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer ${
                 activeTab === "wallet"
                   ? "bg-[#836EF9] text-white"
                   : "bg-white text-[#121212] hover:bg-slate-50"
               }`}
             >
-              Browse Wallet Transactions
+              Wallet Activity
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("hash")}
-              className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out ${
+              className={`border-2 border-[#121212] font-mono font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color,color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer ${
                 activeTab === "hash"
                   ? "bg-[#836EF9] text-white"
                   : "bg-white text-[#121212] hover:bg-slate-50"
               }`}
             >
-              Direct Hash Lookup
+              Search by Hash
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
-                {activeTab === "wallet" ? "Source Chain Filter" : "Source Chain"}
+          {/* Form Controls Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Column 1: Network Selection */}
+            <div className="flex flex-col gap-1.5 min-w-0">
+              <label className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500">
+                Network
               </label>
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212]">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212]">
                   {activeTab === "wallet" && selectedChainId === 0 ? (
                     <Globe className="h-5 w-5 text-[#836EF9]" />
                   ) : (
@@ -368,55 +395,95 @@ export function TransactionImportDialog({
                     />
                   )}
                 </div>
-                {activeTab === "wallet" ? (
-                  <NeoSelect
-                    value={String(selectedChainId)}
-                    onChange={(val) => setSelectedChainId(Number(val))}
-                    options={[
-                      { value: "0", label: "✨ All Supported Chains (Auto-Discover)" },
-                      ...SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
+                <div className="flex-1 min-w-0">
+                  {activeTab === "wallet" ? (
+                    <NeoSelect
+                      fullWidth
+                      className="w-full min-w-0"
+                      buttonClassName="h-10 w-full rounded-xl"
+                      value={String(selectedChainId)}
+                      onChange={(val) => setSelectedChainId(Number(val))}
+                      options={[
+                        { value: "0", label: "✨ All Chains (Auto-Discover)" },
+                        ...SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
+                          value: String(c.chainId),
+                          label: `${c.name} (${c.shortName})`,
+                        })),
+                      ]}
+                    />
+                  ) : (
+                    <NeoSelect
+                      fullWidth
+                      className="w-full min-w-0"
+                      buttonClassName="h-10 w-full rounded-xl"
+                      value={String(lookupChainId)}
+                      onChange={(val) => setLookupChainId(Number(val))}
+                      options={SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
                         value: String(c.chainId),
                         label: `${c.name} (${c.shortName})`,
-                      })),
-                    ]}
-                  />
-                ) : (
-                  <NeoSelect
-                    value={String(lookupChainId)}
-                    onChange={(val) => setLookupChainId(Number(val))}
-                    options={SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
-                      value: String(c.chainId),
-                      label: `${c.name} (${c.shortName})`,
-                    }))}
-                  />
-                )}
+                      }))}
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
-            {activeTab === "wallet" && (
-              <div>
-                <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">
-                  Connected Wallet Address (Rule 1)
+            {/* Column 2: Connected Wallet (Wallet Tab) OR Transaction Hash Input (Hash Tab) */}
+            {activeTab === "wallet" ? (
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <label className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500">
+                  Connected Wallet
                 </label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <input
                     type="text"
                     value={queryAddress}
                     onChange={(e) => setQueryAddress(e.target.value)}
-                    placeholder="Connect an EVM wallet to fetch"
+                    placeholder="Connect a wallet or enter 0x..."
                     readOnly={Boolean(userAddress)}
-                    className="flex-1 border-2 border-[#121212] rounded-xl px-3 py-2 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                    className="flex-1 min-w-0 h-10 border-2 border-[#121212] rounded-xl px-3 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
                   />
                   <button
                     type="button"
                     onClick={() => fetchTransactions(false)}
                     disabled={loading || !isValidEvmAddress(queryAddress)}
-                    title="Refresh transactions via Alchemy"
-                    className="border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                    title="Refresh wallet transactions"
+                    className="h-10 w-10 shrink-0 border-2 border-[#121212] bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:opacity-50 text-[#121212] rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center justify-center transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer disabled:cursor-not-allowed"
                   >
                     <RefreshCw
-                      className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+                      className={`h-4 w-4 ${loading ? "animate-spin text-[#836EF9]" : ""}`}
                     />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <label className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500">
+                  Transaction Hash
+                </label>
+                <div className="flex items-center gap-2 min-w-0">
+                  <input
+                    type="text"
+                    placeholder="0x..."
+                    value={lookupHash}
+                    onChange={(e) => setLookupHash(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleLookup();
+                    }}
+                    className="flex-1 min-w-0 h-10 border-2 border-[#121212] rounded-xl px-3 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleLookup}
+                    disabled={lookupLoading || !lookupHash.trim()}
+                    className="h-10 px-4 shrink-0 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 disabled:opacity-50 text-white font-mono font-black uppercase text-xs rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {lookupLoading ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                    <span>Search</span>
                   </button>
                 </div>
               </div>
@@ -436,39 +503,38 @@ export function TransactionImportDialog({
                   </div>
                   <div>
                     <p className="font-mono text-sm font-bold uppercase text-[#121212] mb-1">
-                      Connect your EVM wallet to fetch blockchain transactions.
+                      Connect your wallet to fetch transactions
                     </p>
                     <p className="text-xs text-slate-500 max-w-sm">
-                      An active external EVM wallet is required to index onchain
-                      transactions via Alchemy.
+                      An active EVM wallet is required to index onchain transactions.
                     </p>
                   </div>
                   {onConnectWallet && (
                     <button
                       type="button"
                       onClick={onConnectWallet}
-                      className="mt-2 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2.5 px-5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-[1px] active:translate-y-[1px]"
+                      className="mt-2 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-mono font-black uppercase text-xs tracking-wider py-2.5 px-5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                     >
                       <Wallet className="h-4 w-4" />
-                      <span>CONNECT EVM WALLET</span>
+                      <span>Connect Wallet</span>
                     </button>
                   )}
                 </div>
               ) : error ? (
-                /* State 2: Alchemy / API Error State (with Neo-Brutalist Actionable Fallbacks) */
+                /* State 2: Error State with Actions */
                 <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#121212] p-5 rounded-xl flex flex-col gap-3 shadow-[4px_4px_0_0_#ef4444]">
                   <div className="flex items-start gap-2.5">
                     <AlertTriangle className="h-5 w-5 text-[#ef4444] shrink-0 mt-0.5" />
                     <div className="space-y-1">
                       <p className="font-mono text-xs font-black uppercase text-[#ef4444] tracking-wider">
-                        Alchemy Indexer Notice
+                        Unable to fetch transactions
                       </p>
                       <p className="font-mono text-xs text-slate-700">
                         {error}
                       </p>
                       {selectedChainId === 0 && (
                         <p className="text-[11px] text-slate-500 font-mono mt-1">
-                          Tip: Scanning 10 EVM chains simultaneously can take longer under heavy RPC load. Selecting a specific chain or using Direct Hash Lookup is instant.
+                          Tip: Scanning all networks at once may time out. Try selecting a specific chain or use Search by Hash.
                         </p>
                       )}
                     </div>
@@ -478,10 +544,10 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={() => fetchTransactions(false)}
-                      className="border-2 border-[#121212] bg-[#ef4444] hover:bg-[#dc2626] text-white font-black uppercase text-xs px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                      className="border-2 border-[#121212] bg-[#ef4444] hover:bg-[#dc2626] text-white font-mono font-black uppercase text-xs px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
-                      <span>Retry Alchemy Request</span>
+                      <span>Retry</span>
                     </button>
 
                     {selectedChainId === 0 ? (
@@ -489,15 +555,15 @@ export function TransactionImportDialog({
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(10143)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
                           <CryptoChainIcon chain={10143} className="h-3.5 w-3.5" />
-                          <span>Monad Testnet</span>
+                          <span>Monad</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(8453)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
                           <CryptoChainIcon chain={8453} className="h-3.5 w-3.5" />
                           <span>Base</span>
@@ -505,7 +571,7 @@ export function TransactionImportDialog({
                         <button
                           type="button"
                           onClick={() => setSelectedChainId(11155111)}
-                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
                           <CryptoChainIcon chain={11155111} className="h-3.5 w-3.5" />
                           <span>Sepolia</span>
@@ -515,20 +581,20 @@ export function TransactionImportDialog({
                       <button
                         type="button"
                         onClick={() => setSelectedChainId(0)}
-                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                       >
                         <Globe className="h-3.5 w-3.5 text-[#836EF9]" />
-                        <span>Try All Chains</span>
+                        <span>All Chains</span>
                       </button>
                     )}
 
                     <button
                       type="button"
                       onClick={() => setActiveTab("hash")}
-                      className="border-2 border-[#121212] bg-[#f3f0ff] hover:bg-[#e9e3ff] text-[#836EF9] font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 sm:ml-auto"
+                      className="border-2 border-[#121212] bg-[#f3f0ff] hover:bg-[#e9e3ff] text-[#836EF9] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 sm:ml-auto cursor-pointer"
                     >
                       <Search className="h-3.5 w-3.5" />
-                      <span>Direct Hash Lookup →</span>
+                      <span>Search by Hash →</span>
                     </button>
                   </div>
                 </div>
@@ -540,14 +606,13 @@ export function TransactionImportDialog({
                   </div>
                   <div className="space-y-1">
                     <p className="font-mono text-sm font-black uppercase text-[#121212] tracking-wider">
-                      Indexing Across 10 EVM Networks
+                      Scanning EVM Networks...
                     </p>
                     <p className="text-xs font-mono text-slate-600">
-                      Scanning transfers via Alchemy · Filtering dust &lt; $1.00 USD
+                      Finding wallet activity and calculating values (≥ $1.00 USD)
                     </p>
                   </div>
 
-                  {/* 10 Chain Badges Grid */}
                   <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-md pt-1">
                     {SUPPORTED_IMPORT_CHAINS.map((chain) => (
                       <span
@@ -559,13 +624,9 @@ export function TransactionImportDialog({
                       </span>
                     ))}
                   </div>
-
-                  <span className="text-[11px] font-mono text-slate-400 mt-1">
-                    Calculating historical USD block valuation and detecting primary wallet network...
-                  </span>
                 </div>
               ) : transactions.length === 0 ? (
-                /* State 4: Honest Empty State with Discovery CTA */
+                /* State 4: Empty State */
                 <div className="text-center py-10 border-2 border-dashed border-[#121212] rounded-xl bg-[#fafafa] p-6 flex flex-col items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
                     <Layers className="h-5 w-5" />
@@ -573,15 +634,15 @@ export function TransactionImportDialog({
                   <div className="font-mono text-xs text-slate-600 max-w-md">
                     {selectedChainId === 0 ? (
                       <p>
-                        No on-chain activity found for{" "}
+                        No transactions found for{" "}
                         <span className="font-bold text-[#121212]">
                           {queryAddress.slice(0, 6)}...{queryAddress.slice(-4)}
                         </span>{" "}
-                        across any supported EVM chains.
+                        across supported networks.
                       </p>
                     ) : (
                       <p>
-                        No attributable transactions found for this wallet on{" "}
+                        No transactions found on{" "}
                         <span className="font-bold text-[#121212]">
                           {currentChainObj?.name || `Chain ID ${selectedChainId}`}
                         </span>
@@ -593,25 +654,25 @@ export function TransactionImportDialog({
                     <button
                       type="button"
                       onClick={() => setSelectedChainId(0)}
-                      className="mt-1 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-black uppercase text-xs tracking-wider py-2 px-4 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+                      className="mt-1 border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] text-white font-mono font-black uppercase text-xs tracking-wider py-2 px-4 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                     >
                       <Globe className="h-3.5 w-3.5" />
-                      <span>Scan All Supported Chains</span>
+                      <span>Scan All Chains</span>
                     </button>
                   )}
                 </div>
               ) : (
                 /* State 5: Loaded Transaction Candidates */
                 <>
-                  {/* Primary Wallet Activity Banner */}
+                  {/* Primary Activity Banner */}
                   {selectedChainId === 0 && mostActiveChainId > 0 && (
-                    <div className="flex items-center justify-between p-3 rounded-xl border-2 border-[#121212] bg-[#f8f6ff] text-xs font-mono shadow-[2px_2px_0_0_#121212]">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#836EF9] text-white font-black text-[10px]">
+                    <div className="flex items-center justify-between p-3 rounded-xl border-2 border-[#121212] bg-[#f8f6ff] text-xs font-mono shadow-[2px_2px_0_0_#121212] flex-wrap gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[#836EF9] text-white font-black text-[10px]">
                           ★
                         </span>
-                        <span className="text-slate-700">
-                          Primary wallet activity on{" "}
+                        <span className="text-slate-700 truncate">
+                          Most active on{" "}
                           <strong className="text-[#121212] font-black">
                             {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.name || `Chain ${mostActiveChainId}`}
                           </strong>{" "}
@@ -621,22 +682,24 @@ export function TransactionImportDialog({
                       <button
                         type="button"
                         onClick={() => setSelectedChainId(mostActiveChainId)}
-                        className="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#836EF9] shadow-[1px_1px_0_0_#121212] transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                        className="text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-lg border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#836EF9] shadow-[1px_1px_0_0_#121212] transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 shrink-0"
                       >
-                        Focus {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.shortName || "Chain"}
+                        Filter to {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.shortName || "Chain"}
                       </button>
                     </div>
                   )}
 
+                  {/* Summary Bar */}
                   <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1">
                     <span>
-                      Found <strong className="text-[#121212]">{transactions.length}</strong> attributable transactions (≥ $1.00 USD)
+                      Found <strong className="text-[#121212]">{transactions.length}</strong> transactions (≥ $1.00 USD)
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-[#836EF9] flex items-center gap-1">
+                    <span className="text-[10px] font-mono uppercase font-bold text-[#836EF9] flex items-center gap-1">
                       <AlchemyLogo className="h-3 w-3" /> Live Ingestion
                     </span>
                   </div>
 
+                  {/* Transaction Cards */}
                   {transactions.map((tx) => {
                     const explorerUrl = getExplorerTxUrl(
                       tx.sourceChainId,
@@ -654,11 +717,12 @@ export function TransactionImportDialog({
                             : "bg-white hover:bg-[#faf8fe]"
                         }`}
                       >
-                        <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center justify-between flex-wrap gap-3">
                           {/* Left: Direction + Token + Amounts */}
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Direction Pill */}
                             <div
-                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] p-1 ${
+                              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] ${
                                 isSender
                                   ? "bg-[#fee2e2] text-[#dc2626]"
                                   : "bg-[#dcfce7] text-[#16a34a]"
@@ -674,36 +738,41 @@ export function TransactionImportDialog({
                               )}
                             </div>
 
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] p-1.5">
+                            {/* Coin Icon */}
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212] p-1.5">
                               <CryptoCoinIcon
                                 symbol={tx.assetSymbol}
                                 className="h-6 w-6"
                               />
                             </div>
 
-                            <div>
-                              <div className="flex items-baseline gap-2">
-                                <span className="font-mono tabular-nums text-base font-black text-[#121212]">
-                                  {tx.formattedAmount} {tx.assetSymbol}
+                            {/* Amount & Badges */}
+                            <div className="min-w-0">
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <span
+                                  className="font-mono tabular-nums text-base font-black text-[#121212]"
+                                  title={`${tx.formattedAmount} ${tx.assetSymbol}`}
+                                >
+                                  {formatCryptoAmount(tx.formattedAmount)} {tx.assetSymbol}
                                 </span>
                                 {tx.usdValueFormatted && (
-                                  <span className="font-mono tabular-nums text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-1.5 py-0.5 rounded border border-[#16a34a]/30">
+                                  <span className="font-mono tabular-nums text-xs font-bold text-[#15803d] bg-[#dcfce7] px-1.5 py-0.5 rounded-md border border-[#121212]">
                                     {tx.usdValueFormatted} USD
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                                 <span
-                                  className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
+                                  className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md border border-[#121212] ${
                                     isSender
                                       ? "bg-[#fee2e2] text-[#dc2626]"
                                       : "bg-[#dcfce7] text-[#16a34a]"
                                   }`}
                                 >
-                                  {isSender ? "SENT" : "RECEIVED"}
+                                  {isSender ? "Sent" : "Received"}
                                 </span>
                                 <span
-                                  className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-[#121212] ${
+                                  className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md border border-[#121212] ${
                                     tx.status === "confirmed"
                                       ? "bg-[#dcfce7] text-[#16a34a]"
                                       : tx.status === "failed"
@@ -713,7 +782,7 @@ export function TransactionImportDialog({
                                 >
                                   {tx.status}
                                 </span>
-                                <span className="text-[9px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-300 flex items-center gap-1">
+                                <span className="text-[10px] font-mono font-bold uppercase bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-[#121212] flex items-center gap-1">
                                   <CryptoChainIcon
                                     chain={tx.sourceChainId}
                                     className="h-3 w-3"
@@ -722,13 +791,13 @@ export function TransactionImportDialog({
                                     (c) => c.chainId === tx.sourceChainId,
                                   )?.shortName || `Chain ${tx.sourceChainId}`}
                                 </span>
-                                <span className="text-[9px] font-mono text-[#0052FF] bg-[#f0f4ff] px-1.5 py-0.2 rounded border border-[#0052FF]/30 flex items-center gap-1">
+                                <span className="text-[10px] font-mono font-bold text-[#0052FF] bg-[#f0f4ff] px-2 py-0.5 rounded-md border border-[#121212] flex items-center gap-1">
                                   <AlchemyLogo className="h-2.5 w-2.5" />
                                   Alchemy
                                 </span>
                                 {tx.isClaimed && (
-                                  <span className="text-[9px] font-black uppercase bg-[#fee2e2] text-[#dc2626] px-1.5 py-0.2 rounded border border-[#121212]">
-                                    CLAIMED
+                                  <span className="text-[10px] font-mono font-black uppercase bg-[#fee2e2] text-[#dc2626] px-2 py-0.5 rounded-md border border-[#121212]">
+                                    Claimed
                                   </span>
                                 )}
                               </div>
@@ -743,7 +812,7 @@ export function TransactionImportDialog({
                               onSelectTransaction(tx, "imported_transaction");
                               onClose();
                             }}
-                            className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out ${
+                            className={`h-10 px-4 border-2 border-[#121212] font-mono font-black uppercase text-xs tracking-wider rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out cursor-pointer ${
                               tx.isClaimed || tx.status === "failed"
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                                 : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
@@ -755,18 +824,18 @@ export function TransactionImportDialog({
                               "Failed"
                             ) : (
                               <>
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                Autofill →
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span>Autofill →</span>
                               </>
                             )}
                           </button>
                         </div>
 
                         {/* Detail row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2 border-t border-slate-100">
-                          <div className="flex items-center gap-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2.5 border-t border-slate-200">
+                          <div className="flex items-center gap-1 min-w-0">
                             <span className="text-slate-400">Tx:</span>
-                            <span className="font-bold">
+                            <span className="font-bold text-[#121212]">
                               {tx.sourceTransactionHash.slice(0, 8)}...
                               {tx.sourceTransactionHash.slice(-6)}
                             </span>
@@ -775,7 +844,7 @@ export function TransactionImportDialog({
                                 href={explorerUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-[#836EF9] hover:underline inline-flex items-center"
+                                className="text-[#836EF9] hover:underline inline-flex items-center ml-0.5"
                                 title="View on block explorer"
                               >
                                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -783,11 +852,11 @@ export function TransactionImportDialog({
                             )}
                           </div>
 
-                          <div className="truncate">
+                          <div className="truncate min-w-0">
                             <span className="text-slate-400">
                               {isSender ? "To:" : "From:"}
                             </span>{" "}
-                            <span className="font-bold">
+                            <span className="font-bold text-[#121212]">
                               {isSender
                                 ? tx.recipient
                                   ? `${tx.recipient.slice(0, 6)}...${tx.recipient.slice(-4)}`
@@ -796,7 +865,7 @@ export function TransactionImportDialog({
                             </span>
                           </div>
 
-                          <div className="sm:text-right">
+                          <div className="sm:text-right min-w-0">
                             <span className="text-slate-400">Time:</span>{" "}
                             <span className="font-bold tabular-nums text-[#121212]">
                               {formatTransactionDateTime(tx.blockTimestamp)}
@@ -821,7 +890,7 @@ export function TransactionImportDialog({
                         type="button"
                         onClick={() => fetchTransactions(true)}
                         disabled={loadingMore}
-                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-black uppercase text-xs tracking-wider px-5 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+                        className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs tracking-wider px-5 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer disabled:opacity-50"
                       >
                         {loadingMore ? (
                           <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -838,85 +907,55 @@ export function TransactionImportDialog({
           ) : (
             /* Direct Hash Lookup Tab */
             <div className="flex flex-col gap-4">
-              <div>
-                <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                  Enter Source Transaction Hash (0x...)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    value={lookupHash}
-                    onChange={(e) => setLookupHash(e.target.value)}
-                    className="flex-1 border-2 border-[#121212] rounded-xl px-3 py-2.5 text-xs font-mono bg-white shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleLookup}
-                    disabled={lookupLoading || !lookupHash.trim()}
-                    className="border-2 border-[#121212] bg-[#836EF9] hover:bg-[#725aeb] disabled:bg-slate-200 text-white font-black uppercase text-xs px-4 py-2.5 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-2 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
-                  >
-                    {lookupLoading ? (
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Search className="h-3.5 w-3.5" />
-                    )}
-                    <span>Lookup</span>
-                  </button>
-                </div>
-              </div>
-
               {lookupError && (
-                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-3 rounded-xl text-xs font-mono font-bold flex items-center gap-2">
+                <div className="border-2 border-[#ef4444] bg-[#fef2f2] text-[#ef4444] p-3.5 rounded-xl text-xs font-mono font-bold flex items-center gap-2 shadow-[2px_2px_0_0_#ef4444]">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>{lookupError}</span>
                 </div>
               )}
 
-              {lookupCandidate && (
+              {lookupCandidate ? (
                 <div
                   className={`border-2 border-[#121212] rounded-xl p-4 shadow-[4px_4px_0_0_#121212] flex flex-col gap-3 ${
                     lookupCandidate.isClaimed ? "bg-slate-50" : "bg-white"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212] p-1">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-[#121212] bg-[#fbf9fe] shadow-[2px_2px_0_0_#121212] p-1.5">
                         <CryptoCoinIcon
                           symbol={lookupCandidate.assetSymbol}
-                          className="h-7 w-7"
+                          className="h-6 w-6"
                         />
                       </div>
-                      <div>
-                        <div className="font-mono tabular-nums text-lg font-black text-[#121212] flex items-center gap-2">
-                          <span>
-                            {lookupCandidate.formattedAmount}{" "}
+                      <div className="min-w-0">
+                        <div className="font-mono tabular-nums text-base font-black text-[#121212] flex items-center gap-2 flex-wrap">
+                          <span title={`${lookupCandidate.formattedAmount} ${lookupCandidate.assetSymbol}`}>
+                            {formatCryptoAmount(lookupCandidate.formattedAmount)}{" "}
                             {lookupCandidate.assetSymbol}
                           </span>
                           {lookupCandidate.usdValueFormatted && (
-                            <span className="font-mono tabular-nums text-xs font-bold text-[#16a34a] bg-[#dcfce7] px-2 py-0.5 rounded border border-[#16a34a]/30">
+                            <span className="font-mono tabular-nums text-xs font-bold text-[#15803d] bg-[#dcfce7] px-2 py-0.5 rounded-md border border-[#121212]">
                               {lookupCandidate.usdValueFormatted} USD
                             </span>
                           )}
-                          <span className="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-300 flex items-center gap-1">
+                          <span className="text-[10px] font-mono font-bold uppercase bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-[#121212] flex items-center gap-1">
                             <CryptoChainIcon
                               chain={lookupCandidate.sourceChainId}
-                              className="h-3.5 w-3.5"
+                              className="h-3 w-3"
                             />
                             {SUPPORTED_IMPORT_CHAINS.find(
-                              (c) =>
-                                c.chainId === lookupCandidate.sourceChainId,
-                            )?.shortName ||
-                              `Chain ${lookupCandidate.sourceChainId}`}
+                              (c) => c.chainId === lookupCandidate.sourceChainId,
+                            )?.shortName || `Chain ${lookupCandidate.sourceChainId}`}
                           </span>
                         </div>
-                        <div className="text-xs font-mono text-slate-500 mt-0.5">
-                          Status:{" "}
+                        <div className="text-xs font-mono text-slate-500 mt-1 flex items-center gap-2">
+                          <span>Status:</span>
                           <span
-                            className={`font-black uppercase ${
+                            className={`font-black uppercase text-[10px] px-2 py-0.5 rounded-md border border-[#121212] ${
                               lookupCandidate.status === "confirmed"
-                                ? "text-[#16a34a]"
-                                : "text-[#dc2626]"
+                                ? "bg-[#dcfce7] text-[#16a34a]"
+                                : "bg-[#fee2e2] text-[#dc2626]"
                             }`}
                           >
                             {lookupCandidate.status}
@@ -938,15 +977,15 @@ export function TransactionImportDialog({
                         );
                         onClose();
                       }}
-                      className={`border-2 border-[#121212] font-black uppercase text-xs tracking-wider px-3.5 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out ${
+                      className={`h-10 px-4 border-2 border-[#121212] font-mono font-black uppercase text-xs tracking-wider rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out cursor-pointer ${
                         lookupCandidate.isClaimed ||
                         lookupCandidate.status === "failed"
                           ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                           : "bg-[#836EF9] hover:bg-[#725aeb] text-white active:translate-x-0.5 active:translate-y-0.5"
                       }`}
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Use Transaction Hash →
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Autofill →</span>
                     </button>
                   </div>
 
@@ -957,23 +996,41 @@ export function TransactionImportDialog({
                     </div>
                   )}
 
-                  <div className="text-xs font-mono text-slate-600 space-y-1">
-                    <div>
-                      <span className="text-slate-400">Sender:</span>{" "}
-                      <span>{lookupCandidate.sender}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Recipient:</span>{" "}
-                      <span>{lookupCandidate.recipient || "None"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Exact Time:</span>{" "}
-                      <span className="font-bold tabular-nums text-[#121212]">
-                        {formatTransactionDateTime(
-                          lookupCandidate.blockTimestamp,
-                        )}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono text-slate-600 pt-2.5 border-t border-slate-200">
+                    <div className="truncate min-w-0">
+                      <span className="text-slate-400">From:</span>{" "}
+                      <span className="font-bold text-[#121212]">
+                        {lookupCandidate.sender.slice(0, 6)}...{lookupCandidate.sender.slice(-4)}
                       </span>
                     </div>
+                    <div className="truncate min-w-0">
+                      <span className="text-slate-400">To:</span>{" "}
+                      <span className="font-bold text-[#121212]">
+                        {lookupCandidate.recipient
+                          ? `${lookupCandidate.recipient.slice(0, 6)}...${lookupCandidate.recipient.slice(-4)}`
+                          : "Contract"}
+                      </span>
+                    </div>
+                    <div className="sm:text-right min-w-0">
+                      <span className="text-slate-400">Time:</span>{" "}
+                      <span className="font-bold tabular-nums text-[#121212]">
+                        {formatTransactionDateTime(lookupCandidate.blockTimestamp)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : !lookupLoading && (
+                <div className="text-center py-12 border-2 border-dashed border-[#121212] rounded-xl bg-[#fafafa] p-6 flex flex-col items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                    <Search className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-mono text-sm font-bold uppercase text-[#121212] mb-1">
+                      Search by Transaction Hash
+                    </p>
+                    <p className="text-xs font-mono text-slate-500 max-w-sm">
+                      Enter any transaction hash above to look up its details and import.
+                    </p>
                   </div>
                 </div>
               )}
@@ -992,7 +1049,7 @@ export function TransactionImportDialog({
           <button
             type="button"
             onClick={onClose}
-            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5"
+            className="border-2 border-[#121212] bg-white hover:bg-slate-100 text-[#121212] font-mono font-black uppercase text-xs tracking-wider px-4 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
           >
             Close
           </button>

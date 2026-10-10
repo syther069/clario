@@ -12,6 +12,8 @@ import type {
   BusinessAuditEvent,
   InvoiceStatus,
   ReimbursementStatus,
+  Budget,
+  Subscription,
 } from "@/lib/supabase/types";
 
 // ============================================================================
@@ -30,6 +32,8 @@ export const STORAGE_KEYS = {
   BUSINESS_REIMBURSEMENTS: "clario_business_reimbursements",
   BUSINESS_POLICIES: "clario_business_policies",
   BUSINESS_AUDIT: "clario_business_audit_events",
+  BUDGETS: "clario_personal_budgets",
+  SUBSCRIPTIONS: "clario_personal_subscriptions",
 };
 
 const knownScopes = new Set<string>();
@@ -873,3 +877,31 @@ export async function recordBusinessAuditEvent(
   }
   return sanitizedEvent;
 }
+
+// ============================================================================
+// PERSONAL MODE: BUDGETS & SUBSCRIPTIONS PERSISTENCE
+// ============================================================================
+
+export function getStoredBudgets(scopeId?: string): Budget[] {
+  return readScopedLocal<Budget>(STORAGE_KEYS.BUDGETS, scopeId, []);
+}
+
+export function saveStoredBudgets(budgets: Budget[], scopeId?: string): void {
+  writeScopedLocal<Budget>(STORAGE_KEYS.BUDGETS, budgets, scopeId);
+}
+
+export function getStoredSubscriptions(scopeId?: string): Subscription[] {
+  return readScopedLocal<Subscription>(STORAGE_KEYS.SUBSCRIPTIONS, scopeId, []);
+}
+
+export function saveStoredSubscriptions(
+  subscriptions: Subscription[],
+  scopeId?: string,
+): void {
+  writeScopedLocal<Subscription>(
+    STORAGE_KEYS.SUBSCRIPTIONS,
+    subscriptions,
+    scopeId,
+  );
+}
+

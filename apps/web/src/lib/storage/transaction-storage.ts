@@ -23,21 +23,39 @@ export function getStoredTransactions(userOrWallet?: string | null): Transaction
   }
 
   try {
-    const scopedKey = getScopedKey(STORAGE_KEY_TRANSACTIONS, userOrWallet);
-    const rawScoped = localStorage.getItem(scopedKey);
-    if (rawScoped) {
-      const parsed = JSON.parse(rawScoped);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed as Transaction[];
-      }
-    }
+    const txMap = new Map<string, Transaction>();
 
+    // 1. Read global store
     const rawGlobal = localStorage.getItem(STORAGE_KEY_TRANSACTIONS);
     if (rawGlobal) {
       const parsed = JSON.parse(rawGlobal);
       if (Array.isArray(parsed)) {
-        return parsed as Transaction[];
+        for (const t of parsed) {
+          if (t && t.id) txMap.set(t.id, t);
+        }
       }
+    }
+
+    // 2. Read scoped store if wallet/user provided
+    if (userOrWallet && userOrWallet.trim()) {
+      const scopedKey = getScopedKey(STORAGE_KEY_TRANSACTIONS, userOrWallet);
+      const rawScoped = localStorage.getItem(scopedKey);
+      if (rawScoped) {
+        const parsed = JSON.parse(rawScoped);
+        if (Array.isArray(parsed)) {
+          for (const t of parsed) {
+            if (t && t.id) txMap.set(t.id, t);
+          }
+        }
+      }
+    }
+
+    if (txMap.size > 0) {
+      return Array.from(txMap.values()).sort((a, b) => {
+        const timeA = new Date(a.date || a.timestamp || a.created_at || 0).getTime();
+        const timeB = new Date(b.date || b.timestamp || b.created_at || 0).getTime();
+        return timeB - timeA;
+      });
     }
   } catch (err) {
     console.warn("Notice: Error reading transactions from localStorage:", err);
@@ -134,7 +152,7 @@ export function extractTransactionsFromReceiptBundles(
       Boolean(b.blockchain_tx_hash);
     const txHash = b.blockchain_tx_hash || null;
 
-    if (Array.isArray(b.receipt_data?.transactions)) {
+    if (Array.isArray(b.receipt_data?.transactions) && b.receipt_data.transactions.length > 0) {
       for (const t of b.receipt_data.transactions) {
         if (!t || !t.id) continue;
         txMap.set(t.id, {
@@ -171,6 +189,39 @@ export function extractTransactionsFromReceiptBundles(
           updated_at: b.updated_at || b.created_at || new Date().toISOString(),
         });
       }
+    } else {
+      // Fallback: bundle itself represents a saved receipt transaction!
+      const txId = (b.transaction_ids && b.transaction_ids[0]) || `tx_${b.id.replace(/[^a-zA-Z0-9]/g, "")}`;
+      txMap.set(txId, {
+        id: txId,
+        user_id: b.user_id || b.wallet_address || "user_default",
+        type: "expense",
+        amount: Number(b.total_amount) || 0,
+        currency: b.currency || "USD",
+        merchant: b.name || b.receipt_name || "Saved Receipt",
+        description: b.name || b.receipt_name || "Saved Receipt",
+        category: "other",
+        category_id: "other",
+        date: b.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+        timestamp: b.created_at || new Date().toISOString(),
+        payment_method: isConfirmed ? "Onchain (Monad)" : "Card",
+        verification_state: isConfirmed ? "verified" : "unverified",
+        verification_status: isConfirmed ? "verified" : "unverified",
+        blockchain_status: isConfirmed ? "confirmed" : null,
+        blockchain_network: b.blockchain_network || "Monad Testnet",
+        blockchain_chain_id: b.blockchain_chain_id || 10143,
+        blockchain_contract_address: b.blockchain_contract_address || null,
+        blockchain_tx_hash: txHash,
+        monad_tx_hash: txHash,
+        monad_block: b.monad_block || null,
+        blockchain_data_hash: b.receipt_hash || null,
+        receipt_bundle_id: b.id,
+        status: "cleared",
+        source: isConfirmed ? "onchain_monad" : "manual",
+        version: 1,
+        created_at: b.created_at || new Date().toISOString(),
+        updated_at: b.updated_at || b.created_at || new Date().toISOString(),
+      });
     }
   }
 

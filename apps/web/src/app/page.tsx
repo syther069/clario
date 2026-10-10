@@ -38,6 +38,12 @@ import {
   extractTransactionsFromReceiptBundles,
 } from "@/lib/storage/transaction-storage";
 import { getStoredReceiptBundles } from "@/lib/receipts/receipt-client-storage";
+import {
+  getStoredBudgets,
+  saveStoredBudgets,
+  getStoredSubscriptions,
+  saveStoredSubscriptions,
+} from "@/lib/modes/mode-storage";
 
 function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const router = useRouter();
@@ -221,8 +227,12 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     return getStoredTransactions();
   });
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => {
+    return getStoredSubscriptions();
+  });
+  const [budgets, setBudgets] = useState<Budget[]>(() => {
+    return getStoredBudgets();
+  });
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
 
   const effectiveUserId = user?.id || connectedEvmAddress || "demo_user";
@@ -256,6 +266,16 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
             return timeB - timeA;
           }),
         );
+      }
+
+      const storedSubs = getStoredSubscriptions(effectiveUserId);
+      if (storedSubs.length > 0 && !ignore) {
+        setSubscriptions(storedSubs);
+      }
+
+      const storedBudgets = getStoredBudgets(effectiveUserId);
+      if (storedBudgets.length > 0 && !ignore) {
+        setBudgets(storedBudgets);
       }
 
       try {
@@ -309,6 +329,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
         const { data: subData } = await subQuery;
         if (subData && !ignore) {
           setSubscriptions(subData as Subscription[]);
+          saveStoredSubscriptions(subData as Subscription[], effectiveUserId);
         }
 
         let budQuery = supabase.from("budgets").select("*");
@@ -322,6 +343,7 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
         const { data: budData } = await budQuery;
         if (budData && !ignore) {
           setBudgets(budData as Budget[]);
+          saveStoredBudgets(budData as Budget[], effectiveUserId);
         }
 
         let goalQuery = supabase.from("financial_goals").select("*");

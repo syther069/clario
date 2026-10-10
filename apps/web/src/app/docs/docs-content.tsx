@@ -26,6 +26,11 @@ import {
   FileCheck,
   Wallet,
   Code2,
+  Zap,
+  Coins,
+  Fingerprint,
+  KeyRound,
+  Sparkles,
 } from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 
@@ -783,36 +788,255 @@ function reimburseExpense(
       return (
         <div className="space-y-10">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#121212] bg-amber-100 px-3 py-1 font-mono text-xs font-black uppercase text-amber-800 shadow-[2px_2px_0_0_#121212]">
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#121212] bg-[#836EF9]/15 px-3 py-1 font-mono text-xs font-black uppercase text-[#836EF9] shadow-[2px_2px_0_0_#121212]">
               <Wallet className="h-3.5 w-3.5" />
-              <span>Identity & Signers</span>
+              <span>Identity & Embedded Wallets</span>
             </div>
             <h1 className="mt-3 text-3xl sm:text-4xl font-black font-sans tracking-tight text-[#121212]">
-              Privy Authentication
+              Privy Authentication & Embedded Wallets
             </h1>
             <p className="mt-3 text-base text-slate-600 font-medium leading-relaxed max-w-3xl">
-              Non-custodial user onboarding with embedded EVM wallets, hardware security enclave isolation, external wallet connectors, and custom wallet nicknames.
+              Non-custodial user onboarding with embedded EVM wallets, Shamir Secret Sharing, 1-Click Session Signing (Privy Delegated Actions) for instantaneous zero-popup onchain anchoring to Monad, native in-app wallet funding onramp (<code className="font-mono text-xs font-bold text-[#836EF9]">useFundWallet</code>), FIDO2 Passkeys, PIN/Cloud recovery, and progressive multi-account linking.
             </p>
           </div>
 
-          <section id="auth-model" className="space-y-4">
+          <DocStatGrid
+            items={[
+              {
+                label: "AUTH MODEL",
+                value: "Non-Custodial",
+                description: "Embedded EVM wallet generated via Shamir Secret Sharing. Zero seed phrases.",
+                badge: "SSS-ENCLAVE",
+              },
+              {
+                label: "FAST SIGNING",
+                value: "1-Click Delegated",
+                description: "Session signing via useDelegatedActions() for zero-popup onchain anchoring.",
+                badge: "PRIVY BOUNTY",
+              },
+              {
+                label: "WALLET FUNDING",
+                value: "useFundWallet",
+                description: "Native in-app modal to fund embedded wallet with testnet & mainnet assets.",
+                badge: "NATIVE MODAL",
+              },
+              {
+                label: "TARGET CHAIN",
+                value: "Monad (10143)",
+                description: "Parallel EVM with 10,000 TPS injected via Viem custom chain definition.",
+                badge: "SUB-SECOND",
+              },
+              {
+                label: "RECOVERY",
+                value: "Passkeys & PIN",
+                description: "WebAuthn FIDO2 biometrics & encrypted cloud backup recovery.",
+                badge: "SELF-CUSTODY",
+              },
+              {
+                label: "ACCOUNT LINKING",
+                value: "Multi-Account DIDs",
+                description: "Google, Email, SMS, & External Wallets linked to single user identity.",
+                badge: "REACTIVE",
+              },
+            ]}
+          />
+
+          {/* 1. auth-model */}
+          <section id="auth-model" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
-              <span className="text-[#836EF9]">#</span> Privy Identity Model
+              <span className="text-[#836EF9]">#</span> Privy Identity & Embedded Wallets
             </h2>
             <p className="text-sm text-slate-700 font-medium leading-relaxed">
-              Clario uses Privy to eliminate seed-phrase friction without sacrificing decentralization. When a user signs in via Email, SMS, or Google, Privy automatically generates a self-custodial embedded EVM wallet protected by Shamir Secret Sharing and user PIN recovery. The user retains sole signing authority; Clario servers never hold private keys.
+              Clario leverages Privy to eliminate seed-phrase friction without compromising self-custody. When a user authenticates via Google OAuth, Email OTP, or SMS, Privy automatically provisions an embedded EVM wallet directly in the browser using <strong>Shamir Secret Sharing (SSS)</strong>.
             </p>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              The private key is split into multiple independent shares across the user&apos;s local device hardware enclave, Privy&apos;s secure enclaves, and user-controlled recovery methods. Clario servers never hold, transmit, or custody user private keys.
+            </p>
+
+            <DocCallout type="tip" title="NON-CUSTODIAL INVARIANT">
+              Every onchain action in Clario—from receipt commitment anchoring to invoice reimbursement—is signed by the user&apos;s cryptographic key. Neither Clario backend servers nor the advisory AI copilot ever hold signing keys.
+            </DocCallout>
+
+            <DocCodeBlock
+              filename="apps/web/src/providers/privy-provider.tsx"
+              language="typescript"
+              code={`<PrivyProvider
+  appId={appId}
+  config={{
+    appearance: {
+      theme: "dark",
+      accentColor: "#836EF9",
+      showWalletLoginFirst: true,
+      landingHeader: "Connect to Clario",
+      loginMessage: "Verifiable Expense & Identity Protocol on Monad",
+    },
+    defaultChain: monadTestnet,
+    supportedChains: [monadTestnet, monadMainnet, baseMainnet, arbitrumMainnet],
+    embeddedWallets: {
+      ethereum: {
+        createOnLogin: "users-without-wallets",
+      },
+    },
+    loginMethods: ["wallet", "email", "google", "passkey"],
+  }}
+>
+  {children}
+</PrivyProvider>`}
+            />
           </section>
 
+          {/* 2. one-click-session-signing */}
+          <section id="one-click-session-signing" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-[#836EF9] px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
+                <Zap className="h-3 w-3" /> Flagship UX
+              </span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Privy Delegated Actions</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> 1-Click Session Signing (Delegated Actions)
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Monad provides 10,000 TPS and sub-second finality. However, traditional Web3 dApps negate this speed advantage by forcing users to click through wallet signature confirmation modals on every single action. When anchoring dozens of expense receipts or saving multiple ledger transactions, signature fatigue severely hurts productivity.
+            </p>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Clario solves this by implementing <strong>Privy 1-Click Session Signing</strong> using Privy&apos;s Delegated Actions API (<code className="font-mono text-xs font-bold text-[#836EF9]">useDelegatedActions</code>).
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-[#836EF9] mb-1">
+                  <Zap className="h-3.5 w-3.5" />
+                  <span>How It Works</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                  The user authorizes a session signer once via <code className="font-mono text-[11px] font-bold">delegateWallet(&#123; address, chainType: &quot;ethereum&quot; &#125;)</code>. Once active (<code className="font-mono text-[11px] font-bold">isSessionDelegated === true</code>), Clario anchors receipt commitments and ledger states to Monad in the background without prompting for signature approvals on each action.
+                </p>
+              </div>
+
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-rose-600 mb-1">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Security & Invariants</span>
+                </div>
+                <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                  Delegated signing is strictly scoped to human-triggered actions; AI agents have zero signing authority. Users retain absolute sovereignty and can revoke session delegation at any second with a single click via <code className="font-mono text-[11px] font-bold">revokeWallets()</code>.
+                </p>
+              </div>
+            </div>
+
+            <h3 className="font-mono font-black text-sm uppercase text-[#121212] mt-4">
+              Integrated Touchpoints Across Clario
+            </h3>
+            <ul className="list-disc pl-5 space-y-2 text-sm text-slate-700 font-medium">
+              <li>
+                <strong>Settings Portal (<code className="font-mono text-xs">/settings</code>):</strong> Dedicated &quot;1-Click Fast Anchoring (Privy Session Signer)&quot; management card displaying real-time delegation status, wallet authorization state, and one-click Enable / Revoke controls.
+              </li>
+              <li>
+                <strong>User Profile Menu (<code className="font-mono text-xs">UserButton</code>):</strong> Quick-action toggle in the top navigation header allowing users to turn Fast Mode on or off anywhere in the application.
+              </li>
+              <li>
+                <strong>Receipt Upload Modal:</strong> Dynamic UI callout displaying <span className="font-mono text-xs font-bold text-[#836EF9]">⚡ 1-Click Fast Signing Active</span> and morphing the submit button to <span className="font-mono text-xs font-bold">⚡ 1-Click Anchor to Monad</span> for instantaneous offchain-to-onchain cryptographic commitment.
+              </li>
+              <li>
+                <strong>Transaction Management Modal:</strong> Instant visual feedback badge ensuring users know their transaction hashes will anchor to Monad Testnet without popups.
+              </li>
+            </ul>
+
+            <DocCodeBlock
+              filename="apps/web/src/lib/auth/use-clario-auth.ts"
+              language="typescript"
+              code={`import { useDelegatedActions } from "@privy-io/react-auth";
+
+export function useClarioAuth() {
+  const { delegateWallet, revokeWallets } = useDelegatedActions();
+
+  // Check if embedded wallet is currently delegated
+  const isSessionDelegated = useMemo(() => {
+    if (!user?.linkedAccounts) return false;
+    return user.linkedAccounts.some(
+      (a) => a.type === "wallet" && (a as any).delegated === true,
+    );
+  }, [user]);
+
+  // Safeguard: only embedded wallets support delegated actions
+  const canDelegate = Boolean(embeddedWalletAddress);
+
+  // Authorize 1-Click Fast Mode
+  const enableSessionSigning = useCallback(async () => {
+    if (!embeddedWalletAddress) throw new Error("No embedded wallet");
+    await delegateWallet({
+      address: embeddedWalletAddress,
+      chainType: "ethereum",
+    });
+  }, [embeddedWalletAddress, delegateWallet]);
+
+  // Instant Revocation
+  const revokeSessionSigning = useCallback(async () => {
+    await revokeWallets();
+  }, [revokeWallets]);
+
+  return { isSessionDelegated, canDelegate, enableSessionSigning, revokeSessionSigning };
+}`}
+            />
+          </section>
+
+          {/* 3. wallet-funding */}
+          <section id="wallet-funding" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-emerald-600 px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
+                <Coins className="h-3 w-3" /> Native Onramp
+              </span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Privy useFundWallet</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> Native Wallet Funding (useFundWallet)
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Newly created embedded wallets begin with a zero balance. Without native tokens (<code className="font-mono text-xs font-bold text-[#836EF9]">MON</code>) for gas or <code className="font-mono text-xs font-bold">USDC</code> for expense settlement, users face the classic Web3 &quot;empty wallet&quot; drop-off.
+            </p>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Clario integrates Privy&apos;s native <code className="font-mono text-xs font-bold text-[#836EF9]">useFundWallet()</code> hook, enabling users to fund their embedded wallet directly within the Clario application interface via card onramps, cross-chain bridging, or transfers from external wallets.
+            </p>
+
+            <DocCallout type="info" title="FUNDING MODAL INTEGRATION">
+              Accessible across both the <strong>Settings Portal</strong> and the <strong>User Profile Dropdown</strong>. Clario passes the active wallet address dynamically to launch the Privy funding sheet without requiring navigation away from the current workspace.
+            </DocCallout>
+
+            <DocCodeBlock
+              filename="apps/web/src/components/auth/user-button.tsx"
+              language="typescript"
+              code={`import { useClarioAuth } from "@/lib/auth/use-clario-auth";
+
+export function UserButton() {
+  const { activeWalletAddress, fundWallet } = useClarioAuth();
+
+  const handleFund = async () => {
+    if (!activeWalletAddress) return;
+    // Launches Privy native funding modal for active embedded wallet
+    await fundWallet({ address: activeWalletAddress });
+  };
+
+  return (
+    <button onClick={handleFund} className="flex items-center gap-2 text-xs font-mono font-bold">
+      <Coins className="h-3.5 w-3.5 text-amber-500" />
+      <span>Fund Wallet (Privy)</span>
+    </button>
+  );
+}`}
+            />
+          </section>
+
+          {/* 4. custom-chain-injection */}
           <section id="custom-chain-injection" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
               <span className="text-[#836EF9]">#</span> Viem Monad Chain Injection
             </h2>
             <p className="text-sm text-slate-700 font-medium leading-relaxed">
-              Monad Testnet is defined as a custom Viem chain and injected into Privy provider options:
+              Privy supports custom EVM chains out of the box via Viem definitions. Clario defines Monad Testnet (Chain ID <code className="font-mono text-xs font-bold text-[#836EF9]">10143</code>) with official RPCs and block explorers, configuring it as the default target chain in PrivyProvider:
             </p>
             <DocCodeBlock
-              filename="apps/web/src/components/providers/privy-provider.tsx"
+              filename="apps/web/src/providers/privy-provider.tsx"
               language="typescript"
               code={`import { defineChain } from "viem";
 
@@ -829,6 +1053,128 @@ export const monadTestnet = defineChain({
   },
   testnet: true,
 });`}
+            />
+          </section>
+
+          {/* 5. passkeys-self-custody */}
+          <section id="passkeys-self-custody" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded border border-[#121212] bg-indigo-600 px-2 py-0.5 font-mono text-[10px] font-black uppercase text-white shadow-[1px_1px_0_0_#121212]">
+                <Fingerprint className="h-3 w-3" /> FIDO2 & Security
+              </span>
+              <span className="font-mono text-xs text-slate-500 font-bold uppercase">// Passkeys & Recovery</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> Passkeys, Recovery & Self-Custody
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Clario exposes three foundational security capabilities through Privy&apos;s recovery and key management hooks:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-[#836EF9] mb-1">
+                  <Fingerprint className="h-3.5 w-3.5" />
+                  <span>WebAuthn Passkeys</span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Users can link biometric passkeys (Touch ID, Face ID, Windows Hello) via <code className="font-mono text-[11px] font-bold">linkPasskey()</code> for phishing-resistant hardware authentication.
+                </p>
+              </div>
+
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-amber-600 mb-1">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Cloud & PIN Recovery</span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Protected by <code className="font-mono text-[11px] font-bold">useSetWalletRecovery()</code>. Users establish a password or cloud backup so they never lose wallet access if their local device is reset.
+                </p>
+              </div>
+
+              <div className="rounded-md border-2 border-[#121212] bg-white p-4 shadow-[3px_3px_0_0_#121212]">
+                <div className="flex items-center gap-2 font-mono text-xs font-black uppercase text-emerald-600 mb-1">
+                  <KeyRound className="h-3.5 w-3.5" />
+                  <span>Key Export (Escape Hatch)</span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Users can export their raw private key at any time using <code className="font-mono text-[11px] font-bold">exportWallet()</code> into MetaMask, Rabby, or hardware signers. Zero vendor lock-in.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 6. progressive-account-linking */}
+          <section id="progressive-account-linking" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> Progressive Multi-Account Linking & Nicknames
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Users rarely operate on a single account. A freelancer might sign in with Google OAuth initially, but later needs to connect their corporate MetaMask, link their personal email, or bind an organization signer.
+            </p>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Privy&apos;s account linking API (<code className="font-mono text-xs font-bold text-[#836EF9]">useLinkAccount</code>) unifies multiple authenticators and external Web3 wallets into a single Decentralized Identifier (DID). Clario enhances this with a <strong>Local-First Reactive Nickname Engine</strong>:
+            </p>
+
+            <ul className="list-disc pl-5 space-y-2 text-sm text-slate-700 font-medium">
+              <li>
+                <strong>Unified Identity:</strong> Connect external wallets (MetaMask, Rabby, Coinbase Wallet, Phantom) without creating duplicate accounts.
+              </li>
+              <li>
+                <strong>Custom Wallet Nicknames:</strong> Assign human-readable labels (e.g., &quot;Main Monad Ops&quot;, &quot;Company Treasury&quot;) stored local-first and synchronized reactively across all transaction, budget, and receipt modals.
+              </li>
+              <li>
+                <strong>Seamless Switching:</strong> Switch active wallets on the fly with <code className="font-mono text-xs font-bold">setActiveWallet()</code> while preserving historical session signatures.
+              </li>
+            </ul>
+
+            <DocTable
+              caption="Privy Architecture & Integration Matrix in Clario"
+              headers={["Feature", "Privy SDK Primitive", "Clario Implementation Point", "Architectural Benefit"]}
+              rows={[
+                [
+                  "Embedded EVM Wallets",
+                  "@privy-io/react-auth (createOnLogin)",
+                  "Automatic on Google/Email sign-in",
+                  "Zero seed phrase friction; non-custodial Shamir Secret Sharing",
+                ],
+                [
+                  "1-Click Session Signing",
+                  "useDelegatedActions() (delegateWallet)",
+                  "Settings, UserButton, Receipt & Tx Modals",
+                  "Sub-second Monad anchoring with zero signature popup interrupts",
+                ],
+                [
+                  "Native Wallet Funding",
+                  "useFundWallet()",
+                  "Settings card & UserButton dropdown",
+                  "Direct in-app onramp & transfers preventing zero-gas abandonment",
+                ],
+                [
+                  "Monad Testnet Injection",
+                  "defineChain() + defaultChain (10143)",
+                  "src/providers/privy-provider.tsx",
+                  "Direct EVM RPC targeting 10,000 TPS parallel Monad execution",
+                ],
+                [
+                  "Biometric Passkeys",
+                  "useLinkPasskey() / useUnlinkPasskey()",
+                  "Settings > Security & Signers",
+                  "FIDO2 WebAuthn authentication via Face ID / Touch ID",
+                ],
+                [
+                  "Self-Custody Escape Hatch",
+                  "useExportWallet()",
+                  "Settings > Wallet Details",
+                  "Full private key export ensuring complete user sovereignty",
+                ],
+                [
+                  "Multi-Account Linking",
+                  "useLinkAccount() + useUnlinkAccount()",
+                  "Settings > Linked Identities",
+                  "Unifies Google, Email, SMS, & multiple external EVM wallets to 1 DID",
+                ],
+              ]}
             />
           </section>
         </div>

@@ -127,15 +127,17 @@ export const DOC_SECTIONS: DocSection[] = [
   {
     id: "privy-auth",
     slug: "privy-auth",
-    title: "Privy Authentication",
-    badge: "Wallets",
-    description: "Non-custodial identity, embedded wallets, external EVM signers, and session management.",
+    title: "Privy Authentication & Embedded Wallets",
+    badge: "Wallets & Signers",
+    description: "Non-custodial identity, embedded wallets, 1-click session signing (delegated actions), native wallet funding onramp, passkeys, and multi-wallet linking.",
     group: "Integrations",
     subsections: [
-      { id: "auth-model", title: "Privy Identity Model" },
-      { id: "supported-signers", title: "Embedded & External EVM Signers" },
+      { id: "auth-model", title: "Privy Identity & Embedded Wallets" },
+      { id: "one-click-session-signing", title: "1-Click Session Signing (Delegated Actions)" },
+      { id: "wallet-funding", title: "Native Wallet Funding (useFundWallet)" },
       { id: "custom-chain-injection", title: "Viem Monad Chain Injection" },
-      { id: "session-persistence", title: "Session & Multi-Account Linking" },
+      { id: "passkeys-self-custody", title: "Passkeys, Recovery & Self-Custody" },
+      { id: "progressive-account-linking", title: "Progressive Multi-Account Linking & Nicknames" },
     ],
   },
   {
