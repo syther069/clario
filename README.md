@@ -21,7 +21,7 @@ Built and verified for the **Monad Metropolis Hackathon**, Clario combines Monad
 - **Alchemy Multi-Chain Ingestion Engine**: Bidirectional transfer queries across supported chains (Ethereum, Base, Arbitrum, Optimism, Polygon) via Alchemy Transfers API with spam token filtering and historical price resolution. Monad activity is ingested via direct Monad RPC & Explorer adapters.
 - **Advisory Grounded AI Financial Copilot**: Context-aware financial copilot powered by Groq and Gemini with automatic PII anonymization (`anonymizeCopilotContext`), scrubbing names, emails, phones, and wallet addresses before external transmission.
 - **Privy 1-Click Fast Signing & Embedded Wallets**: Seedless non-custodial EVM onboarding via Shamir Secret Sharing, 1-Click Session Signing (Privy Delegated Actions via `useDelegatedActions`) for zero-popup instantaneous onchain anchoring to Monad Testnet, native in-app wallet funding modal (`useFundWallet`), FIDO2 Passkeys, and progressive multi-account linking.
-- **Montally Neo-Brutalist Design System**: High-contrast `border-2 border-black` borders, hard 2D offset box-shadows (`shadow-[4px_4px_0px_#000]`), monospace tracking badges, `.bg-grid` canvas, and Monad electric purple accent (`#836EF9`).
+- **Clario Neo-Brutalist Design System**: High-contrast `border-2 border-black` borders, hard 2D offset box-shadows (`shadow-[4px_4px_0px_#000]`), monospace tracking badges, `.bg-grid` canvas, and Monad electric purple accent (`#836EF9`).
 
 ---
 
