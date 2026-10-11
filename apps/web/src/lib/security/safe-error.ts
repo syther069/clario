@@ -1,7 +1,7 @@
 /**
  * Safe Error Handler & Sanitizer
  * Prevents stack traces, database schema leaks, credentials, and internal server paths
- * from leaking to user-facing API responses (Security Prompt Pack Section 5, SEC-10).
+ * from leaking to user-facing API responses.
  */
 
 import { NextResponse } from "next/server";

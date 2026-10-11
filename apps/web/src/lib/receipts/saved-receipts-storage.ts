@@ -76,9 +76,7 @@ export function ensureCanonicalReceiptData(
     // Synthesize transaction items so transactions is NEVER empty if transactionIds exist
     const total = Number(d.totalAmount ?? fallback.totalAmount) || 0;
     const splitAmount =
-      txIds.length > 1
-        ? Number((total / txIds.length).toFixed(2))
-        : total;
+      txIds.length > 1 ? Number((total / txIds.length).toFixed(2)) : total;
     txs = txIds.map((id, index) => ({
       id,
       amount:
@@ -157,8 +155,7 @@ function readLocalStore(): Record<string, PersistedSavedReceipt> {
               } else {
                 const existingTxCount =
                   existing.receipt_data?.transactions?.length || 0;
-                const newTxCount =
-                  r.receipt_data?.transactions?.length || 0;
+                const newTxCount = r.receipt_data?.transactions?.length || 0;
                 merged[id] = newTxCount >= existingTxCount ? r : existing;
               }
             }

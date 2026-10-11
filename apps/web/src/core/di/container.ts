@@ -61,7 +61,9 @@ class ServiceContainer {
 
   public get getTransactionsUseCase(): GetTransactionsUseCase {
     if (!this._getTransactionsUseCase) {
-      this._getTransactionsUseCase = new GetTransactionsUseCase(this.transactionRepository);
+      this._getTransactionsUseCase = new GetTransactionsUseCase(
+        this.transactionRepository,
+      );
     }
     return this._getTransactionsUseCase;
   }
@@ -78,7 +80,8 @@ class ServiceContainer {
 
   public get extractReceiptTransactionsUseCase(): ExtractReceiptTransactionsUseCase {
     if (!this._extractReceiptTransactionsUseCase) {
-      this._extractReceiptTransactionsUseCase = new ExtractReceiptTransactionsUseCase();
+      this._extractReceiptTransactionsUseCase =
+        new ExtractReceiptTransactionsUseCase();
     }
     return this._extractReceiptTransactionsUseCase;
   }

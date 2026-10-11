@@ -39,8 +39,12 @@ export default function AccountSettingsPage() {
 
   // Nickname Modal State
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
-  const [targetWalletForNickname, setTargetWalletForNickname] = useState<string | null>(null);
-  const [targetTitleForNickname, setTargetTitleForNickname] = useState("Set Wallet Nickname");
+  const [targetWalletForNickname, setTargetWalletForNickname] = useState<
+    string | null
+  >(null);
+  const [targetTitleForNickname, setTargetTitleForNickname] = useState(
+    "Set Wallet Nickname",
+  );
 
   // Inline Quick-Edit State for Profile Card
   const [isEditingInline, setIsEditingInline] = useState(false);
@@ -48,7 +52,9 @@ export default function AccountSettingsPage() {
 
   // 1-Click Session Signing State
   const [isDelegating, setIsDelegating] = useState(false);
-  const [delegationFeedback, setDelegationFeedback] = useState<string | null>(null);
+  const [delegationFeedback, setDelegationFeedback] = useState<string | null>(
+    null,
+  );
 
   const {
     displayName,
@@ -90,21 +96,21 @@ export default function AccountSettingsPage() {
 
   const hasLinkedExternalWallet = Boolean(
     (externalEvmWallets && externalEvmWallets.length > 0) ||
-      wallets.some((w) => w.walletClientType !== "privy") ||
-      user?.linkedAccounts?.some(
-        (a) =>
-          a.type === "wallet" &&
-          (a as { walletClientType?: string }).walletClientType !== "privy",
-      ),
+    wallets.some((w) => w.walletClientType !== "privy") ||
+    user?.linkedAccounts?.some(
+      (a) =>
+        a.type === "wallet" &&
+        (a as { walletClientType?: string }).walletClientType !== "privy",
+    ),
   );
   const hasLinkedEmail = Boolean(
     user?.email?.address ||
-      (user?.email && typeof user.email === "string") ||
-      user?.linkedAccounts?.some((a) => a.type === "email"),
+    (user?.email && typeof user.email === "string") ||
+    user?.linkedAccounts?.some((a) => a.type === "email"),
   );
   const hasLinkedGoogle = Boolean(
     user?.google ||
-      user?.linkedAccounts?.some((a) => a.type === "google_oauth"),
+    user?.linkedAccounts?.some((a) => a.type === "google_oauth"),
   );
   const hasLinkedPasskey = Boolean(
     user?.linkedAccounts?.some((a) => a.type === "passkey"),
@@ -128,35 +134,30 @@ export default function AccountSettingsPage() {
     (typeof user?.email === "string" ? user.email : null) ||
     (
       user?.linkedAccounts?.find((a) => a.type === "email") as
-        | { address?: string }
-        | undefined
+        { address?: string } | undefined
     )?.address;
 
   const linkedGoogleEmail =
     user?.google?.email ||
     (
       user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
-        | { email?: string }
-        | undefined
+        { email?: string } | undefined
     )?.email;
   const linkedGoogleSubject =
     user?.google?.subject ||
     (
       user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
-        | { subject?: string }
-        | undefined
+        { subject?: string } | undefined
     )?.subject;
 
   const linkedPasskeyId =
     (
       user?.linkedAccounts?.find((a) => a.type === "passkey") as
-        | { credentialId?: string; id?: string }
-        | undefined
+        { credentialId?: string; id?: string } | undefined
     )?.credentialId ||
     (
       user?.linkedAccounts?.find((a) => a.type === "passkey") as
-        | { credentialId?: string; id?: string }
-        | undefined
+        { credentialId?: string; id?: string } | undefined
     )?.id;
 
   const totalLinkedCount =
@@ -227,7 +228,8 @@ export default function AccountSettingsPage() {
                     Account Settings & Security
                   </h1>
                   <p className="text-xs text-slate-600 font-medium">
-                    Manage your connected wallets, security credentials, and platform preferences.
+                    Manage your connected wallets, security credentials, and
+                    platform preferences.
                   </p>
                 </div>
               </div>
@@ -276,7 +278,8 @@ export default function AccountSettingsPage() {
                           </p>
                         ) : activeWalletAddress ? (
                           <p className="text-xs text-slate-500 font-mono truncate mt-0.5">
-                            {activeWalletAddress.slice(0, 6)}...{activeWalletAddress.slice(-4)}
+                            {activeWalletAddress.slice(0, 6)}...
+                            {activeWalletAddress.slice(-4)}
                           </p>
                         ) : (
                           <p className="text-xs text-slate-500 font-mono mt-0.5">
@@ -285,7 +288,10 @@ export default function AccountSettingsPage() {
                         )}
                       </div>
                     ) : (
-                      <form onSubmit={handleSaveInlineEdit} className="space-y-2">
+                      <form
+                        onSubmit={handleSaveInlineEdit}
+                        className="space-y-2"
+                      >
                         <input
                           type="text"
                           value={inlineNickname}
@@ -353,7 +359,10 @@ export default function AccountSettingsPage() {
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() =>
-                          openNicknameModal(activeWalletAddress, "Edit Active Wallet Nickname")
+                          openNicknameModal(
+                            activeWalletAddress,
+                            "Edit Active Wallet Nickname",
+                          )
                         }
                         className="relative text-slate-500 hover:text-[#836EF9] p-1.5 transition-colors duration-150 ease-out rounded hover:bg-slate-100 after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
                         title="Set / Edit Nickname"
@@ -380,7 +389,9 @@ export default function AccountSettingsPage() {
                         <ContextualIconSwap
                           isActive={copied}
                           initialIcon={<Copy className="h-3.5 w-3.5" />}
-                          activeIcon={<Check className="h-3.5 w-3.5 text-emerald-600" />}
+                          activeIcon={
+                            <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          }
                         />
                       </button>
                     </div>
@@ -521,7 +532,9 @@ export default function AccountSettingsPage() {
                           {linkedExternalWalletAddress}
                         </p>
                       ) : (
-                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">Not linked</p>
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          Not linked
+                        </p>
                       )}
                     </div>
                   </div>
@@ -543,12 +556,18 @@ export default function AccountSettingsPage() {
                             title="Set / Edit Nickname"
                           >
                             <Pencil className="h-3 w-3" />
-                            <span>{externalWalletNickname ? "Edit Name" : "Set Name"}</span>
+                            <span>
+                              {externalWalletNickname
+                                ? "Edit Name"
+                                : "Set Name"}
+                            </span>
                           </button>
                         )}
                         {canUnlink && linkedExternalWalletAddress && (
                           <button
-                            onClick={() => unlinkWallet(linkedExternalWalletAddress)}
+                            onClick={() =>
+                              unlinkWallet(linkedExternalWalletAddress)
+                            }
                             className="text-[10px] font-mono font-bold uppercase text-red-600 hover:underline px-2 py-1"
                           >
                             Unlink
@@ -581,7 +600,9 @@ export default function AccountSettingsPage() {
                           {linkedEmailAddress}
                         </p>
                       ) : (
-                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">Not linked</p>
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          Not linked
+                        </p>
                       )}
                     </div>
                   </div>
@@ -626,7 +647,9 @@ export default function AccountSettingsPage() {
                           {linkedGoogleEmail}
                         </p>
                       ) : (
-                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">Not linked</p>
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          Not linked
+                        </p>
                       )}
                     </div>
                   </div>
@@ -725,7 +748,8 @@ export default function AccountSettingsPage() {
                         Recovery Password
                       </div>
                       <p className="text-[11px] text-slate-500 mt-1">
-                        Set cloud backup or custom PIN for instant device recovery
+                        Set cloud backup or custom PIN for instant device
+                        recovery
                       </p>
                     </div>
                   </button>
@@ -740,7 +764,8 @@ export default function AccountSettingsPage() {
                         Export Private Key
                       </div>
                       <p className="text-[11px] text-slate-500 mt-1">
-                        Self-custody export for MetaMask, Rabby, or hardware wallets
+                        Self-custody export for MetaMask, Rabby, or hardware
+                        wallets
                       </p>
                     </div>
                   </button>
@@ -793,7 +818,10 @@ export default function AccountSettingsPage() {
               </div>
 
               <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                Pre-authorizes your Privy embedded wallet to sign transaction commitments and receipt proof hashes in the background on Monad Testnet without triggering signature popup modals each time you save an entry.
+                Pre-authorizes your Privy embedded wallet to sign transaction
+                commitments and receipt proof hashes in the background on Monad
+                Testnet without triggering signature popup modals each time you
+                save an entry.
               </p>
 
               {canDelegate ? (
@@ -804,7 +832,9 @@ export default function AccountSettingsPage() {
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase text-[#121212]">
-                        {isSessionDelegated ? "Session Signatures Authorized" : "Session Authorization Required"}
+                        {isSessionDelegated
+                          ? "Session Signatures Authorized"
+                          : "Session Authorization Required"}
                       </p>
                       <p className="text-[11px] font-mono text-slate-500">
                         {isSessionDelegated
@@ -823,9 +853,15 @@ export default function AccountSettingsPage() {
                           setIsDelegating(true);
                           try {
                             await revokeSessionSigning();
-                            setDelegationFeedback("1-Click session authorization revoked.");
+                            setDelegationFeedback(
+                              "1-Click session authorization revoked.",
+                            );
                           } catch (err) {
-                            setDelegationFeedback(err instanceof Error ? err.message : "Failed to revoke authorization.");
+                            setDelegationFeedback(
+                              err instanceof Error
+                                ? err.message
+                                : "Failed to revoke authorization.",
+                            );
                           } finally {
                             setIsDelegating(false);
                           }
@@ -842,9 +878,15 @@ export default function AccountSettingsPage() {
                           setIsDelegating(true);
                           try {
                             await enableSessionSigning();
-                            setDelegationFeedback("1-Click Fast Anchoring activated successfully!");
+                            setDelegationFeedback(
+                              "1-Click Fast Anchoring activated successfully!",
+                            );
                           } catch (err) {
-                            setDelegationFeedback(err instanceof Error ? err.message : "Failed to enable 1-Click Fast Anchoring.");
+                            setDelegationFeedback(
+                              err instanceof Error
+                                ? err.message
+                                : "Failed to enable 1-Click Fast Anchoring.",
+                            );
                           } finally {
                             setIsDelegating(false);
                           }
@@ -873,7 +915,10 @@ export default function AccountSettingsPage() {
                     <span>Embedded Wallet Required for 1-Click Delegation</span>
                   </div>
                   <p className="mt-1 text-[11px] leading-relaxed">
-                    1-Click background signing uses Privy delegated actions, which are exclusive to embedded wallets. External browser extensions (e.g. MetaMask) require manual EIP-1193 confirmation for security.
+                    1-Click background signing uses Privy delegated actions,
+                    which are exclusive to embedded wallets. External browser
+                    extensions (e.g. MetaMask) require manual EIP-1193
+                    confirmation for security.
                   </p>
                 </div>
               )}
@@ -903,7 +948,10 @@ export default function AccountSettingsPage() {
                   </h3>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
-                  Your private evidence and receipts remain strictly offchain in local storage and encrypted databases. Only immutable state commitments and authorization signatures are published to Monad Testnet.
+                  Your private evidence and receipts remain strictly offchain in
+                  local storage and encrypted databases. Only immutable state
+                  commitments and authorization signatures are published to
+                  Monad Testnet.
                 </p>
               </div>
             </div>
@@ -916,7 +964,11 @@ export default function AccountSettingsPage() {
         isOpen={nicknameModalOpen}
         onClose={() => setNicknameModalOpen(false)}
         walletAddress={targetWalletForNickname}
-        currentNickname={targetWalletForNickname ? getNickname(targetWalletForNickname) : nickname}
+        currentNickname={
+          targetWalletForNickname
+            ? getNickname(targetWalletForNickname)
+            : nickname
+        }
         onSave={(newNickname, targetAddress) => {
           setNickname(newNickname, targetAddress || undefined);
         }}

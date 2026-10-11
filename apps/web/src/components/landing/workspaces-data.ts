@@ -45,7 +45,8 @@ export const WORKSPACES_DATA: WorkspaceModeData[] = [
   {
     id: "freelancer",
     name: "Freelancer",
-    promise: "Bill clients for project expenses with instant, indisputable proof.",
+    promise:
+      "Bill clients for project expenses with instant, indisputable proof.",
     description:
       "Tag expenses to specific clients, organize your tax deductions, and send clean reimbursement links that prove payment without leaking personal invoice details.",
     bestFor:
@@ -69,7 +70,8 @@ export const WORKSPACES_DATA: WorkspaceModeData[] = [
   {
     id: "family",
     name: "Family",
-    promise: "Share household expenses and settle balances without awkward math.",
+    promise:
+      "Share household expenses and settle balances without awkward math.",
     description:
       "Pool grocery runs, utility payments, and childcare costs across family members. Everyone sees what was spent and who is owed, with zero guesswork.",
     bestFor:

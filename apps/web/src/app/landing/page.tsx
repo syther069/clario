@@ -42,7 +42,8 @@ const SAMPLE_EXPENSES = [
     status: "Verified & Settled",
     privacy: "Invoice stays on your laptop · Never published publicly",
     gasFee: "0.00012 MON (< $0.001)",
-    verificationMethod: "Keccak-256 pre-image commitment with onchain settlement guard",
+    verificationMethod:
+      "Keccak-256 pre-image commitment with onchain settlement guard",
   },
   {
     id: "EXP-9043",
@@ -68,7 +69,8 @@ const SAMPLE_EXPENSES = [
     status: "Verified & Settled",
     privacy: "Scope and notes offchain · Proof fingerprint on Monad",
     gasFee: "0.00011 MON (< $0.001)",
-    verificationMethod: "Keccak-256 pre-image commitment with onchain settlement guard",
+    verificationMethod:
+      "Keccak-256 pre-image commitment with onchain settlement guard",
   },
 ];
 
@@ -153,8 +155,7 @@ export default function LandingPage() {
     });
   }, [scrollY]);
 
-  const activeExpense =
-    SAMPLE_EXPENSES[selectedExpense] ?? SAMPLE_EXPENSES[0]!;
+  const activeExpense = SAMPLE_EXPENSES[selectedExpense] ?? SAMPLE_EXPENSES[0]!;
 
   const handleCopyHash = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -184,11 +185,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-grid text-gray-900 font-sans selection:bg-[#7C6CF6] selection:text-white relative">
       <ScrollProgress />
 
-
       {/* Navigation Header (Montally Neo-Brutalism) */}
       <header
         className={`sticky top-0 z-40 bg-white border-b-2 border-[#121212] px-4 sm:px-8 transition-all duration-200 ${
-          isNavCompact ? "py-2.5 shadow-[0_2px_0_0_#121212]" : "py-3.5 shadow-[0_2px_0_0_#121212]"
+          isNavCompact
+            ? "py-2.5 shadow-[0_2px_0_0_#121212]"
+            : "py-3.5 shadow-[0_2px_0_0_#121212]"
         }`}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -244,7 +246,10 @@ export default function LandingPage() {
                 className="inline-flex items-center justify-center gap-1.5 font-mono text-xs font-black uppercase tracking-wider px-4 py-2 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[3px_3px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
               >
                 <span className="!text-white">Launch App</span>
-                <ArrowRight className="h-3.5 w-3.5 !text-white stroke-[2.5]" aria-hidden="true" />
+                <ArrowRight
+                  className="h-3.5 w-3.5 !text-white stroke-[2.5]"
+                  aria-hidden="true"
+                />
               </Link>
             </Magnetic>
           </div>
@@ -275,8 +280,9 @@ export default function LandingPage() {
 
               {/* Subtitle */}
               <p className="text-base sm:text-lg text-gray-600 font-normal leading-relaxed max-w-xl text-pretty">
-                Track everyday spending across four simple workspaces. Your receipts
-                stay on your device, while Monad creates proof that nobody can dispute or change.
+                Track everyday spending across four simple workspaces. Your
+                receipts stay on your device, while Monad creates proof that
+                nobody can dispute or change.
               </p>
 
               {/* Hero CTAs */}
@@ -287,7 +293,10 @@ export default function LandingPage() {
                     className="inline-flex items-center justify-center gap-2 font-mono text-sm font-black uppercase tracking-wider px-6 py-3.5 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                   >
                     <span className="!text-white">Launch Testnet App</span>
-                    <ArrowRight className="h-4 w-4 !text-white stroke-[2.5]" aria-hidden="true" />
+                    <ArrowRight
+                      className="h-4 w-4 !text-white stroke-[2.5]"
+                      aria-hidden="true"
+                    />
                   </Link>
                 </Magnetic>
 
@@ -306,7 +315,8 @@ export default function LandingPage() {
 
               {/* Testnet Disclaimer */}
               <p className="text-xs font-mono font-bold uppercase tracking-wider text-gray-700">
-                Unaudited testnet software on Monad Testnet. No real money required.
+                Unaudited testnet software on Monad Testnet. No real money
+                required.
               </p>
 
               {/* Micro Guarantees */}
@@ -496,7 +506,9 @@ export default function LandingPage() {
                       className="h-4 w-4 text-[#836EF9] stroke-[2.5]"
                       aria-hidden="true"
                     />
-                    <span className="!text-white">Inspect Verification Live</span>
+                    <span className="!text-white">
+                      Inspect Verification Live
+                    </span>
                   </Link>
                 </div>
               </InteractiveCard>
@@ -525,9 +537,10 @@ export default function LandingPage() {
                 Inspect Receipt Integrity (Sandbox Simulator)
               </h2>
               <p className="text-gray-300 text-sm sm:text-base mt-2 leading-relaxed font-medium">
-                Experience how auditors, clients, and teammates can independently verify that an expense
-                has not been altered and has never been double-reimbursed. For live Monad Testnet verification,
-                explore the dedicated Proof Center.
+                Experience how auditors, clients, and teammates can
+                independently verify that an expense has not been altered and
+                has never been double-reimbursed. For live Monad Testnet
+                verification, explore the dedicated Proof Center.
               </p>
             </div>
 
@@ -553,9 +566,15 @@ export default function LandingPage() {
                           : "border-white/10 bg-[#121212] hover:border-white/30 text-gray-400"
                       }`}
                     >
-                      <div className="font-mono text-[11px] font-black uppercase text-[#836EF9]">{exp.id}</div>
-                      <div className="text-xs font-bold text-white truncate mt-0.5">{exp.title}</div>
-                      <div className="font-mono text-xs font-bold text-gray-300 mt-1">{exp.amount}</div>
+                      <div className="font-mono text-[11px] font-black uppercase text-[#836EF9]">
+                        {exp.id}
+                      </div>
+                      <div className="text-xs font-bold text-white truncate mt-0.5">
+                        {exp.title}
+                      </div>
+                      <div className="font-mono text-xs font-bold text-gray-300 mt-1">
+                        {exp.amount}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -564,7 +583,10 @@ export default function LandingPage() {
               {/* Action Button */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
                 <div className="text-xs text-gray-400 font-mono">
-                  Active Fingerprint: <span className="text-white font-bold">{activeExpense.hash.slice(0, 18)}...</span>
+                  Active Fingerprint:{" "}
+                  <span className="text-white font-bold">
+                    {activeExpense.hash.slice(0, 18)}...
+                  </span>
                 </div>
                 <button
                   type="button"
@@ -572,7 +594,9 @@ export default function LandingPage() {
                   disabled={isVerifying}
                   className="w-full sm:w-auto font-mono text-xs font-black uppercase tracking-wider px-6 py-3 rounded-lg bg-[#836EF9] text-white border-2 border-white shadow-[3px_3px_0_0_#fff] hover:bg-[#7257f8] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50 transition cursor-pointer"
                 >
-                  {isVerifying ? "Simulating Onchain Verification..." : "Run Sandbox Verification"}
+                  {isVerifying
+                    ? "Simulating Onchain Verification..."
+                    : "Run Sandbox Verification"}
                 </button>
               </div>
 
@@ -600,30 +624,46 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                       <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero Cloud Leak
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero Cloud
+                          Leak
                         </div>
-                        <p className="text-[11px] text-gray-300">Receipt image and sensitive notes remain offchain in private vault storage.</p>
+                        <p className="text-[11px] text-gray-300">
+                          Receipt image and sensitive notes remain offchain in
+                          private vault storage.
+                        </p>
                       </div>
 
                       <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Tamper-Proof Match
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Tamper-Proof
+                          Match
                         </div>
-                        <p className="text-[11px] text-gray-300">Amount, vendor, and date cryptographic fingerprint matches onchain anchor perfectly.</p>
+                        <p className="text-[11px] text-gray-300">
+                          Amount, vendor, and date cryptographic fingerprint
+                          matches onchain anchor perfectly.
+                        </p>
                       </div>
 
                       <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Human Governance
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Human
+                          Governance
                         </div>
-                        <p className="text-[11px] text-gray-300">Authorized human officer signature verified. Automated AI copilot had zero release power.</p>
+                        <p className="text-[11px] text-gray-300">
+                          Authorized human officer signature verified. Automated
+                          AI copilot had zero release power.
+                        </p>
                       </div>
 
                       <div className="bg-[#121212]/80 border border-emerald-500/40 rounded-lg p-3">
                         <div className="font-mono text-[11px] font-black uppercase text-emerald-400 flex items-center gap-1.5 mb-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero Duplicate Settlement
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Zero
+                          Duplicate Settlement
                         </div>
-                        <p className="text-[11px] text-gray-300">Settlement state recorded on Monad; the smart contract prevents duplicate reimbursement forever.</p>
+                        <p className="text-[11px] text-gray-300">
+                          Settlement state recorded on Monad; the smart contract
+                          prevents duplicate reimbursement forever.
+                        </p>
                       </div>
                     </div>
 
@@ -631,19 +671,43 @@ export default function LandingPage() {
                     <div className="pt-2 border-t border-emerald-500/30">
                       <button
                         type="button"
-                        onClick={() => setShowVoucherDetails(!showVoucherDetails)}
+                        onClick={() =>
+                          setShowVoucherDetails(!showVoucherDetails)
+                        }
                         className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 flex items-center justify-between w-full cursor-pointer py-1"
                       >
-                        <span>View Cryptographic Proof Payload (JSON / Signer)</span>
-                        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showVoucherDetails ? "rotate-180" : ""}`} />
+                        <span>
+                          View Cryptographic Proof Payload (JSON / Signer)
+                        </span>
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 transition-transform ${showVoucherDetails ? "rotate-180" : ""}`}
+                        />
                       </button>
 
                       {showVoucherDetails && (
                         <div className="mt-3 p-3.5 rounded-lg bg-[#121212] border border-white/20 font-mono text-[11px] text-gray-300 space-y-1.5">
-                          <div><span className="text-gray-500">Commitment Hash:</span> {activeExpense.hash}</div>
-                          <div><span className="text-gray-500">Authorized Signer:</span> {verificationResult.approver}</div>
-                          <div><span className="text-gray-500">Network:</span> Monad Testnet</div>
-                          <div><span className="text-gray-500">Verification Spec:</span> {activeExpense.verificationMethod}</div>
+                          <div>
+                            <span className="text-gray-500">
+                              Commitment Hash:
+                            </span>{" "}
+                            {activeExpense.hash}
+                          </div>
+                          <div>
+                            <span className="text-gray-500">
+                              Authorized Signer:
+                            </span>{" "}
+                            {verificationResult.approver}
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Network:</span>{" "}
+                            Monad Testnet
+                          </div>
+                          <div>
+                            <span className="text-gray-500">
+                              Verification Spec:
+                            </span>{" "}
+                            {activeExpense.verificationMethod}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -651,7 +715,8 @@ export default function LandingPage() {
                     {/* Link to live Proof Center */}
                     <div className="pt-3 border-t border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3">
                       <span className="font-mono text-[11px] text-gray-300">
-                        Interactive sandbox demonstration. Have a live Monad transaction hash to check?
+                        Interactive sandbox demonstration. Have a live Monad
+                        transaction hash to check?
                       </span>
                       <Link
                         href="/proof"
@@ -684,7 +749,8 @@ export default function LandingPage() {
               Frequently asked questions
             </h2>
             <p className="text-base sm:text-lg text-gray-600 mt-3 leading-relaxed">
-              Clear answers about privacy, testnet use, and everyday expense workflows.
+              Clear answers about privacy, testnet use, and everyday expense
+              workflows.
             </p>
           </div>
 
@@ -743,7 +809,8 @@ export default function LandingPage() {
                 Ready to test private, verifiable expenses?
               </h2>
               <p className="text-gray-700 text-sm sm:text-base leading-relaxed font-medium">
-                Launch personal budgeting, freelance billing, or team expense approvals on Monad testnet in seconds.
+                Launch personal budgeting, freelance billing, or team expense
+                approvals on Monad testnet in seconds.
               </p>
 
               <div className="pt-2 flex justify-center">
@@ -753,7 +820,10 @@ export default function LandingPage() {
                     className="inline-flex items-center justify-center gap-2 font-mono text-sm font-black uppercase tracking-wider px-6 py-3.5 rounded-xl bg-[#836EF9] !text-white border-2 border-[#121212] shadow-[4px_4px_0_0_#121212] hover:bg-[#7257f8] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                   >
                     <span className="!text-white">Launch Testnet App</span>
-                    <ArrowRight className="h-4 w-4 !text-white stroke-[2.5]" aria-hidden="true" />
+                    <ArrowRight
+                      className="h-4 w-4 !text-white stroke-[2.5]"
+                      aria-hidden="true"
+                    />
                   </Link>
                 </Magnetic>
               </div>
@@ -792,7 +862,9 @@ export default function LandingPage() {
               </Link>
 
               <p className="text-xs text-gray-700 leading-relaxed font-medium max-w-sm">
-                Private expense tracking built on Monad. Keep receipts local on your own device while settling verified cryptographic proofs onchain.
+                Private expense tracking built on Monad. Keep receipts local on
+                your own device while settling verified cryptographic proofs
+                onchain.
               </p>
 
               {/* Status Micro-Card */}
@@ -953,10 +1025,13 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
               <span>© 2026 Clario Protocol</span>
               <span className="text-gray-400">•</span>
-              <span className="text-gray-600 font-bold">All rights reserved</span>
+              <span className="text-gray-600 font-bold">
+                All rights reserved
+              </span>
             </div>
             <span className="font-mono text-[11px] font-bold text-gray-600 max-w-xl text-center sm:text-right leading-relaxed uppercase">
-              Experimental software on Monad Testnet. Zero cloud leak. Immutable by code.
+              Experimental software on Monad Testnet. Zero cloud leak. Immutable
+              by code.
             </span>
           </div>
         </div>

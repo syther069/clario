@@ -32,9 +32,17 @@ describe("Domain: Cash Flow Calculator", () => {
   });
 
   it("produces correct bucket count for 30D, 3M, 6M, and 1Y periods", () => {
-    expect(calculateCashFlowSeries(sampleTransactions, "30D", refDate)).toHaveLength(6);
-    expect(calculateCashFlowSeries(sampleTransactions, "3M", refDate)).toHaveLength(6);
-    expect(calculateCashFlowSeries(sampleTransactions, "6M", refDate)).toHaveLength(6);
-    expect(calculateCashFlowSeries(sampleTransactions, "1Y", refDate)).toHaveLength(12);
+    expect(
+      calculateCashFlowSeries(sampleTransactions, "30D", refDate),
+    ).toHaveLength(6);
+    expect(
+      calculateCashFlowSeries(sampleTransactions, "3M", refDate),
+    ).toHaveLength(6);
+    expect(
+      calculateCashFlowSeries(sampleTransactions, "6M", refDate),
+    ).toHaveLength(6);
+    expect(
+      calculateCashFlowSeries(sampleTransactions, "1Y", refDate),
+    ).toHaveLength(12);
   });
 });

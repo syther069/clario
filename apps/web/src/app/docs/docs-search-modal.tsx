@@ -59,7 +59,9 @@ export function DocsSearchModal({
 
   DOC_SECTIONS.forEach((section) => {
     const titleMatch = section.title.toLowerCase().includes(normalizedQuery);
-    const descMatch = section.description.toLowerCase().includes(normalizedQuery);
+    const descMatch = section.description
+      .toLowerCase()
+      .includes(normalizedQuery);
 
     if (titleMatch || descMatch || !normalizedQuery) {
       results.push({
@@ -91,7 +93,9 @@ export function DocsSearchModal({
       >
         {/* Search Input Bar */}
         <div className="flex items-center gap-3 border-b-2 border-[#121212] pb-3">
-          <div className="font-mono text-sm font-black text-[#836EF9] select-none">&gt;</div>
+          <div className="font-mono text-sm font-black text-[#836EF9] select-none">
+            &gt;
+          </div>
           <input
             ref={inputRef}
             type="text"
@@ -155,10 +159,16 @@ export function DocsSearchModal({
         <div className="mt-3 border-t-2 border-[#121212]/15 pt-2 flex items-center justify-between text-[10px] font-mono text-slate-500 uppercase tracking-wider">
           <div className="flex items-center gap-3">
             <span>
-              <kbd className="border border-slate-300 bg-slate-100 px-1 rounded">ESC</kbd> CLOSE
+              <kbd className="border border-slate-300 bg-slate-100 px-1 rounded">
+                ESC
+              </kbd>{" "}
+              CLOSE
             </span>
             <span>
-              <kbd className="border border-slate-300 bg-slate-100 px-1 rounded">↵</kbd> SELECT
+              <kbd className="border border-slate-300 bg-slate-100 px-1 rounded">
+                ↵
+              </kbd>{" "}
+              SELECT
             </span>
           </div>
           <span>TOTAL SPECIFICATIONS: {DOC_SECTIONS.length}</span>

@@ -1251,7 +1251,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       recipient_address: RECIPIENT_ADDR,
       amount: "1000000",
       payment_reference: null,
-      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      transaction_hash:
+        "0x9999999999999999999999999999999999999999999999999999999999999999",
       status: "confirmed",
       settled_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
@@ -1296,7 +1297,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       recipient_address: RECIPIENT_ADDR,
       amount: "1000000",
       payment_reference: null,
-      transaction_hash: "0x8888888888888888888888888888888888888888888888888888888888888888",
+      transaction_hash:
+        "0x8888888888888888888888888888888888888888888888888888888888888888",
       status: "submitted",
       settled_at: null,
       created_at: new Date().toISOString(),
@@ -1322,14 +1324,16 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       workspace_id: WS_ID,
       expense_id: EXP_ID,
       source_chain_id: 1,
-      source_transaction_hash: "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      source_transaction_hash:
+        "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
       claim_slot: 0,
     });
     db.sourceTransactions.push({
       workspace_id: WS_ID,
       expense_id: OTHER_EXP_ID,
       source_chain_id: 1,
-      source_transaction_hash: "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      source_transaction_hash:
+        "0xabc1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab",
       claim_slot: 0,
     });
     db.reimbursements.push({
@@ -1341,7 +1345,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       recipient_address: RECIPIENT_ADDR,
       amount: "1000000",
       payment_reference: null,
-      transaction_hash: "0x7777777777777777777777777777777777777777777777777777777777777777",
+      transaction_hash:
+        "0x7777777777777777777777777777777777777777777777777777777777777777",
       status: "confirmed",
       settled_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
@@ -1388,7 +1393,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       recipient_address: RECIPIENT_ADDR,
       amount: "1000000",
       payment_reference: null,
-      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      transaction_hash:
+        "0x9999999999999999999999999999999999999999999999999999999999999999",
       status: "confirmed",
       settled_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
@@ -1506,7 +1512,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
         recipient_address: RECIPIENT_ADDR,
         amount: "1000000",
         payment_reference: null,
-        transaction_hash: "0x1111111111111111111111111111111111111111111111111111111111111111",
+        transaction_hash:
+          "0x1111111111111111111111111111111111111111111111111111111111111111",
         status: "failed",
         settled_at: null,
         created_at: new Date(Date.now() - 60000).toISOString(),
@@ -1566,7 +1573,8 @@ describe("Duplicate Settlement & Receipt Prevention", () => {
       recipient_address: RECIPIENT_ADDR,
       amount: "1000000",
       payment_reference: null,
-      transaction_hash: "0x9999999999999999999999999999999999999999999999999999999999999999",
+      transaction_hash:
+        "0x9999999999999999999999999999999999999999999999999999999999999999",
       status: "confirmed",
       settled_at: new Date().toISOString(),
       created_at: new Date().toISOString(),

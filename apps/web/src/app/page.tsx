@@ -57,8 +57,12 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     connectedEvmAddress,
     connectEvmWallet,
   } = auth;
-  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
-  const [savingOnChainTxId, setSavingOnChainTxId] = useState<string | null>(null);
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(
+    null,
+  );
+  const [savingOnChainTxId, setSavingOnChainTxId] = useState<string | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState<CorePillar>("expenses");
   const [activeMode, setActiveMode] = useState<PlatformMode>(initialMode);
   const [personalView, setPersonalView] = useState<PersonalView>("overview");
@@ -165,7 +169,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
       const url = new URL(window.location.href);
       url.searchParams.set("mode", mode);
       url.searchParams.delete("view");
-      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
+      router.replace(url.pathname + "?" + url.searchParams.toString(), {
+        scroll: false,
+      });
     }
   };
 
@@ -174,7 +180,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
+      router.replace(url.pathname + "?" + url.searchParams.toString(), {
+        scroll: false,
+      });
     }
   };
 
@@ -183,7 +191,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
+      router.replace(url.pathname + "?" + url.searchParams.toString(), {
+        scroll: false,
+      });
     }
   };
 
@@ -192,7 +202,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
+      router.replace(url.pathname + "?" + url.searchParams.toString(), {
+        scroll: false,
+      });
     }
   };
 
@@ -201,7 +213,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("view", view);
-      router.replace(url.pathname + "?" + url.searchParams.toString(), { scroll: false });
+      router.replace(url.pathname + "?" + url.searchParams.toString(), {
+        scroll: false,
+      });
     }
   };
 
@@ -226,7 +240,9 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
   };
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [txModalOpen, setTxModalOpen] = useState(false);
-  const [txModalSubLedger, setTxModalSubLedger] = useState<"fiat" | "onchain">("fiat");
+  const [txModalSubLedger, setTxModalSubLedger] = useState<"fiat" | "onchain">(
+    "fiat",
+  );
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     return getStoredTransactions();
@@ -573,7 +589,8 @@ function DashboardContent({ initialMode }: { initialMode: PlatformMode }) {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-0.5">
-                  Sign in with Email, Google, Passkey, or Web3 Wallet to anchor verifiable cryptographic receipts.
+                  Sign in with Email, Google, Passkey, or Web3 Wallet to anchor
+                  verifiable cryptographic receipts.
                 </p>
               </div>
             </div>

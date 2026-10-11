@@ -1,7 +1,7 @@
 # Clario Independent Verifier
 
-**Status:** Implemented for verification package schema v1  
-**Task:** `VER-002`
+**Status:** Canonical Verification Tooling (Schema v1)  
+**Package:** `@clario/protocol`  
 
 The verifier checks a Clario export without an authenticated Clario API or access to Clario's private database. It reads the disclosed package locally and, when an RPC URL is supplied, reads public state directly from the package's configured Clario registry on a compatible Monad RPC endpoint.
 

@@ -43,7 +43,15 @@ Thumbs.db
 *.log
 pnpm-debug.log*
 
-# Scratch
+# Scratch & Agents
 scratch/
 scratch_prompt.txt
+demo_video/
+.agents/
+skills-lock.json
+AGENTS.md
+CLAUDE.md
+*.mp3
+*.mp4
+*.wav
 

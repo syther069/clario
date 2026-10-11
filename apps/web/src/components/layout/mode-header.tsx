@@ -40,10 +40,7 @@ export function ModeHeader({
           className="flex items-center gap-2.5 group cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0"
           title="Go to Clario Landing Page"
         >
-          <ClarioLogo
-            size={36}
-            className="transition group-hover:scale-105"
-          />
+          <ClarioLogo size={36} className="transition group-hover:scale-105" />
           <div className="flex flex-col">
             <span className="text-base font-black tracking-wider text-[#121212] uppercase flex items-center gap-1.5 font-sans">
               Clario

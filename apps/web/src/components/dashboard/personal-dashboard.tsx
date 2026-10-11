@@ -117,14 +117,22 @@ export function PersonalDashboard({
   const handleConnectWallet = onConnectWallet || auth.connectEvmWallet;
 
   // Selected state for modals & receipts
-  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
-  const [selectedBundle, setSelectedBundle] = useState<ReceiptBundle | null>(null);
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(
+    null,
+  );
+  const [selectedBundle, setSelectedBundle] = useState<ReceiptBundle | null>(
+    null,
+  );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTxIds, setSelectedTxIds] = useState<Set<string>>(new Set());
-  const [activeLedgerTab, setActiveLedgerTab] = useState<"transactions" | "receipts">("transactions");
+  const [activeLedgerTab, setActiveLedgerTab] = useState<
+    "transactions" | "receipts"
+  >("transactions");
   const [isLoadingReceipts, setIsLoadingReceipts] = useState<boolean>(false);
   const [receiptSearchQuery, setReceiptSearchQuery] = useState<string>("");
-  const [receiptBundles, setReceiptBundles] = useState<Record<string, ReceiptBundle>>(() => {
+  const [receiptBundles, setReceiptBundles] = useState<
+    Record<string, ReceiptBundle>
+  >(() => {
     return getStoredReceiptBundles(effectiveConnectedAddress || userId);
   });
   const [savingTxId, setSavingTxId] = useState<string | null>(null);
@@ -135,7 +143,10 @@ export function PersonalDashboard({
   // Sub-ledger state (All vs Personal Finance vs On-Chain)
   const [subLedger, setSubLedger] = useState<"all" | "fiat" | "onchain">("all");
 
-  const [fiatCurrency, setFiatCurrency] = useState<{ code: string; symbol: string }>({
+  const [fiatCurrency, setFiatCurrency] = useState<{
+    code: string;
+    symbol: string;
+  }>({
     code: "USD",
     symbol: currencySymbol || "$",
   });
@@ -166,7 +177,7 @@ export function PersonalDashboard({
       pm.includes("usdc") ||
       pm.includes("usdt") ||
       pm.includes("base") ||
-      pm.includes("arbitrum")
+      pm.includes("arbitrum"),
     );
   };
 
@@ -188,7 +199,8 @@ export function PersonalDashboard({
         : onChainTransactions;
   }, [subLedger, transactions, fiatTransactions, onChainTransactions]);
 
-  const activeCurrencySymbol = subLedger === "onchain" ? "$" : fiatCurrency.symbol;
+  const activeCurrencySymbol =
+    subLedger === "onchain" ? "$" : fiatCurrency.symbol;
 
   // Persistent local budgets & subscriptions
   const [localBudgets, setLocalBudgets] = useState<Budget[]>(() => {
@@ -203,10 +215,12 @@ export function PersonalDashboard({
     }
   }
 
-  const [localSubscriptions, setLocalSubscriptions] = useState<Subscription[]>(() => {
-    const stored = getStoredSubscriptions(userId);
-    return stored.length > 0 ? stored : subscriptions;
-  });
+  const [localSubscriptions, setLocalSubscriptions] = useState<Subscription[]>(
+    () => {
+      const stored = getStoredSubscriptions(userId);
+      return stored.length > 0 ? stored : subscriptions;
+    },
+  );
   const [prevSubs, setPrevSubs] = useState(subscriptions);
   if (subscriptions !== prevSubs) {
     setPrevSubs(subscriptions);
@@ -216,7 +230,9 @@ export function PersonalDashboard({
   }
 
   // Cash flow period
-  const [cashFlowPeriod, setCashFlowPeriod] = useState<"7D" | "30D" | "3M" | "6M" | "1Y">("30D");
+  const [cashFlowPeriod, setCashFlowPeriod] = useState<
+    "7D" | "30D" | "3M" | "6M" | "1Y"
+  >("30D");
 
   // Clean Architecture Domain & Application Metrics hook
   const metrics = usePersonalMetrics({
@@ -227,14 +243,20 @@ export function PersonalDashboard({
   });
 
   // Clean Architecture Filters application hook
-  const expenseFilters = useExpenseFilters({ transactions: activeTransactions });
+  const expenseFilters = useExpenseFilters({
+    transactions: activeTransactions,
+  });
 
   const displayedTransactions = activeTransactions;
 
   const latestTransactions = useMemo(() => {
     return [...transactions].sort((a, b) => {
-      const timeA = new Date(a.date || a.timestamp || a.created_at || 0).getTime();
-      const timeB = new Date(b.date || b.timestamp || b.created_at || 0).getTime();
+      const timeA = new Date(
+        a.date || a.timestamp || a.created_at || 0,
+      ).getTime();
+      const timeB = new Date(
+        b.date || b.timestamp || b.created_at || 0,
+      ).getTime();
       return timeB - timeA;
     });
   }, [transactions]);
@@ -246,9 +268,11 @@ export function PersonalDashboard({
 
   const largestIncomeTx = useMemo(() => {
     if (incomeTransactions.length === 0) return null;
-    return [...incomeTransactions].sort(
-      (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
-    )[0] || null;
+    return (
+      [...incomeTransactions].sort(
+        (a, b) => Number(b.amount || 0) - Number(a.amount || 0),
+      )[0] || null
+    );
   }, [incomeTransactions]);
 
   const averageMonthlyIncome = useMemo(() => {
@@ -286,7 +310,8 @@ export function PersonalDashboard({
   const [isAddSubOpen, setIsAddSubOpen] = useState(false);
   const [subNameInput, setSubNameInput] = useState("");
   const [subAmountInput, setSubAmountInput] = useState("");
-  const [subFrequencyInput, setSubFrequencyInput] = useState<SubFrequency>("monthly");
+  const [subFrequencyInput, setSubFrequencyInput] =
+    useState<SubFrequency>("monthly");
   const [subNextBillingInput, setSubNextBillingInput] = useState("");
 
   // Multi-select & Batch Actions
@@ -300,7 +325,8 @@ export function PersonalDashboard({
   );
 
   const selectedTransactionsTotal = useMemo(
-    () => selectedTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0),
+    () =>
+      selectedTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0),
     [selectedTransactions],
   );
 
@@ -406,7 +432,9 @@ export function PersonalDashboard({
         queryParams.set("userAddress", normAddr);
         queryParams.set("verifiedOnly", "true");
 
-        const res = await fetch(`/api/receipts/bundle?${queryParams.toString()}`);
+        const res = await fetch(
+          `/api/receipts/bundle?${queryParams.toString()}`,
+        );
         const data = await res.json();
         if (!ignore && data.success && Array.isArray(data.bundles)) {
           const map: Record<string, ReceiptBundle> = {};
@@ -436,7 +464,8 @@ export function PersonalDashboard({
   const verifiedReceipts = useMemo(() => {
     const verifiedBundles = Object.values(receiptBundles).filter((b) => {
       return (
-        (b.verification_status === "verified" || b.blockchain_status === "confirmed") &&
+        (b.verification_status === "verified" ||
+          b.blockchain_status === "confirmed") &&
         Boolean(b.blockchain_tx_hash) &&
         b.blockchain_status !== "failed"
       );
@@ -452,56 +481,58 @@ export function PersonalDashboard({
         (!t.receipt_bundle_id || !receiptBundles[t.receipt_bundle_id]),
     );
 
-    const synthesizedBundles: ReceiptBundle[] = standaloneConfirmedTxs.map((t) => {
-      const txHash = t.blockchain_tx_hash || t.monad_tx_hash || "0x";
-      const receiptId = `receipt_${t.id.replace(/-/g, "")}`;
-      return {
-        id: receiptId,
-        user_id: t.user_id || userId,
-        wallet_address: effectiveConnectedAddress || null,
-        name: t.merchant,
-        receipt_name: t.merchant,
-        receipt_number: `CR-${t.id.slice(0, 8).toUpperCase()}`,
-        receipt_hash: t.blockchain_data_hash || t.commitment_hash || "0x",
-        file_hash: t.blockchain_data_hash || t.commitment_hash || "0x",
-        transaction_count: 1,
-        total_amount: Number(t.amount),
-        currency: t.currency || "USD",
-        transaction_ids: [t.id],
-        receipt_data: {
-          receiptId,
-          receiptNumber: `CR-${t.id.slice(0, 8).toUpperCase()}`,
-          receiptName: t.merchant,
-          createdAt: t.created_at,
-          owner: t.user_id || userId,
-          transactionCount: 1,
-          totalAmount: Number(t.amount),
+    const synthesizedBundles: ReceiptBundle[] = standaloneConfirmedTxs.map(
+      (t) => {
+        const txHash = t.blockchain_tx_hash || t.monad_tx_hash || "0x";
+        const receiptId = `receipt_${t.id.replace(/-/g, "")}`;
+        return {
+          id: receiptId,
+          user_id: t.user_id || userId,
+          wallet_address: effectiveConnectedAddress || null,
+          name: t.merchant,
+          receipt_name: t.merchant,
+          receipt_number: `CR-${t.id.slice(0, 8).toUpperCase()}`,
+          receipt_hash: t.blockchain_data_hash || t.commitment_hash || "0x",
+          file_hash: t.blockchain_data_hash || t.commitment_hash || "0x",
+          transaction_count: 1,
+          total_amount: Number(t.amount),
           currency: t.currency || "USD",
-          transactionIds: [t.id],
-          transactions: [
-            {
-              id: t.id,
-              amount: Number(t.amount),
-              currency: t.currency || "USD",
-              merchant: t.merchant,
-              category: formatCategoryName(t.category, t.category_id),
-              date: t.date || t.timestamp,
-              type: t.type,
-            },
-          ],
-          version: 1,
-        },
-        blockchain_network: "Monad Testnet",
-        blockchain_status: "confirmed",
-        blockchain_tx_hash: txHash,
-        blockchain_contract_address: CLARIO_REGISTRY_ADDRESS,
-        blockchain_chain_id: MONAD_TESTNET_CHAIN_ID,
-        monad_block: t.monad_block || null,
-        verification_status: "verified",
-        created_at: t.created_at,
-        updated_at: t.updated_at,
-      };
-    });
+          transaction_ids: [t.id],
+          receipt_data: {
+            receiptId,
+            receiptNumber: `CR-${t.id.slice(0, 8).toUpperCase()}`,
+            receiptName: t.merchant,
+            createdAt: t.created_at,
+            owner: t.user_id || userId,
+            transactionCount: 1,
+            totalAmount: Number(t.amount),
+            currency: t.currency || "USD",
+            transactionIds: [t.id],
+            transactions: [
+              {
+                id: t.id,
+                amount: Number(t.amount),
+                currency: t.currency || "USD",
+                merchant: t.merchant,
+                category: formatCategoryName(t.category, t.category_id),
+                date: t.date || t.timestamp,
+                type: t.type,
+              },
+            ],
+            version: 1,
+          },
+          blockchain_network: "Monad Testnet",
+          blockchain_status: "confirmed",
+          blockchain_tx_hash: txHash,
+          blockchain_contract_address: CLARIO_REGISTRY_ADDRESS,
+          blockchain_chain_id: MONAD_TESTNET_CHAIN_ID,
+          monad_block: t.monad_block || null,
+          verification_status: "verified",
+          created_at: t.created_at,
+          updated_at: t.updated_at,
+        };
+      },
+    );
 
     const all = [...verifiedBundles];
     const seenTxHashes = new Set(
@@ -519,7 +550,8 @@ export function PersonalDashboard({
 
     return all.sort(
       (a, b) =>
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+        new Date(b.created_at || 0).getTime() -
+        new Date(a.created_at || 0).getTime(),
     );
   }, [receiptBundles, transactions, userId, effectiveConnectedAddress]);
 
@@ -536,7 +568,12 @@ export function PersonalDashboard({
       const num = (r.receipt_number || "").toLowerCase();
       const tx = (r.blockchain_tx_hash || "").toLowerCase();
       const wallet = (r.wallet_address || "").toLowerCase();
-      return name.includes(q) || num.includes(q) || tx.includes(q) || wallet.includes(q);
+      return (
+        name.includes(q) ||
+        num.includes(q) ||
+        tx.includes(q) ||
+        wallet.includes(q)
+      );
     });
   }, [verifiedReceipts, receiptSearchQuery]);
 
@@ -570,9 +607,12 @@ export function PersonalDashboard({
             existing?.type ||
             "expense",
           amount: Number(t.amount) || existing?.amount || 0,
-          currency: t.currency || existing?.currency || bundle.currency || "USD",
-          merchant: t.merchant || existing?.merchant || bundle.name || "Expense",
-          description: t.merchant || existing?.description || bundle.name || "Expense",
+          currency:
+            t.currency || existing?.currency || bundle.currency || "USD",
+          merchant:
+            t.merchant || existing?.merchant || bundle.name || "Expense",
+          description:
+            t.merchant || existing?.description || bundle.name || "Expense",
           category: t.category || existing?.category || "other",
           category_id: t.category || existing?.category_id || "other",
           date:
@@ -581,7 +621,10 @@ export function PersonalDashboard({
             bundle.created_at?.slice(0, 10) ||
             new Date().toISOString().slice(0, 10),
           timestamp:
-            t.date || existing?.timestamp || bundle.created_at || new Date().toISOString(),
+            t.date ||
+            existing?.timestamp ||
+            bundle.created_at ||
+            new Date().toISOString(),
           payment_method: existing?.payment_method || "Onchain (Monad)",
           receipt_bundle_id: bundle.id,
           verification_state: "verified",
@@ -594,7 +637,10 @@ export function PersonalDashboard({
           status: "cleared",
           source: "onchain_monad",
           version: 1,
-          created_at: existing?.created_at || bundle.created_at || new Date().toISOString(),
+          created_at:
+            existing?.created_at ||
+            bundle.created_at ||
+            new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
         updatedTxs.push(fullTx);
@@ -639,7 +685,9 @@ export function PersonalDashboard({
       const addrQuery = effectiveConnectedAddress
         ? `&userAddress=${encodeURIComponent(effectiveConnectedAddress.toLowerCase())}`
         : "";
-      const res = await fetch(`/api/receipts/bundle?receiptId=${bundleId}${addrQuery}`);
+      const res = await fetch(
+        `/api/receipts/bundle?receiptId=${bundleId}${addrQuery}`,
+      );
       const data = await res.json();
       if (data.success && data.bundle) {
         setReceiptBundles((prev) => ({ ...prev, [bundleId]: data.bundle }));
@@ -650,7 +698,9 @@ export function PersonalDashboard({
       console.warn("Notice: bundle fetch fallback:", e);
     }
 
-    const bundleTxs = transactions.filter((t) => t.receipt_bundle_id === bundleId);
+    const bundleTxs = transactions.filter(
+      (t) => t.receipt_bundle_id === bundleId,
+    );
     if (bundleTxs.length > 0) {
       const firstTx = bundleTxs[0]!;
       const totalAmt = bundleTxs.reduce((s, t) => s + Number(t.amount), 0);
@@ -660,9 +710,13 @@ export function PersonalDashboard({
         user_id: firstTx.user_id || userId,
         name: fallbackName,
         receipt_name: fallbackName,
-        receipt_number: bundleId.startsWith("CR-") ? bundleId : `CR-${bundleId.slice(0, 8).toUpperCase()}`,
-        file_hash: firstTx.blockchain_data_hash || firstTx.commitment_hash || "0x",
-        receipt_hash: firstTx.blockchain_data_hash || firstTx.commitment_hash || "0x",
+        receipt_number: bundleId.startsWith("CR-")
+          ? bundleId
+          : `CR-${bundleId.slice(0, 8).toUpperCase()}`,
+        file_hash:
+          firstTx.blockchain_data_hash || firstTx.commitment_hash || "0x",
+        receipt_hash:
+          firstTx.blockchain_data_hash || firstTx.commitment_hash || "0x",
         transaction_count: bundleTxs.length,
         total_amount: totalAmt,
         currency: firstTx.currency || "USD",
@@ -682,7 +736,10 @@ export function PersonalDashboard({
             amount: Number(t.amount),
             currency: t.currency || "USD",
             merchant: t.merchant,
-            category: typeof t.category === "string" ? t.category : t.category_id || "other",
+            category:
+              typeof t.category === "string"
+                ? t.category
+                : t.category_id || "other",
             date: t.date || t.timestamp,
             type: t.type,
           })),
@@ -719,7 +776,8 @@ export function PersonalDashboard({
       auth.externalEvmWallet ||
       auth.embeddedWallet ||
       auth.wallets.find(
-        (w) => w.address.toLowerCase() === effectiveConnectedAddress.toLowerCase(),
+        (w) =>
+          w.address.toLowerCase() === effectiveConnectedAddress.toLowerCase(),
       );
 
     try {
@@ -749,8 +807,10 @@ export function PersonalDashboard({
           name: result.transaction.merchant,
           receipt_name: result.transaction.merchant,
           receipt_number: `CR-${new Date().getFullYear()}-${result.transaction.id.slice(0, 4).toUpperCase()}`,
-          receipt_hash: result.dataHash || result.transaction.blockchain_data_hash || "0x",
-          file_hash: result.dataHash || result.transaction.blockchain_data_hash || "0x",
+          receipt_hash:
+            result.dataHash || result.transaction.blockchain_data_hash || "0x",
+          file_hash:
+            result.dataHash || result.transaction.blockchain_data_hash || "0x",
           transaction_count: 1,
           total_amount: Number(result.transaction.amount),
           currency: result.transaction.currency || "USD",
@@ -783,7 +843,8 @@ export function PersonalDashboard({
           },
           blockchain_network: "Monad Testnet",
           blockchain_status: "confirmed",
-          blockchain_tx_hash: result.txHash || result.transaction.blockchain_tx_hash || null,
+          blockchain_tx_hash:
+            result.txHash || result.transaction.blockchain_tx_hash || null,
           blockchain_contract_address: CLARIO_REGISTRY_ADDRESS,
           blockchain_chain_id: MONAD_TESTNET_CHAIN_ID,
           monad_block: result.transaction.monad_block || null,
@@ -807,13 +868,16 @@ export function PersonalDashboard({
         if (!saveRes.ok) {
           const errData = await saveRes.json().catch(() => ({}));
           throw new Error(
-            errData.error || `Failed to persist saved receipt (HTTP ${saveRes.status})`,
+            errData.error ||
+              `Failed to persist saved receipt (HTTP ${saveRes.status})`,
           );
         }
 
         const saveData = await saveRes.json();
         if (!saveData.success) {
-          throw new Error(saveData.error || "Failed to persist saved receipt in database");
+          throw new Error(
+            saveData.error || "Failed to persist saved receipt in database",
+          );
         }
 
         const persistedBundle = saveData.bundle || singleBundle;
@@ -835,7 +899,8 @@ export function PersonalDashboard({
         setSaveError(result.error);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to save receipt on Monad";
+      const msg =
+        err instanceof Error ? err.message : "Failed to save receipt on Monad";
       setSaveError(msg);
     } finally {
       setSavingTxId(null);
@@ -895,7 +960,8 @@ export function PersonalDashboard({
       amount: Number(subAmountInput),
       currency: currencySymbol === "₹" ? "INR" : "USD",
       frequency: subFrequencyInput,
-      next_billing_date: subNextBillingInput || new Date().toISOString().split("T")[0]!,
+      next_billing_date:
+        subNextBillingInput || new Date().toISOString().split("T")[0]!,
       status: "active",
       created_at: new Date().toISOString(),
     };
@@ -957,8 +1023,12 @@ export function PersonalDashboard({
   }
 
   const hasData = displayedTransactions.length > 0;
-  const totalExpensesCount = activeTransactions.filter((t) => t.type === "expense" || !t.type).length;
-  const totalIncomeCount = activeTransactions.filter((t) => t.type === "income").length;
+  const totalExpensesCount = activeTransactions.filter(
+    (t) => t.type === "expense" || !t.type,
+  ).length;
+  const totalIncomeCount = activeTransactions.filter(
+    (t) => t.type === "income",
+  ).length;
 
   return (
     <div className="space-y-8">
@@ -1006,7 +1076,9 @@ export function PersonalDashboard({
           availableBudget={metrics.availableBudget}
           totalBudgetLimit={metrics.totalBudgetLimit}
           upcomingBillsTotal={metrics.upcomingBillsTotal}
-          activeSubscriptionsCount={localSubscriptions.filter((s) => s.status === "active").length}
+          activeSubscriptionsCount={
+            localSubscriptions.filter((s) => s.status === "active").length
+          }
           savingsRate={metrics.savingsRate}
           onAddExpense={onUpdateTransaction}
           chartData={metrics.chartData}
@@ -1042,7 +1114,9 @@ export function PersonalDashboard({
           isAllSelected={isAllSelected}
           onCreateReceiptForSelected={handleCreateReceiptForSelected}
           onBatchSaveOnChain={handleBatchSaveOnChain}
-          onExportExpensesCSV={() => exportTransactionsToCsv(expenseFilters.filteredExpenses)}
+          onExportExpensesCSV={() =>
+            exportTransactionsToCsv(expenseFilters.filteredExpenses)
+          }
           onUploadReceipt={onUploadReceipt}
           onAddTransaction={onAddTransaction}
           onSelectProofTx={setSelectedProofTx}
@@ -1059,7 +1133,9 @@ export function PersonalDashboard({
           expenseReceiptFilter={expenseFilters.expenseReceiptFilter}
           onReceiptFilterChange={expenseFilters.setExpenseReceiptFilter}
           expenseVerificationFilter={expenseFilters.expenseVerificationFilter}
-          onVerificationFilterChange={expenseFilters.setExpenseVerificationFilter}
+          onVerificationFilterChange={
+            expenseFilters.setExpenseVerificationFilter
+          }
           onResetFilters={expenseFilters.resetFilters}
         />
       )}

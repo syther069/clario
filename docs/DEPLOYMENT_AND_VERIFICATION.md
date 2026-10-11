@@ -2,7 +2,7 @@
 
 **Status:** Authoritative protocol tooling runbook  
 **Target Chains:** Monad (Local Anvil, Preview/Testnet, Staging, Production)  
-**Governing Documents:** [RULES.md](../RULES.md) · [architecture.md](../architecture.md) · [TASKS.md](../TASKS.md)
+**Governing Documents:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [SECURITY.md](./SECURITY.md)
 
 ---
 
@@ -23,7 +23,7 @@ ClarioWorkspaceRegistryV1 (Roles, Policy History)
                                         ClarioRegistry (Coordinator & Manifest Anchor)
 ```
 
-The runtime configuration and web application consume contract addresses solely through a frozen `DeploymentManifest` conforming to schema version 1 (`apps/web/src/config/schema.ts`). Direct or raw address environment variables are strictly forbidden (`RULES.md` R-010, Section 14).
+The runtime configuration and web application consume contract addresses solely through a frozen `DeploymentManifest` conforming to schema version 1 (`apps/web/src/config/schema.ts`). Direct or raw address environment variables are strictly forbidden to ensure audit traceability.
 
 ---
 
@@ -98,9 +98,9 @@ The manifest is validated against `parseDeploymentManifest` before being written
 ---
 
 ## 5. Silent Overwrite Protection
-
-Per `RULES.md` Section 15.2 ("Never overwrite a previous deployment record"), the deployment tool prevents accidental erasure of existing deployment records:
-
+ 
+To maintain audit consistency and deployment safety, the deployment tool prevents accidental erasure of existing deployment records:
+ 
 - If the output manifest file already exists, re-running the deployment tool **fails immediately** with:
   ```text
   Deployment manifest already exists at: <path>. Re-running will not overwrite an existing manifest silently. Pass --force to overwrite.
@@ -109,14 +109,14 @@ Per `RULES.md` Section 15.2 ("Never overwrite a previous deployment record"), th
   ```bash
   node scripts/deploy.mjs --env local --force
   ```
-
+ 
 ---
-
+ 
 ## 6. Monad Network Deployment (Non-Local Environments)
-
+ 
 > [!CAUTION]
-> **Explicit Human Authorization Required**  
-> Per `RULES.md` Section 15.2 and `AGENTS.md`, no agent or automated script may deploy, sign, broadcast, or move funds on public or live networks without explicit human founder authorization.
+> **Explicit Operator Authorization Required**  
+> Automated scripts or untrusted processes must never deploy, sign, broadcast, or move funds on public or live networks without explicit human authorization.
 
 When authorized by a human founder for preview, staging, or production:
 

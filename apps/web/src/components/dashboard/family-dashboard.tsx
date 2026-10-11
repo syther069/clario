@@ -95,7 +95,9 @@ export function FamilyDashboard({
   currencySymbol = "$",
 }: FamilyDashboardProps) {
   const householdId = `household_${userId}`;
-  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(
+    null,
+  );
 
   const handleViewReceipt = (tx: Transaction) => {
     if (onViewReceipt) {
@@ -873,7 +875,9 @@ export function FamilyDashboard({
     const rows = householdExpenses.map((tx) => [
       tx.date || tx.timestamp?.split("T")[0] || "",
       tx.merchant || "",
-      typeof tx.category === "string" ? tx.category : tx.category?.name || "General",
+      typeof tx.category === "string"
+        ? tx.category
+        : tx.category?.name || "General",
       tx.amount,
       tx.currency,
       tx.status,
@@ -992,7 +996,9 @@ export function FamilyDashboard({
                 >
                   <Icon
                     className={`h-4 w-4 shrink-0 transition-colors ${
-                      isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+                      isActive
+                        ? "text-white"
+                        : "text-[#836EF9] group-hover:text-[#7257f8]"
                     }`}
                     aria-hidden="true"
                   />
@@ -1191,7 +1197,9 @@ export function FamilyDashboard({
                   onClick={() => setIsManualSettlementModalOpen(true)}
                   variant="secondary"
                   size="sm"
-                  icon={<ArrowLeftRight className="h-3.5 w-3.5 text-[#836EF9]" />}
+                  icon={
+                    <ArrowLeftRight className="h-3.5 w-3.5 text-[#836EF9]" />
+                  }
                   morphText="Record IOU"
                 />
               </Magnetic>
@@ -2216,7 +2224,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2330,7 +2341,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2476,7 +2490,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2528,7 +2545,9 @@ export function FamilyDashboard({
               <div className="mt-3 p-2.5 rounded-lg border border-[#836EF9]/30 bg-[#fbf9fe] text-xs text-slate-600 flex items-start gap-2">
                 <span className="font-bold text-[#836EF9] shrink-0">Note:</span>
                 <span>
-                  Splitting calculates exact IOU balances between family members. No funds are moved automatically — each member simply records when their share has been reimbursed.
+                  Splitting calculates exact IOU balances between family
+                  members. No funds are moved automatically — each member simply
+                  records when their share has been reimbursed.
                 </span>
               </div>
 
@@ -2562,7 +2581,8 @@ export function FamilyDashboard({
                         type="button"
                         onClick={() =>
                           setSplitType(
-                            method.id as "equal" | "custom_percentage" | "exact",
+                            method.id as
+                              "equal" | "custom_percentage" | "exact",
                           )
                         }
                         className={`py-1.5 px-2 rounded-lg text-xs font-bold border-2 border-[#121212] transition ${
@@ -2588,7 +2608,9 @@ export function FamilyDashboard({
                       const totalAmt = Number(selectedTxForSplit.amount);
                       const equalShare =
                         splitSelectedMemberIds.length > 0
-                          ? (totalAmt / splitSelectedMemberIds.length).toFixed(2)
+                          ? (totalAmt / splitSelectedMemberIds.length).toFixed(
+                              2,
+                            )
                           : "0.00";
 
                       return (
@@ -2702,7 +2724,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2811,7 +2836,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2935,7 +2963,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -2964,7 +2995,10 @@ export function FamilyDashboard({
                 </button>
               </div>
 
-              <form onSubmit={handleContributeToGoal} className="mt-4 space-y-4">
+              <form
+                onSubmit={handleContributeToGoal}
+                className="mt-4 space-y-4"
+              >
                 <div>
                   <span className="text-[10px] font-black uppercase text-slate-500">
                     Goal Target
@@ -3016,7 +3050,10 @@ export function FamilyDashboard({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div

@@ -63,7 +63,9 @@ describe("Gemini Multimodal OCR Service", () => {
     expect(enriched.anomalies?.length).toBe(1);
     expect(enriched.anomalies?.[0]?.field).toBe("totalAmount");
     expect(enriched.anomalies?.[0]?.severity).toBe("medium");
-    expect(enriched.anomalies?.[0]?.issue).toContain("equals $108.50, differing from total ($120.00)");
+    expect(enriched.anomalies?.[0]?.issue).toContain(
+      "equals $108.50, differing from total ($120.00)",
+    );
   });
 
   it("defaults field confidences reasonably when not provided by vision parser", () => {

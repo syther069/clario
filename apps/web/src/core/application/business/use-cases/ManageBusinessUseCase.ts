@@ -21,23 +21,32 @@ export class ManageBusinessUseCase {
   ) {}
 
   // Team
-  public async getBusinessTeam(orgId: string): Promise<BusinessTeamMemberEntity[]> {
+  public async getBusinessTeam(
+    orgId: string,
+  ): Promise<BusinessTeamMemberEntity[]> {
     return this.repository.getBusinessTeam(orgId);
   }
 
-  public async saveBusinessTeamMember(member: BusinessTeamMemberEntity): Promise<BusinessTeamMemberEntity> {
+  public async saveBusinessTeamMember(
+    member: BusinessTeamMemberEntity,
+  ): Promise<BusinessTeamMemberEntity> {
     const saved = await this.repository.saveBusinessTeamMember(member);
     this.notifyUpdate(member.orgId);
     return saved;
   }
 
-  public async deleteBusinessTeamMember(memberId: string, orgId?: string): Promise<void> {
+  public async deleteBusinessTeamMember(
+    memberId: string,
+    orgId?: string,
+  ): Promise<void> {
     await this.repository.deleteBusinessTeamMember(memberId, orgId);
     this.notifyUpdate(orgId);
   }
 
   // Reimbursements
-  public async getBusinessReimbursements(orgId: string): Promise<BusinessReimbursementEntity[]> {
+  public async getBusinessReimbursements(
+    orgId: string,
+  ): Promise<BusinessReimbursementEntity[]> {
     return this.repository.getBusinessReimbursements(orgId);
   }
 
@@ -68,29 +77,41 @@ export class ManageBusinessUseCase {
     this.notifyUpdate(orgId);
   }
 
-  public async deleteBusinessReimbursement(claimId: string, orgId?: string): Promise<void> {
+  public async deleteBusinessReimbursement(
+    claimId: string,
+    orgId?: string,
+  ): Promise<void> {
     await this.repository.deleteBusinessReimbursement(claimId, orgId);
     this.notifyUpdate(orgId);
   }
 
   // Policies
-  public async getExpensePolicies(orgId: string): Promise<ExpensePolicyEntity[]> {
+  public async getExpensePolicies(
+    orgId: string,
+  ): Promise<ExpensePolicyEntity[]> {
     return this.repository.getExpensePolicies(orgId);
   }
 
-  public async saveExpensePolicy(policy: ExpensePolicyEntity): Promise<ExpensePolicyEntity> {
+  public async saveExpensePolicy(
+    policy: ExpensePolicyEntity,
+  ): Promise<ExpensePolicyEntity> {
     const saved = await this.repository.saveExpensePolicy(policy);
     this.notifyUpdate(policy.orgId);
     return saved;
   }
 
-  public async deleteExpensePolicy(policyId: string, orgId?: string): Promise<void> {
+  public async deleteExpensePolicy(
+    policyId: string,
+    orgId?: string,
+  ): Promise<void> {
     await this.repository.deleteExpensePolicy(policyId, orgId);
     this.notifyUpdate(orgId);
   }
 
   // Audit Events
-  public async getBusinessAuditEvents(orgId: string): Promise<BusinessAuditEventEntity[]> {
+  public async getBusinessAuditEvents(
+    orgId: string,
+  ): Promise<BusinessAuditEventEntity[]> {
     return this.repository.getBusinessAuditEvents(orgId);
   }
 

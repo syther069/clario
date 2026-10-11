@@ -3,7 +3,10 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 import { AnimatedBackground } from "@/components/ui/motion";
-import type { CashFlowBucket, CashFlowPeriod } from "@/domain/analytics/cashflow-calculator";
+import type {
+  CashFlowBucket,
+  CashFlowPeriod,
+} from "@/domain/analytics/cashflow-calculator";
 import {
   AreaChart,
   Area,

@@ -130,7 +130,10 @@ export function loadVerificationPackageZip(
     throw new Error("Verification package is missing manifest.json.");
   let parsed: unknown;
   try {
-    parsed = JSON.parse(manifestBytes.toString("utf8"), safeJsonReviver) as unknown;
+    parsed = JSON.parse(
+      manifestBytes.toString("utf8"),
+      safeJsonReviver,
+    ) as unknown;
   } catch {
     throw new Error("Verification package manifest.json is not valid JSON.");
   }

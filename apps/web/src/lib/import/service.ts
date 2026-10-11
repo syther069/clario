@@ -189,10 +189,7 @@ export class TransactionImportService {
         resolvedChainId = probeChainIds[matchedIdx]!;
       }
     } else {
-      tx = await this.adapter.fetchTransactionByHash(
-        chainId,
-        normalizedHash,
-      );
+      tx = await this.adapter.fetchTransactionByHash(chainId, normalizedHash);
       resolvedChainId = chainId;
     }
 
@@ -273,7 +270,8 @@ export class TransactionImportService {
 
     if (!this.db) {
       throw new ProtocolError("INTERNAL_ERROR", {
-        message: "Database connection is required to record transaction claims.",
+        message:
+          "Database connection is required to record transaction claims.",
       });
     }
 

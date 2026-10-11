@@ -89,7 +89,9 @@ export function BusinessDashboard({
   currencySymbol = "$",
 }: BusinessDashboardProps) {
   const orgId = `org_${userId}`;
-  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(
+    null,
+  );
 
   const handleViewReceipt = (tx: Transaction) => {
     if (onViewReceipt) {
@@ -2430,7 +2432,10 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsInviteModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2586,7 +2591,10 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsClaimModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2752,7 +2760,10 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsPolicyModalOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -2916,7 +2927,10 @@ export function BusinessDashboard({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               transition={{ duration: 0.2 }}
               onClick={() => setSelectedClaimForReview(null)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"

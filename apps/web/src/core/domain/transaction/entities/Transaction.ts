@@ -7,7 +7,8 @@ import type {
 } from "@/lib/supabase/types";
 
 export type { TransactionType, TransactionSource, VerificationState };
-export type BlockchainStatus = "unverified" | "pending" | "confirmed" | "failed" | null;
+export type BlockchainStatus =
+  "unverified" | "pending" | "confirmed" | "failed" | null;
 
 /**
  * Clean Architecture - Domain Layer
@@ -170,7 +171,9 @@ export class TransactionEntity {
   }
 
   public isConfirmedOnchain(): boolean {
-    return this._blockchainStatus === "confirmed" && Boolean(this._blockchainTxHash);
+    return (
+      this._blockchainStatus === "confirmed" && Boolean(this._blockchainTxHash)
+    );
   }
 
   /**
@@ -230,7 +233,8 @@ export class TransactionEntity {
       date: dto.date,
       timestamp: dto.timestamp || dto.date,
       paymentMethod: dto.payment_method || "Card",
-      verificationState: (dto.verification_state || "unverified") as VerificationState,
+      verificationState: (dto.verification_state ||
+        "unverified") as VerificationState,
       blockchainStatus: dto.blockchain_status || null,
       blockchainNetwork: dto.blockchain_network || "Monad Testnet",
       blockchainChainId: dto.blockchain_chain_id ?? 10143,

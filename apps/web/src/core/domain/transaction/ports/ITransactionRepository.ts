@@ -8,10 +8,25 @@ import type { TransactionEntity } from "../entities/Transaction";
 export interface ITransactionRepository {
   getAll(scopeId?: string | null): Promise<TransactionEntity[]>;
   getAllSync(scopeId?: string | null): TransactionEntity[];
-  save(transactions: TransactionEntity[], scopeId?: string | null): Promise<void>;
+  save(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): Promise<void>;
   saveSync(transactions: TransactionEntity[], scopeId?: string | null): void;
-  upsert(transaction: TransactionEntity, scopeId?: string | null): Promise<TransactionEntity[]>;
-  upsertSync(transaction: TransactionEntity, scopeId?: string | null): TransactionEntity[];
-  upsertBatch(transactions: TransactionEntity[], scopeId?: string | null): Promise<TransactionEntity[]>;
-  upsertBatchSync(transactions: TransactionEntity[], scopeId?: string | null): TransactionEntity[];
+  upsert(
+    transaction: TransactionEntity,
+    scopeId?: string | null,
+  ): Promise<TransactionEntity[]>;
+  upsertSync(
+    transaction: TransactionEntity,
+    scopeId?: string | null,
+  ): TransactionEntity[];
+  upsertBatch(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): Promise<TransactionEntity[]>;
+  upsertBatchSync(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): TransactionEntity[];
 }

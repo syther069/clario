@@ -56,12 +56,14 @@ export function WalletGuardModal({
 
             <div className="mt-4 space-y-2">
               <p className="text-sm font-bold text-[#121212]">
-                To save this receipt on Monad, connect a wallet to your Clario account.
+                To save this receipt on Monad, connect a wallet to your Clario
+                account.
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Your Clario account remains the permanent owner of all your data
                 and receipts. Connecting an EVM wallet allows you to anchor the
-                cryptographic receipt commitment directly to Monad Testnet (Chain ID 10143).
+                cryptographic receipt commitment directly to Monad Testnet
+                (Chain ID 10143).
               </p>
             </div>
 

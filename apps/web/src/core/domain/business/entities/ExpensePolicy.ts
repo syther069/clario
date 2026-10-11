@@ -44,12 +44,16 @@ export class ExpensePolicyEntity {
     this.orgId = (props.orgId || props.org_id || "").trim().toLowerCase();
     this.name = props.name || "Standard Policy";
     this.category = props.category || "General";
-    this.maxSingleAmount = props.maxSingleAmount ?? props.max_single_amount ?? 1000;
+    this.maxSingleAmount =
+      props.maxSingleAmount ?? props.max_single_amount ?? 1000;
     this.monthlyBudget = props.monthlyBudget ?? props.monthly_budget ?? 10000;
-    this.requiresReceiptAbove = props.requiresReceiptAbove ?? props.requires_receipt_above ?? 50;
-    this.requiresApprovalAbove = props.requiresApprovalAbove ?? props.requires_approval_above ?? 300;
+    this.requiresReceiptAbove =
+      props.requiresReceiptAbove ?? props.requires_receipt_above ?? 50;
+    this.requiresApprovalAbove =
+      props.requiresApprovalAbove ?? props.requires_approval_above ?? 300;
     this.isActive = props.isActive ?? props.is_active ?? true;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): ExpensePolicyDTO {

@@ -7,7 +7,8 @@ import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "Clario | Verifiable Expense Ledger on Monad",
-  description: "Verifiable expense workflows and cryptographic receipts on Monad.",
+  description:
+    "Verifiable expense workflows and cryptographic receipts on Monad.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import { motion, AnimatePresence, type Transition } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +16,8 @@ interface ToolbarExpandableContextType {
   setIsExpanded: (expanded: boolean) => void;
 }
 
-const ToolbarExpandableContext = createContext<ToolbarExpandableContextType | null>(
-  null,
-);
+const ToolbarExpandableContext =
+  createContext<ToolbarExpandableContextType | null>(null);
 
 export function useToolbarExpandable() {
   const context = useContext(ToolbarExpandableContext);
@@ -46,18 +52,22 @@ export function ToolbarExpandable({
   onExpandedChange,
   transition = DEFAULT_SPRING,
 }: ToolbarExpandableProps) {
-  const [uncontrolledExpanded, setUncontrolledExpanded] = useState(defaultExpanded);
+  const [uncontrolledExpanded, setUncontrolledExpanded] =
+    useState(defaultExpanded);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isControlled = controlledExpanded !== undefined;
   const isExpanded = isControlled ? controlledExpanded : uncontrolledExpanded;
 
-  const setIsExpanded = useCallback((next: boolean) => {
-    if (!isControlled) {
-      setUncontrolledExpanded(next);
-    }
-    onExpandedChange?.(next);
-  }, [isControlled, onExpandedChange]);
+  const setIsExpanded = useCallback(
+    (next: boolean) => {
+      if (!isControlled) {
+        setUncontrolledExpanded(next);
+      }
+      onExpandedChange?.(next);
+    },
+    [isControlled, onExpandedChange],
+  );
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -91,7 +101,10 @@ export interface ToolbarCollapsedProps {
   className?: string;
 }
 
-export function ToolbarCollapsed({ children, className }: ToolbarCollapsedProps) {
+export function ToolbarCollapsed({
+  children,
+  className,
+}: ToolbarCollapsedProps) {
   const { isExpanded } = useToolbarExpandable();
 
   return (
@@ -144,7 +157,11 @@ export interface ToolbarToggleProps {
   onClick?: () => void;
 }
 
-export function ToolbarToggle({ children, className, onClick }: ToolbarToggleProps) {
+export function ToolbarToggle({
+  children,
+  className,
+  onClick,
+}: ToolbarToggleProps) {
   const { isExpanded, setIsExpanded } = useToolbarExpandable();
 
   return (
@@ -164,4 +181,3 @@ export function ToolbarToggle({ children, className, onClick }: ToolbarTogglePro
     </button>
   );
 }
-

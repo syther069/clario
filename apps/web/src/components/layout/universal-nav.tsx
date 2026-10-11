@@ -338,7 +338,10 @@ export function UniversalNav({
               onClick={() => onOpenCopilot && onOpenCopilot()}
               className="flex items-center gap-1.5 rounded-lg border-2 border-[#121212] bg-[#f3f0ff] pl-3 pr-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-[#836EF9] shadow-[2px_2px_0_0_#121212] transition-colors duration-150 ease-out hover:bg-[#ebe5ff] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none active:scale-[0.96]"
             >
-              <Bot className="h-3.5 w-3.5 text-[#836EF9] stroke-[2.5]" aria-hidden="true" />
+              <Bot
+                className="h-3.5 w-3.5 text-[#836EF9] stroke-[2.5]"
+                aria-hidden="true"
+              />
               <span>Clario</span>
             </button>
           </Magnetic>

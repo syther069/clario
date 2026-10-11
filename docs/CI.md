@@ -58,4 +58,4 @@ When changing a gate, temporarily add one minimal failing fixture for that gate,
 - Add the five exact checks above to the default branch's required ruleset.
 - Require branches to be up to date before merging.
 - Block force pushes and branch deletion on the protected default branch.
-- Record the repository URL, default branch, ruleset reviewer, and first successful workflow run in `MEMORY.md` without copying tokens or private logs.
+- Record the repository URL, default branch, ruleset reviewer, and first successful workflow run in internal release notes without copying tokens or private logs.

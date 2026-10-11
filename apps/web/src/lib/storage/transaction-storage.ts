@@ -13,7 +13,9 @@ export { normalizeIdentityKey, getScopedKey, STORAGE_KEY_TRANSACTIONS };
  * Retrieves stored transactions from the Clean Architecture repository.
  * Checks scoped key first, then falls back to global key.
  */
-export function getStoredTransactions(userOrWallet?: string | null): Transaction[] {
+export function getStoredTransactions(
+  userOrWallet?: string | null,
+): Transaction[] {
   const entities = container.getTransactionsUseCase.execute(userOrWallet);
   return entities.map((e) => e.toDTO());
 }
@@ -38,7 +40,10 @@ export function upsertStoredTransaction(
   userOrWallet?: string | null,
 ): Transaction[] {
   const entity = TransactionEntity.fromDTO(transaction);
-  const updated = container.upsertTransactionUseCase.execute(entity, userOrWallet);
+  const updated = container.upsertTransactionUseCase.execute(
+    entity,
+    userOrWallet,
+  );
   return updated.map((e) => e.toDTO());
 }
 
@@ -53,7 +58,10 @@ export function upsertStoredTransactions(
     return getStoredTransactions(userOrWallet);
   }
   const entities = transactions.map((t) => TransactionEntity.fromDTO(t));
-  const updated = container.upsertTransactionUseCase.executeBatch(entities, userOrWallet);
+  const updated = container.upsertTransactionUseCase.executeBatch(
+    entities,
+    userOrWallet,
+  );
   return updated.map((e) => e.toDTO());
 }
 

@@ -2,17 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import { Activity, ShieldCheck, Zap } from "lucide-react";
-import { getMonadPublicClient, getMonadRpcProviderInfo } from "@/lib/blockchain/registry";
+import {
+  getMonadPublicClient,
+  getMonadRpcProviderInfo,
+} from "@/lib/blockchain/registry";
 
 export function AlchemyNetworkBadge() {
   const [blockNumber, setBlockNumber] = useState<bigint | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [providerInfo, setProviderInfo] = useState(() => getMonadRpcProviderInfo());
+  const [providerInfo] = useState(() => getMonadRpcProviderInfo());
 
   useEffect(() => {
     let isMounted = true;
-    setProviderInfo(getMonadRpcProviderInfo());
 
     async function probeMonadNode() {
       try {
@@ -109,7 +111,9 @@ export function AlchemyNetworkBadge() {
           <div className="space-y-1.5 text-gray-700 text-[11px]">
             <div className="flex justify-between">
               <span className="text-gray-500">Network:</span>
-              <span className="font-bold text-black">Monad Testnet (10143)</span>
+              <span className="font-bold text-black">
+                Monad Testnet (10143)
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Transport:</span>

@@ -57,7 +57,9 @@ export function stripPrototypePollution<T>(target: T): T {
   }
 
   const clean = Object.create(null);
-  for (const [key, value] of Object.entries(target as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    target as Record<string, unknown>,
+  )) {
     if (!DANGEROUS_KEYS.has(key)) {
       clean[key] = stripPrototypePollution(value);
     }
@@ -69,7 +71,10 @@ export function stripPrototypePollution<T>(target: T): T {
 /**
  * Validates that a string is a 0x-prefixed hex string of exact or arbitrary length.
  */
-export function isValidHex(value: unknown, expectedLength?: number): value is `0x${string}` {
+export function isValidHex(
+  value: unknown,
+  expectedLength?: number,
+): value is `0x${string}` {
   if (typeof value !== "string" || !value.startsWith("0x")) {
     return false;
   }

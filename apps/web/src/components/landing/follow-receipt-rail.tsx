@@ -43,7 +43,8 @@ export const FOLLOW_RECEIPT_STEPS: ReceiptStep[] = [
   },
   {
     step: "02",
-    title: "Clario locks in a fingerprint so nobody can quietly change it later.",
+    title:
+      "Clario locks in a fingerprint so nobody can quietly change it later.",
     summary:
       "A unique mathematical fingerprint is created for the exact numbers. If anyone tries to alter an amount, change a date, or swap an invoice later, the fingerprint breaks instantly.",
     badge: "Tamper-proof record",
@@ -86,7 +87,9 @@ export const FOLLOW_RECEIPT_STEPS: ReceiptStep[] = [
 ];
 
 export function FollowReceiptRail() {
-  const [expandedTechnical, setExpandedTechnical] = useState<number | null>(null);
+  const [expandedTechnical, setExpandedTechnical] = useState<number | null>(
+    null,
+  );
 
   const toggleTechnical = (idx: number) => {
     setExpandedTechnical((prev) => (prev === idx ? null : idx));
@@ -107,7 +110,8 @@ export function FollowReceiptRail() {
           Follow One Receipt
         </h2>
         <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed text-pretty">
-          See how an everyday expense moves from your pocket to verified settlement without leaking private details.
+          See how an everyday expense moves from your pocket to verified
+          settlement without leaking private details.
         </p>
       </div>
 
@@ -216,7 +220,9 @@ function StepIllustration({
     return (
       <div className="space-y-2.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-mono text-xs font-bold text-gray-700 uppercase">Digital Fingerprint:</span>
+          <span className="font-mono text-xs font-bold text-gray-700 uppercase">
+            Digital Fingerprint:
+          </span>
           <span className="text-[10px] font-mono bg-[#f5f3ff] text-[#836EF9] border border-[#836EF9]/40 px-2 py-0.5 rounded font-black uppercase">
             Locked
           </span>
@@ -225,7 +231,8 @@ function StepIllustration({
           0x89f4b7a1...bc19aa314
         </div>
         <div className="text-[11px] text-emerald-700 font-mono font-bold uppercase flex items-center gap-1">
-          <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5]" /> Tamper-evident seal active
+          <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5]" /> Tamper-evident
+          seal active
         </div>
       </div>
     );
@@ -259,7 +266,9 @@ function StepIllustration({
           <MonadLogo className="h-4 w-4 text-[#836EF9]" />
           <span>Settled on Monad</span>
         </div>
-        <span className="font-mono font-black text-emerald-700">&lt; 1 sec</span>
+        <span className="font-mono font-black text-emerald-700">
+          &lt; 1 sec
+        </span>
       </div>
       <div className="flex items-center justify-between text-[11px] text-gray-600 pt-2 border-t border-[#121212]/10 font-mono font-bold uppercase">
         <span className="text-emerald-700 flex items-center gap-1">

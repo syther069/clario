@@ -112,11 +112,21 @@ describe("AlchemyImportAdapter", () => {
 
   it("routes Monad queries directly to Monad fallback without calling alchemy_getAssetTransfers", async () => {
     const adapter = new AlchemyImportAdapter(dummyKey);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const monadFallbackSpy = vi.spyOn((adapter as any).monadFallback, "fetchTransactions").mockResolvedValue({
-      items: [],
-      nextCursor: null,
-    });
+    const monadFallbackSpy = vi
+      .spyOn(
+        (
+          adapter as unknown as {
+            monadFallback: {
+              fetchTransactions: (...args: unknown[]) => Promise<unknown>;
+            };
+          }
+        ).monadFallback,
+        "fetchTransactions",
+      )
+      .mockResolvedValue({
+        items: [],
+        nextCursor: null,
+      } as unknown as { items: []; nextCursor: null });
     const fetchSpy = vi.fn();
     global.fetch = fetchSpy;
 

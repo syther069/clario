@@ -108,7 +108,9 @@ export function AddSubscriptionModal({
                   <NeoSelect
                     fullWidth
                     value={subFrequencyInput}
-                    onChange={(val) => setSubFrequencyInput(val as SubFrequency)}
+                    onChange={(val) =>
+                      setSubFrequencyInput(val as SubFrequency)
+                    }
                     options={[
                       { value: "monthly", label: "Monthly" },
                       { value: "yearly", label: "Yearly" },

@@ -32,13 +32,8 @@ export function useClarioAuth() {
   const { wallets } = useWallets();
   const { wallet: activeConnectedWallet, setActiveWallet } = useActiveWallet();
   const { connectWallet } = useConnectWallet();
-  const {
-    linkWallet,
-    linkEmail,
-    linkGoogle,
-    linkPasskey,
-    linkPhone,
-  } = useLinkAccount();
+  const { linkWallet, linkEmail, linkGoogle, linkPasskey, linkPhone } =
+    useLinkAccount();
   const { unlink: unlinkWalletRaw } = useUnlinkWallet();
   const { unlink: unlinkEmailRaw } = useUnlinkEmail();
   const { unlink: unlinkOAuthRaw } = useUnlinkOAuth();
@@ -152,7 +147,13 @@ export function useClarioAuth() {
       return addr;
     }
     return null;
-  }, [hasConnectedEvmWallet, activeWallet, externalEvmWallet, embeddedWalletAddress, activeConnectedWallet]);
+  }, [
+    hasConnectedEvmWallet,
+    activeWallet,
+    externalEvmWallet,
+    embeddedWalletAddress,
+    activeConnectedWallet,
+  ]);
 
   const activeWalletAddress: string | null = connectedEvmAddress;
   const primaryWalletAddress: string | null = connectedEvmAddress;
@@ -166,9 +167,10 @@ export function useClarioAuth() {
   const isActiveWalletEmbedded: boolean = useMemo(() => {
     return Boolean(
       activeWallet &&
-        (activeWallet.walletClientType === "privy" ||
-          (embeddedWalletAddress &&
-            activeWallet.address.toLowerCase() === embeddedWalletAddress.toLowerCase())),
+      (activeWallet.walletClientType === "privy" ||
+        (embeddedWalletAddress &&
+          activeWallet.address.toLowerCase() ===
+            embeddedWalletAddress.toLowerCase())),
     );
   }, [activeWallet, embeddedWalletAddress]);
 
@@ -178,14 +180,16 @@ export function useClarioAuth() {
   );
 
   // Account identity type
-  const accountType: "email" | "google" | "wallet" | "passkey" | "anonymous" = useMemo(() => {
-    if (!user) return "anonymous";
-    if (user.google) return "google";
-    if (user.email?.address) return "email";
-    if (hasConnectedEvmWallet) return "wallet";
-    if (user.linkedAccounts?.some((a) => a.type === "passkey")) return "passkey";
-    return "email";
-  }, [user, hasConnectedEvmWallet]);
+  const accountType: "email" | "google" | "wallet" | "passkey" | "anonymous" =
+    useMemo(() => {
+      if (!user) return "anonymous";
+      if (user.google) return "google";
+      if (user.email?.address) return "email";
+      if (hasConnectedEvmWallet) return "wallet";
+      if (user.linkedAccounts?.some((a) => a.type === "passkey"))
+        return "passkey";
+      return "email";
+    }, [user, hasConnectedEvmWallet]);
 
   // Login hook
   const { login } = useLogin({
@@ -237,8 +241,7 @@ export function useClarioAuth() {
         user?.google?.subject ||
         (
           user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
-            | { subject?: string }
-            | undefined
+            { subject?: string } | undefined
         )?.subject;
       if (!targetSubject) return;
       await unlinkOAuthRaw({ provider: "google", subject: targetSubject });
@@ -251,7 +254,8 @@ export function useClarioAuth() {
     if (!user?.linkedAccounts) return false;
     return user.linkedAccounts.some(
       (a) =>
-        a.type === "wallet" && (a as { delegated?: boolean }).delegated === true,
+        a.type === "wallet" &&
+        (a as { delegated?: boolean }).delegated === true,
     );
   }, [user]);
 
@@ -275,10 +279,11 @@ export function useClarioAuth() {
 
   const unlinkPasskey = useCallback(
     async (credentialId?: string) => {
-      const passkeyAcc = user?.linkedAccounts?.find((a) => a.type === "passkey") as
-        | { credentialId?: string; id?: string }
-        | undefined;
-      const targetCredId = credentialId || passkeyAcc?.credentialId || passkeyAcc?.id;
+      const passkeyAcc = user?.linkedAccounts?.find(
+        (a) => a.type === "passkey",
+      ) as { credentialId?: string; id?: string } | undefined;
+      const targetCredId =
+        credentialId || passkeyAcc?.credentialId || passkeyAcc?.id;
       if (!targetCredId) return;
       await unlinkPasskeyRaw({ credentialId: targetCredId });
     },

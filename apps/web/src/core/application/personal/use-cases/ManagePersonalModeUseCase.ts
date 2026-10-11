@@ -35,7 +35,10 @@ export class ManagePersonalModeUseCase {
     return this.repository.getSubscriptions(scopeId);
   }
 
-  public saveSubscriptions(subscriptions: SubscriptionEntity[], scopeId?: string): void {
+  public saveSubscriptions(
+    subscriptions: SubscriptionEntity[],
+    scopeId?: string,
+  ): void {
     this.repository.saveSubscriptions(subscriptions, scopeId);
     if (this.eventBus) {
       this.eventBus.publish(EVENT_PERSONAL_MODE_UPDATED, {

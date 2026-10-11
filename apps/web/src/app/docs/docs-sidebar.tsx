@@ -5,12 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
 import { DOC_SECTIONS } from "./docs-data";
 import { ClarioLogo } from "@/components/ui/clario-logo";
-import {
-  Search,
-  ArrowLeft,
-  ChevronRight,
-  X,
-} from "lucide-react";
+import { Search, ArrowLeft, ChevronRight, X } from "lucide-react";
 
 interface DocsSidebarProps {
   activeSectionId: string;
@@ -26,9 +21,9 @@ const GROUP_INDEX: Record<string, string> = {
   "Getting Started": "01",
   "Product & Modes": "02",
   "Architecture & Verification": "03",
-  "Integrations": "04",
+  Integrations: "04",
   "Security & Ops": "05",
-  "Hackathon": "06",
+  Hackathon: "06",
 };
 
 export function DocsSidebar({
@@ -107,7 +102,9 @@ export function DocsSidebar({
           >
             <div className="flex items-center gap-2">
               <Search className="h-3.5 w-3.5 text-[#836EF9]" />
-              <span className="text-[11px] uppercase tracking-wider">Search Manual...</span>
+              <span className="text-[11px] uppercase tracking-wider">
+                Search Manual...
+              </span>
             </div>
             <kbd className="font-mono text-[10px] bg-slate-100 border border-slate-300 rounded px-1.5 py-0.5 font-bold text-slate-700">
               ⌘K
@@ -130,7 +127,9 @@ export function DocsSidebar({
                 <div key={group} className="space-y-1">
                   <div className="px-2 py-0.5 mb-1 border-b border-[#121212]/10 flex items-center justify-between">
                     <span className="font-mono text-[10px] font-bold tracking-wider text-slate-500 uppercase flex items-center gap-1.5">
-                      <span className="text-[#836EF9] font-black">{groupNum}</span>
+                      <span className="text-[#836EF9] font-black">
+                        {groupNum}
+                      </span>
                       <span className="text-slate-300">{"//"}</span>
                       <span>{group}</span>
                     </span>
@@ -218,45 +217,53 @@ export function DocsSidebar({
 
                           {/* Nested Accordion Subsections for Active Section */}
                           <AnimatePresence initial={false}>
-                            {isActive && section.subsections && section.subsections.length > 0 && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                                className="overflow-hidden ml-3 pl-2.5 py-1 space-y-0.5 border-l-2 border-[#836EF9]/50 my-1"
-                              >
-                                {section.subsections.map((sub, sIdx) => {
-                                  const isSubActive = activeSubsectionId === sub.id;
-                                  return (
-                                    <button
-                                      key={sub.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onSelectSubsection?.(sub.id);
-                                        onCloseMobile?.();
-                                      }}
-                                      className={`group/sub flex items-center justify-between w-full px-2 py-1 rounded text-left transition-colors ${
-                                        isSubActive
-                                          ? "text-[#836EF9] font-bold bg-[#836EF9]/10"
-                                          : "text-slate-600 hover:text-[#121212] hover:bg-black/[0.04]"
-                                      }`}
-                                    >
-                                      <span className="truncate font-sans font-medium text-[12px] tracking-tight">
-                                        {sub.title}
-                                      </span>
-                                      <span
-                                        className={`font-mono text-[9px] font-bold shrink-0 ml-1 ${
-                                          isSubActive ? "text-[#836EF9]" : "text-slate-400"
+                            {isActive &&
+                              section.subsections &&
+                              section.subsections.length > 0 && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{
+                                    duration: 0.22,
+                                    ease: [0.16, 1, 0.3, 1],
+                                  }}
+                                  className="overflow-hidden ml-3 pl-2.5 py-1 space-y-0.5 border-l-2 border-[#836EF9]/50 my-1"
+                                >
+                                  {section.subsections.map((sub, sIdx) => {
+                                    const isSubActive =
+                                      activeSubsectionId === sub.id;
+                                    return (
+                                      <button
+                                        key={sub.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onSelectSubsection?.(sub.id);
+                                          onCloseMobile?.();
+                                        }}
+                                        className={`group/sub flex items-center justify-between w-full px-2 py-1 rounded text-left transition-colors ${
+                                          isSubActive
+                                            ? "text-[#836EF9] font-bold bg-[#836EF9]/10"
+                                            : "text-slate-600 hover:text-[#121212] hover:bg-black/[0.04]"
                                         }`}
                                       >
-                                        {String(sIdx + 1).padStart(2, "0")}
-                                      </span>
-                                    </button>
-                                  );
-                                })}
-                              </motion.div>
-                            )}
+                                        <span className="truncate font-sans font-medium text-[12px] tracking-tight">
+                                          {sub.title}
+                                        </span>
+                                        <span
+                                          className={`font-mono text-[9px] font-bold shrink-0 ml-1 ${
+                                            isSubActive
+                                              ? "text-[#836EF9]"
+                                              : "text-slate-400"
+                                          }`}
+                                        >
+                                          {String(sIdx + 1).padStart(2, "0")}
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
                           </AnimatePresence>
                         </div>
                       );

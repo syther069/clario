@@ -26,7 +26,8 @@ export async function GET(
         {
           error: {
             code: "RATE_LIMITED",
-            message: "Too many transaction lookup requests. Please try again shortly.",
+            message:
+              "Too many transaction lookup requests. Please try again shortly.",
           },
         },
         {

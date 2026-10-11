@@ -16,9 +16,7 @@ import type {
 export const MONAD_TESTNET_CHAIN_ID = 10143;
 
 const effectiveAlchemyKey =
-  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ||
-  process.env.ALCHEMY_API_KEY ||
-  "";
+  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || process.env.ALCHEMY_API_KEY || "";
 
 export const ALCHEMY_MONAD_TESTNET_RPC = effectiveAlchemyKey
   ? `https://monad-testnet.g.alchemy.com/v2/${effectiveAlchemyKey}`
@@ -29,13 +27,13 @@ export const ALCHEMY_MONAD_TESTNET_WSS = effectiveAlchemyKey
   : "";
 
 // Alchemy Monad RPC is primary when key is available, with resilient public fallback
-export const MONAD_TESTNET_RPC =
-  effectiveAlchemyKey
-    ? ALCHEMY_MONAD_TESTNET_RPC
-    : (process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC || "https://testnet-rpc.monad.xyz");
+export const MONAD_TESTNET_RPC = effectiveAlchemyKey
+  ? ALCHEMY_MONAD_TESTNET_RPC
+  : process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC ||
+    "https://testnet-rpc.monad.xyz";
 
 export const IS_ALCHEMY_MONAD_RPC_ACTIVE: boolean = Boolean(
-  effectiveAlchemyKey && ALCHEMY_MONAD_TESTNET_RPC
+  effectiveAlchemyKey && ALCHEMY_MONAD_TESTNET_RPC,
 );
 
 export function getMonadRpcProviderInfo(): {
@@ -49,11 +47,15 @@ export function getMonadRpcProviderInfo(): {
     const url = new URL(MONAD_TESTNET_RPC);
     endpointHost = url.host;
   } catch {
-    endpointHost = isAlchemy ? "monad-testnet.g.alchemy.com" : "testnet-rpc.monad.xyz";
+    endpointHost = isAlchemy
+      ? "monad-testnet.g.alchemy.com"
+      : "testnet-rpc.monad.xyz";
   }
   return {
     isAlchemy,
-    providerName: isAlchemy ? "Alchemy Monad RPC" : "Monad Public RPC (Fallback)",
+    providerName: isAlchemy
+      ? "Alchemy Monad RPC"
+      : "Monad Public RPC (Fallback)",
     endpointHost,
   };
 }

@@ -406,8 +406,7 @@ export class AuthorizationPolicy {
       version: evRes.rows[0]!.version,
     };
 
-    // ARCHITECTURE RULE §8.3 & RULES.md §6.3:
-    // Administrators cannot bypass evidence authorization merely because they manage membership
+    // Security Policy: Administrators cannot bypass evidence authorization merely because they manage membership
     if (action === "read") {
       const isCreator =
         expense.createdBy.toLowerCase() === context.address.toLowerCase();

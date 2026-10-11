@@ -1,14 +1,22 @@
 import type { IFreelancerRepository } from "../../domain/freelancer/ports/IFreelancerRepository";
 import { ClientEntity } from "../../domain/freelancer/entities/Client";
 import { InvoiceEntity } from "../../domain/freelancer/entities/Invoice";
-import type { Client as ClientDTO, Invoice as InvoiceDTO, InvoiceStatus } from "@/lib/supabase/types";
+import type {
+  Client as ClientDTO,
+  Invoice as InvoiceDTO,
+  InvoiceStatus,
+} from "@/lib/supabase/types";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { IdentityScope } from "../../domain/common/IdentityScope";
 
 export const STORAGE_KEY_CLIENTS = "clario_freelancer_clients";
 export const STORAGE_KEY_INVOICES = "clario_freelancer_invoices";
 
-function readScoped<T>(baseKey: string, scopeId?: string, fallback: T[] = []): T[] {
+function readScoped<T>(
+  baseKey: string,
+  scopeId?: string,
+  fallback: T[] = [],
+): T[] {
   if (typeof window === "undefined" || !window.localStorage) return fallback;
   if (scopeId) IdentityScope.register(scopeId);
   const scopedKey = IdentityScope.getScopedKey(baseKey, scopeId);
@@ -42,10 +50,18 @@ function writeScoped<T>(baseKey: string, data: T[], scopeId?: string): void {
   }
 }
 
-function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: string, scopeId?: string): void {
+function deleteFromAllScopes<T extends { id: string }>(
+  baseKey: string,
+  itemId: string,
+  scopeId?: string,
+): void {
   if (scopeId) {
     const list = readScoped<T>(baseKey, scopeId, []);
-    writeScoped(baseKey, list.filter((it) => it.id !== itemId), scopeId);
+    writeScoped(
+      baseKey,
+      list.filter((it) => it.id !== itemId),
+      scopeId,
+    );
     return;
   }
 
@@ -54,13 +70,20 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
     try {
       const unscoped = readScoped<T>(baseKey, undefined, []);
       if (unscoped.length > 0) {
-        localStorage.setItem(baseKey, JSON.stringify(unscoped.filter((it) => it.id !== itemId)));
+        localStorage.setItem(
+          baseKey,
+          JSON.stringify(unscoped.filter((it) => it.id !== itemId)),
+        );
       }
 
       for (const scope of IdentityScope.getKnownScopes()) {
         const list = readScoped<T>(baseKey, scope, []);
         if (list.some((it) => it.id === itemId)) {
-          writeScoped(baseKey, list.filter((it) => it.id !== itemId), scope);
+          writeScoped(
+            baseKey,
+            list.filter((it) => it.id !== itemId),
+            scope,
+          );
         }
       }
 
@@ -70,8 +93,14 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
           const raw = localStorage.getItem(k);
           if (raw) {
             const parsed = JSON.parse(raw) as T[];
-            if (Array.isArray(parsed) && parsed.some((it) => it.id === itemId)) {
-              localStorage.setItem(k, JSON.stringify(parsed.filter((it) => it.id !== itemId)));
+            if (
+              Array.isArray(parsed) &&
+              parsed.some((it) => it.id === itemId)
+            ) {
+              localStorage.setItem(
+                k,
+                JSON.stringify(parsed.filter((it) => it.id !== itemId)),
+              );
             }
           }
         }
@@ -112,7 +141,10 @@ export class LocalStorageFreelancerRepository implements IFreelancerRepository {
   public async saveClient(client: ClientEntity): Promise<ClientEntity> {
     const scopeId = client.userId;
     const local = readScoped<ClientDTO>(STORAGE_KEY_CLIENTS, scopeId, []);
-    const updated = [client.toDTO(), ...local.filter((c) => c.id !== client.id)];
+    const updated = [
+      client.toDTO(),
+      ...local.filter((c) => c.id !== client.id),
+    ];
     writeScoped(STORAGE_KEY_CLIENTS, updated, scopeId);
 
     try {
@@ -160,7 +192,10 @@ export class LocalStorageFreelancerRepository implements IFreelancerRepository {
   public async saveInvoice(invoice: InvoiceEntity): Promise<InvoiceEntity> {
     const scopeId = invoice.userId;
     const local = readScoped<InvoiceDTO>(STORAGE_KEY_INVOICES, scopeId, []);
-    const updated = [invoice.toDTO(), ...local.filter((i) => i.id !== invoice.id)];
+    const updated = [
+      invoice.toDTO(),
+      ...local.filter((i) => i.id !== invoice.id),
+    ];
     writeScoped(STORAGE_KEY_INVOICES, updated, scopeId);
 
     try {
@@ -173,7 +208,10 @@ export class LocalStorageFreelancerRepository implements IFreelancerRepository {
     return invoice;
   }
 
-  public async deleteInvoice(invoiceId: string, userId?: string): Promise<void> {
+  public async deleteInvoice(
+    invoiceId: string,
+    userId?: string,
+  ): Promise<void> {
     deleteFromAllScopes<InvoiceDTO>(STORAGE_KEY_INVOICES, invoiceId, userId);
 
     try {
@@ -190,7 +228,9 @@ export class LocalStorageFreelancerRepository implements IFreelancerRepository {
     paymentDate?: string,
     userId?: string,
   ): Promise<void> {
-    const scopesToUpdate = userId ? [userId] : [undefined, ...IdentityScope.getKnownScopes()];
+    const scopesToUpdate = userId
+      ? [userId]
+      : [undefined, ...IdentityScope.getKnownScopes()];
 
     for (const scope of scopesToUpdate) {
       const local = readScoped<InvoiceDTO>(STORAGE_KEY_INVOICES, scope, []);

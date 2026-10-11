@@ -10,7 +10,9 @@ describe("Privy Webhook Verification (Svix HMAC-SHA256)", () => {
   it("successfully verifies a valid webhook signature", () => {
     const rawBody = JSON.stringify({
       type: "user.wallet_created",
-      data: { wallet: { address: "0x1234567890abcdef1234567890abcdef12345678" } },
+      data: {
+        wallet: { address: "0x1234567890abcdef1234567890abcdef12345678" },
+      },
     });
     const svixId = "msg_123456789";
     const svixTimestamp = String(Math.floor(Date.now() / 1000));

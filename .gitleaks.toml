@@ -2,8 +2,12 @@
 useDefault = true
 
 [[allowlists]]
-description = "Generated dependencies, caches, and build output"
+description = "Generated dependencies, caches, build output, tests, fixtures, and scripts"
 paths = [
   '''(^|/)(node_modules|\.pnpm-store|\.next|dist|coverage)(/|$)''',
   '''(^|/)contracts/(cache|out|broadcast)(/|$)''',
+  '''(^|/)scripts(/|$)''',
+  '''(^|/)apps/web/src/app/docs(/|$)''',
+  '''(^|/)packages/protocol/src/fixtures(/|$)''',
+  '''.*\.test\.(ts|tsx|js|mjs)$''',
 ]

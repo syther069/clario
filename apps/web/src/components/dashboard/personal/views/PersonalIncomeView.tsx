@@ -63,7 +63,8 @@ export function PersonalIncomeView({
             Personal Income & Earnings
           </h2>
           <p className="text-xs text-slate-500">
-            Track salary, freelance contracts, investment dividends, and incoming deposits.
+            Track salary, freelance contracts, investment dividends, and
+            incoming deposits.
           </p>
         </div>
         {onAddTransaction && (
@@ -163,9 +164,7 @@ export function PersonalIncomeView({
                 className="p-3 rounded-lg border-2 border-[#121212] bg-white shadow-[2px_2px_0_0_#121212]"
               >
                 <div className="flex justify-between text-xs font-bold text-[#121212] mb-1.5">
-                  <span className="uppercase tracking-wide">
-                    {src.name}
-                  </span>
+                  <span className="uppercase tracking-wide">{src.name}</span>
                   <span className="font-mono tabular-nums text-[#15803d]">
                     +{currencySymbol}
                     {src.amount.toFixed(2)} ({src.pct}%)
@@ -234,7 +233,10 @@ export function PersonalIncomeView({
             <tbody className="divide-y border-b border-[#121212]">
               {filteredIncome.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 font-semibold">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-slate-500 font-semibold"
+                  >
                     No income transactions logged yet.
                   </td>
                 </tr>
@@ -258,7 +260,10 @@ export function PersonalIncomeView({
                     </td>
                     <td className="py-3 px-4">
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-[#15803d]">
-                        <BadgeCheck className="w-3 h-3 shrink-0" aria-hidden="true" />
+                        <BadgeCheck
+                          className="w-3 h-3 shrink-0"
+                          aria-hidden="true"
+                        />
                         <span>Cleared</span>
                       </span>
                     </td>

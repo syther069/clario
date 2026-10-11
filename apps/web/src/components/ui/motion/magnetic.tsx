@@ -84,7 +84,17 @@ export function Magnetic({
     return () => {
       document.removeEventListener("mousemove", calculateDistance);
     };
-  }, [ref, isHovered, intensity, range, maxTranslation, x, y, disabled, shouldReduceMotion]);
+  }, [
+    ref,
+    isHovered,
+    intensity,
+    range,
+    maxTranslation,
+    x,
+    y,
+    disabled,
+    shouldReduceMotion,
+  ]);
 
   useEffect(() => {
     if (disabled || shouldReduceMotion) return;
@@ -144,4 +154,3 @@ export function Magnetic({
     </motion.div>
   );
 }
-

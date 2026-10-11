@@ -1,4 +1,7 @@
-import type { ReceiptBundle, CanonicalReceiptBundle } from "@/lib/supabase/types";
+import type {
+  ReceiptBundle,
+  CanonicalReceiptBundle,
+} from "@/lib/supabase/types";
 import { getScopedKey } from "@/lib/storage/transaction-storage";
 
 export const STORAGE_KEY_RECEIPTS = "clario_saved_receipts";
@@ -58,7 +61,10 @@ export function getStoredReceiptBundles(
       }
     }
   } catch (err) {
-    console.warn("Notice: Error reading receipt bundles from localStorage:", err);
+    console.warn(
+      "Notice: Error reading receipt bundles from localStorage:",
+      err,
+    );
   }
 
   return result;
@@ -73,16 +79,21 @@ export function saveStoredReceiptBundles(
 ): Record<string, ReceiptBundle> {
   if (typeof window === "undefined" || !window.localStorage) {
     return Array.isArray(bundles)
-      ? bundles.reduce((acc, b) => {
-          if (b && b.id) acc[b.id] = b;
-          return acc;
-        }, {} as Record<string, ReceiptBundle>)
+      ? bundles.reduce(
+          (acc, b) => {
+            if (b && b.id) acc[b.id] = b;
+            return acc;
+          },
+          {} as Record<string, ReceiptBundle>,
+        )
       : bundles;
   }
 
   try {
     const current = getStoredReceiptBundles(userOrWallet);
-    const bundleList = Array.isArray(bundles) ? bundles : Object.values(bundles);
+    const bundleList = Array.isArray(bundles)
+      ? bundles
+      : Object.values(bundles);
 
     for (const b of bundleList) {
       if (!b || !b.id) continue;
@@ -95,15 +106,20 @@ export function saveStoredReceiptBundles(
       const mergedBundle: ReceiptBundle = {
         ...existing,
         ...b,
-        blockchain_tx_hash: b.blockchain_tx_hash || existing?.blockchain_tx_hash || null,
+        blockchain_tx_hash:
+          b.blockchain_tx_hash || existing?.blockchain_tx_hash || null,
         blockchain_status:
-          b.blockchain_status === "confirmed" || existing?.blockchain_status === "confirmed"
+          b.blockchain_status === "confirmed" ||
+          existing?.blockchain_status === "confirmed"
             ? "confirmed"
             : b.blockchain_status || existing?.blockchain_status || "draft",
         verification_status:
-          b.verification_status === "verified" || existing?.verification_status === "verified"
+          b.verification_status === "verified" ||
+          existing?.verification_status === "verified"
             ? "verified"
-            : b.verification_status || existing?.verification_status || "unverified",
+            : b.verification_status ||
+              existing?.verification_status ||
+              "unverified",
         receipt_data: {
           ...(existing?.receipt_data || {}),
           ...(b.receipt_data || {}),
@@ -126,10 +142,13 @@ export function saveStoredReceiptBundles(
   } catch (err) {
     console.warn("Notice: Error writing receipt bundles to localStorage:", err);
     return Array.isArray(bundles)
-      ? bundles.reduce((acc, b) => {
-          if (b && b.id) acc[b.id] = b;
-          return acc;
-        }, {} as Record<string, ReceiptBundle>)
+      ? bundles.reduce(
+          (acc, b) => {
+            if (b && b.id) acc[b.id] = b;
+            return acc;
+          },
+          {} as Record<string, ReceiptBundle>,
+        )
       : bundles;
   }
 }
@@ -152,7 +171,9 @@ export function mergeReceiptBundles(
   incoming: Record<string, ReceiptBundle> | ReceiptBundle[],
 ): Record<string, ReceiptBundle> {
   const result: Record<string, ReceiptBundle> = { ...base };
-  const incomingList = Array.isArray(incoming) ? incoming : Object.values(incoming);
+  const incomingList = Array.isArray(incoming)
+    ? incoming
+    : Object.values(incoming);
 
   for (const b of incomingList) {
     if (!b || !b.id) continue;
@@ -169,13 +190,16 @@ export function mergeReceiptBundles(
     result[b.id] = {
       ...existing,
       ...b,
-      blockchain_tx_hash: b.blockchain_tx_hash || existing.blockchain_tx_hash || null,
+      blockchain_tx_hash:
+        b.blockchain_tx_hash || existing.blockchain_tx_hash || null,
       blockchain_status:
-        b.blockchain_status === "confirmed" || existing.blockchain_status === "confirmed"
+        b.blockchain_status === "confirmed" ||
+        existing.blockchain_status === "confirmed"
           ? "confirmed"
           : b.blockchain_status || existing.blockchain_status,
       verification_status:
-        b.verification_status === "verified" || existing.verification_status === "verified"
+        b.verification_status === "verified" ||
+        existing.verification_status === "verified"
           ? "verified"
           : b.verification_status || existing.verification_status,
       receipt_data: {

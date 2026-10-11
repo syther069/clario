@@ -155,10 +155,7 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
   private monadFallback: MonadFallbackImportAdapter;
 
   constructor(apiKey?: string, monadFallback?: MonadFallbackImportAdapter) {
-    this.apiKey =
-      apiKey ??
-      process.env.ALCHEMY_API_KEY ??
-      null;
+    this.apiKey = apiKey ?? process.env.ALCHEMY_API_KEY ?? null;
     this.monadFallback =
       monadFallback ?? new MonadFallbackImportAdapter(this.apiKey ?? undefined);
   }
@@ -334,23 +331,23 @@ export class AlchemyImportAdapter implements TransactionImportAdapter {
       shouldIncludeMonadFallback = true;
     }
 
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit,
-  timeoutMs = 3000,
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-    return res;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
+    async function fetchWithTimeout(
+      url: string,
+      options: RequestInit,
+      timeoutMs = 3000,
+    ): Promise<Response> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+        });
+        return res;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
 
     const maxCountHex = `0x${Math.min(filter.limit ?? 50, 100).toString(16)}`;
 
@@ -374,20 +371,27 @@ async function fetchWithTimeout(
           ...(filter.cursor ? { pageKey: filter.cursor } : {}),
         });
 
-        const fetchFrom = fetchWithTimeout(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: chainId,
-            method: "alchemy_getAssetTransfers",
-            params: [fetchParams("fromAddress")],
-          }),
-        }, 3000)
+        const fetchFrom = fetchWithTimeout(
+          endpoint,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: chainId,
+              method: "alchemy_getAssetTransfers",
+              params: [fetchParams("fromAddress")],
+            }),
+          },
+          3000,
+        )
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
-              console.warn(`[Alchemy] fromAddress error chain ${chainId}:`, data.error);
+              console.warn(
+                `[Alchemy] fromAddress error chain ${chainId}:`,
+                data.error,
+              );
             }
             return {
               transfers: data?.result?.transfers ?? [],
@@ -396,24 +400,34 @@ async function fetchWithTimeout(
             };
           })
           .catch((err) => {
-            console.warn(`[Alchemy] fetch error for chain ${chainId} (fromAddress):`, err?.name === "AbortError" ? "timed out" : err);
+            console.warn(
+              `[Alchemy] fetch error for chain ${chainId} (fromAddress):`,
+              err?.name === "AbortError" ? "timed out" : err,
+            );
             return { transfers: [], pageKey: null, chainId };
           });
 
-        const fetchTo = fetchWithTimeout(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: chainId,
-            method: "alchemy_getAssetTransfers",
-            params: [fetchParams("toAddress")],
-          }),
-        }, 3000)
+        const fetchTo = fetchWithTimeout(
+          endpoint,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: chainId,
+              method: "alchemy_getAssetTransfers",
+              params: [fetchParams("toAddress")],
+            }),
+          },
+          3000,
+        )
           .then((res) => (res.ok ? res.json() : null))
           .then((data: AlchemyTransfersResponse | null) => {
             if (data?.error) {
-              console.warn(`[Alchemy] toAddress error chain ${chainId}:`, data.error);
+              console.warn(
+                `[Alchemy] toAddress error chain ${chainId}:`,
+                data.error,
+              );
             }
             return {
               transfers: data?.result?.transfers ?? [],
@@ -422,7 +436,10 @@ async function fetchWithTimeout(
             };
           })
           .catch((err) => {
-            console.warn(`[Alchemy] fetch error for chain ${chainId} (toAddress):`, err?.name === "AbortError" ? "timed out" : err);
+            console.warn(
+              `[Alchemy] fetch error for chain ${chainId} (toAddress):`,
+              err?.name === "AbortError" ? "timed out" : err,
+            );
             return { transfers: [], pageKey: null, chainId };
           });
 
@@ -432,8 +449,13 @@ async function fetchWithTimeout(
       const settled = await Promise.allSettled(queryPromises);
       const responses = settled
         .filter(
-          (r): r is PromiseFulfilledResult<{ transfers: readonly AlchemyTransferItem[]; pageKey: string | null; chainId: number }> =>
-            r.status === "fulfilled",
+          (
+            r,
+          ): r is PromiseFulfilledResult<{
+            transfers: readonly AlchemyTransferItem[];
+            pageKey: string | null;
+            chainId: number;
+          }> => r.status === "fulfilled",
         )
         .map((r) => r.value);
 

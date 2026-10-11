@@ -2,7 +2,6 @@ import { type RequestId, parseRequestId } from "./identifiers.js";
 
 /**
  * Stable protocol error codes defined across Clario architecture.
- * See architecture.md §10.7 and TASKS.md PRO-003 requirements.
  */
 export const PROTOCOL_ERROR_CODES = [
   "UNAUTHORIZED",
@@ -94,7 +93,7 @@ export interface ProtocolErrorDetail {
 }
 
 /**
- * Standard error response envelope matching architecture.md §10.7:
+ * Standard error response envelope:
  * {
  *   "error": {
  *     "code": "EXPENSE_VERSION_SUPERSEDED",

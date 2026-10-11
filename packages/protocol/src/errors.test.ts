@@ -23,7 +23,7 @@ describe("Protocol Errors and Error Envelope", () => {
     "UNVERIFIABLE_EVIDENCE",
   ];
 
-  it("contains all minimum required error codes from TASKS.md", () => {
+  it("contains all minimum required error codes", () => {
     for (const code of minimumRequiredCodes) {
       expect(PROTOCOL_ERROR_CODES).toContain(code);
       expect(isProtocolErrorCode(code)).toBe(true);
@@ -32,7 +32,7 @@ describe("Protocol Errors and Error Envelope", () => {
     }
   });
 
-  it("creates and serializes a ProtocolError matching architecture §10.7", () => {
+  it("creates and serializes a ProtocolError matching specification", () => {
     const err = createProtocolError("EXPENSE_VERSION_SUPERSEDED", {
       requestId: "req_test_12345",
     });

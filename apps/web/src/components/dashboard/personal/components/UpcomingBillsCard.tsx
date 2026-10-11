@@ -67,7 +67,10 @@ export function UpcomingBillsCard({
         </div>
       ) : (
         <div className="py-8 flex flex-col items-center justify-center border-2 border-dashed border-[#121212] rounded-xl text-center p-4 bg-[#f8f9fa]">
-          <RotateCcw className="h-6 w-6 text-slate-400 mb-2" aria-hidden="true" />
+          <RotateCcw
+            className="h-6 w-6 text-slate-400 mb-2"
+            aria-hidden="true"
+          />
           <p className="text-xs font-black uppercase tracking-wider text-[#121212]">
             No recurring bills
           </p>

@@ -1,4 +1,7 @@
-import type { BusinessTeamMember as BusinessTeamMemberDTO, BusinessRole } from "@/lib/supabase/types";
+import type {
+  BusinessTeamMember as BusinessTeamMemberDTO,
+  BusinessRole,
+} from "@/lib/supabase/types";
 
 /**
  * Clean Architecture - Domain Layer
@@ -49,7 +52,8 @@ export class BusinessTeamMemberEntity {
       0,
       props.spendingLimitMonthly ?? props.spending_limit_monthly ?? 0,
     );
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): BusinessTeamMemberDTO {

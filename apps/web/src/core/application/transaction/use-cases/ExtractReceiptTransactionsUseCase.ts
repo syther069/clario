@@ -10,7 +10,9 @@ export class ExtractReceiptTransactionsUseCase {
   public execute(
     bundles: ReceiptBundle[] | Record<string, ReceiptBundle>,
   ): TransactionEntity[] {
-    const bundleList = Array.isArray(bundles) ? bundles : Object.values(bundles);
+    const bundleList = Array.isArray(bundles)
+      ? bundles
+      : Object.values(bundles);
     const entityMap = new Map<string, TransactionEntity>();
 
     for (const b of bundleList) {

@@ -440,16 +440,26 @@ body {
     text-decoration: inherit;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     text-wrap: balance;
   }
 
-  p, li, figcaption, blockquote {
+  p,
+  li,
+  figcaption,
+  blockquote {
     text-wrap: pretty;
   }
 
   /* Image Outlines (make-interfaces-feel-better: Principle 11) */
-  img, [data-receipt-preview], [data-image-surface] {
+  img,
+  [data-receipt-preview],
+  [data-image-surface] {
     outline: 1px solid oklch(0 0 0 / 0.1);
     outline-offset: -1px;
   }

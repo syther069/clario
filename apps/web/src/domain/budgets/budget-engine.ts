@@ -21,7 +21,10 @@ export function calculateTotalBudgetLimit(budgets: Budget[]): number {
 /**
  * Calculates remaining available budget after current spending.
  */
-export function calculateAvailableBudget(totalBudgetLimit: number, monthlySpending: number): number {
+export function calculateAvailableBudget(
+  totalBudgetLimit: number,
+  monthlySpending: number,
+): number {
   return Math.max(0, totalBudgetLimit - monthlySpending);
 }
 
@@ -37,7 +40,9 @@ export function calculateBudgetStatusList(
     const spent = transactions
       .filter((t) => {
         if (t.type !== "expense") return false;
-        const txCat = String(t.category_id || t.category || "other").toLowerCase();
+        const txCat = String(
+          t.category_id || t.category || "other",
+        ).toLowerCase();
         return (
           txCat === catKey || txCat.includes(catKey) || catKey.includes(txCat)
         );

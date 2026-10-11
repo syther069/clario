@@ -11,8 +11,12 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
     expect(monadTestnet.id).toBe(10143);
     expect(monadTestnet.name).toBe("Monad Testnet");
     expect(monadTestnet.nativeCurrency.symbol).toBe("MON");
-    expect(monadTestnet.rpcUrls.default.http[0]).toBe("https://testnet-rpc.monad.xyz");
-    expect(monadTestnet.blockExplorers?.default.url).toBe("https://testnet.monadexplorer.com");
+    expect(monadTestnet.rpcUrls.default.http[0]).toBe(
+      "https://testnet-rpc.monad.xyz",
+    );
+    expect(monadTestnet.blockExplorers?.default.url).toBe(
+      "https://testnet.monadexplorer.com",
+    );
     expect(monadTestnet.testnet).toBe(true);
   });
 
@@ -114,7 +118,11 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
         email: { address: email },
         wallet: undefined,
       };
-      const activeWallets: Array<{ address: string; chainType?: string; type?: string }> = [];
+      const activeWallets: Array<{
+        address: string;
+        chainType?: string;
+        type?: string;
+      }> = [];
 
       const externalEvmWallets = activeWallets.filter(
         (w) =>
@@ -126,7 +134,8 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
         connectedEvmAddress && /^0x[a-fA-F0-9]{40}$/.test(connectedEvmAddress),
       );
       const isEmailOnlyUser = Boolean(email && !hasConnectedEvmWallet);
-      const accountType = email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
+      const accountType =
+        email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
 
       expect(accountType).toBe("email");
       expect(isEmailOnlyUser).toBe(true);
@@ -160,22 +169,27 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
         connectedEvmAddress && /^0x[a-fA-F0-9]{40}$/.test(connectedEvmAddress),
       );
       const isEmailOnlyUser = Boolean(email && !hasConnectedEvmWallet);
-      const accountType = email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
+      const accountType =
+        email && hasConnectedEvmWallet ? "hybrid" : email ? "email" : "wallet";
 
       expect(accountType).toBe("hybrid");
       expect(isEmailOnlyUser).toBe(false);
       expect(hasConnectedEvmWallet).toBe(true);
-      expect(connectedEvmAddress).toBe("0x836EF91234567890123456789012345678901234");
+      expect(connectedEvmAddress).toBe(
+        "0x836EF91234567890123456789012345678901234",
+      );
       // Clario Account ID remains stable across wallet connections
       expect(privyUser.id).toBe("did:privy:clario-founder-1");
     });
 
     it("preserves stable Clario account identity when wallet disconnects", () => {
       const privyUserId = "did:privy:clario-founder-1";
-      let connectedEvmAddress: string | null = "0x836EF91234567890123456789012345678901234";
+      let connectedEvmAddress: string | null =
+        "0x836EF91234567890123456789012345678901234";
 
       // Effective User ID should be anchored to Clario Account ID
-      const getEffectiveUserId = (addr: string | null) => privyUserId || addr || "demo_user";
+      const getEffectiveUserId = (addr: string | null) =>
+        privyUserId || addr || "demo_user";
       expect(getEffectiveUserId(connectedEvmAddress)).toBe(privyUserId);
 
       // Simulate wallet disconnect
@@ -209,4 +223,3 @@ describe("Privy Multi-Chain & Wallet Resolution Audit", () => {
     });
   });
 });
-

@@ -78,7 +78,9 @@ export function TransactionShareModal({
           `Date: ${transaction.date || transaction.timestamp}`,
           `Network: Monad Testnet (Chain ID ${MONAD_TESTNET_CHAIN_ID})`,
           `Status: VERIFIED ON-CHAIN`,
-          ...(txHash ? [`Monad Tx: ${txHash}`, `Explorer: ${explorerUrl}`] : []),
+          ...(txHash
+            ? [`Monad Tx: ${txHash}`, `Explorer: ${explorerUrl}`]
+            : []),
           ...(dataHash ? [`Data Commitment: ${dataHash}`] : []),
           `Contract: ${contractAddress}`,
           `Shareable Link: ${shareableUrl}`,
@@ -108,7 +110,10 @@ export function TransactionShareModal({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -376,9 +381,9 @@ export function TransactionShareModal({
                     <strong className="text-[#121212]">
                       Zero Sensitive Data Leaked:
                     </strong>{" "}
-                    Only the cryptographic hash of canonical transaction attributes is
-                    anchored on Monad. Your receipt images and personal notes remain
-                    securely private in Supabase.
+                    Only the cryptographic hash of canonical transaction
+                    attributes is anchored on Monad. Your receipt images and
+                    personal notes remain securely private in Supabase.
                   </p>
                 </div>
               )}

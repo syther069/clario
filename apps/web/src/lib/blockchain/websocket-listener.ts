@@ -80,8 +80,8 @@ export function listenToMonadEvents(
         },
       });
 
-    const unwatchTx: WatchContractEventReturnType =
-      wsClient.watchContractEvent({
+    const unwatchTx: WatchContractEventReturnType = wsClient.watchContractEvent(
+      {
         address: CLARIO_REGISTRY_ADDRESS,
         abi: CLARIO_REGISTRY_ABI,
         eventName: "TransactionSaved",
@@ -103,7 +103,8 @@ export function listenToMonadEvents(
             options.onError(err);
           }
         },
-      });
+      },
+    );
 
     return () => {
       unwatchReceipt();

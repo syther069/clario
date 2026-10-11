@@ -77,11 +77,16 @@ export class InvoiceEntity {
     const computedSubtotal =
       props.subtotal !== undefined
         ? props.subtotal
-        : this.items.reduce((acc, it) => acc + (it.amount || it.quantity * it.rate || 0), 0);
+        : this.items.reduce(
+            (acc, it) => acc + (it.amount || it.quantity * it.rate || 0),
+            0,
+          );
     this.subtotal = computedSubtotal;
 
     this.taxRate = props.taxRate ?? 0;
-    this.taxAmount = props.taxAmount ?? Math.round(this.subtotal * (this.taxRate / 100) * 100) / 100;
+    this.taxAmount =
+      props.taxAmount ??
+      Math.round(this.subtotal * (this.taxRate / 100) * 100) / 100;
     this.totalAmount = props.totalAmount ?? this.subtotal + this.taxAmount;
   }
 
@@ -114,7 +119,8 @@ export class InvoiceEntity {
     };
     if (this.clientId !== null) dto.client_id = this.clientId;
     if (this.notes !== null) dto.notes = this.notes;
-    if (this.paymentReceivedDate !== null) dto.payment_received_date = this.paymentReceivedDate;
+    if (this.paymentReceivedDate !== null)
+      dto.payment_received_date = this.paymentReceivedDate;
     if (this.transactionId !== null) dto.transaction_id = this.transactionId;
     return dto;
   }

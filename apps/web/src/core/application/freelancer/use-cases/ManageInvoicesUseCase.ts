@@ -31,7 +31,10 @@ export class ManageInvoicesUseCase {
     return saved;
   }
 
-  public async deleteInvoice(invoiceId: string, userId?: string): Promise<void> {
+  public async deleteInvoice(
+    invoiceId: string,
+    userId?: string,
+  ): Promise<void> {
     await this.repository.deleteInvoice(invoiceId, userId);
     if (this.eventBus) {
       this.eventBus.publish(EVENT_INVOICES_UPDATED, {
@@ -47,7 +50,12 @@ export class ManageInvoicesUseCase {
     paymentDate?: string,
     userId?: string,
   ): Promise<void> {
-    await this.repository.updateInvoiceStatus(invoiceId, status, paymentDate, userId);
+    await this.repository.updateInvoiceStatus(
+      invoiceId,
+      status,
+      paymentDate,
+      userId,
+    );
     if (this.eventBus) {
       this.eventBus.publish(EVENT_INVOICES_UPDATED, {
         invoiceId,

@@ -27,7 +27,12 @@ import {
 
 function GithubIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -57,7 +62,10 @@ export function LegalLayout({ data }: LegalLayoutProps) {
 
           const sectionElements = data.sections
             .map((sec) => ({ id: sec.id, el: document.getElementById(sec.id) }))
-            .filter((item): item is { id: string; el: HTMLElement } => item.el !== null);
+            .filter(
+              (item): item is { id: string; el: HTMLElement } =>
+                item.el !== null,
+            );
 
           for (let i = sectionElements.length - 1; i >= 0; i--) {
             const item = sectionElements[i];
@@ -212,7 +220,10 @@ export function LegalLayout({ data }: LegalLayoutProps) {
               className="inline-flex items-center justify-center gap-1.5 font-mono text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-lg bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] hover:bg-[#7257f8] active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               <span>Launch App</span>
-              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" aria-hidden="true" />
+              <ArrowRight
+                className="h-3.5 w-3.5 stroke-[2.5]"
+                aria-hidden="true"
+              />
             </Link>
           </div>
         </div>
@@ -232,7 +243,10 @@ export function LegalLayout({ data }: LegalLayoutProps) {
               aria-label="Breadcrumbs"
               className="mb-4 flex items-center gap-2 text-xs font-mono text-slate-500 pb-2 border-b border-[#121212]/15 print:hidden"
             >
-              <Link href="/" className="hover:text-[#121212] font-black uppercase">
+              <Link
+                href="/"
+                className="hover:text-[#121212] font-black uppercase"
+              >
                 CLARIO
               </Link>
               <span>{"//"}</span>
@@ -260,11 +274,22 @@ export function LegalLayout({ data }: LegalLayoutProps) {
 
               {/* Metadata strip */}
               <div className="mt-4 pt-3 border-t-2 border-[#121212]/15 flex flex-wrap items-center gap-x-6 gap-y-1 font-mono text-xs font-bold text-slate-600 uppercase">
-                <span>Version: <strong className="text-[#121212]">{data.version}</strong></span>
+                <span>
+                  Version:{" "}
+                  <strong className="text-[#121212]">{data.version}</strong>
+                </span>
                 <span>•</span>
-                <span>Last Updated: <strong className="text-[#121212]">{data.lastUpdated}</strong></span>
+                <span>
+                  Last Updated:{" "}
+                  <strong className="text-[#121212]">{data.lastUpdated}</strong>
+                </span>
                 <span>•</span>
-                <span>Target: <strong className="text-[#836EF9]">Monad Testnet (10143)</strong></span>
+                <span>
+                  Target:{" "}
+                  <strong className="text-[#836EF9]">
+                    Monad Testnet (10143)
+                  </strong>
+                </span>
               </div>
             </header>
 
@@ -286,7 +311,11 @@ export function LegalLayout({ data }: LegalLayoutProps) {
             {/* Rendered Sections */}
             <div className="space-y-6 text-base leading-[1.65] text-slate-800">
               {data.sections.map((section) => (
-                <section key={section.id} id={section.id} className="scroll-mt-24">
+                <section
+                  key={section.id}
+                  id={section.id}
+                  className="scroll-mt-24"
+                >
                   <LegalSectionHeading
                     id={section.id}
                     number={section.number}
@@ -338,7 +367,10 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                       />
 
                       {sub.paragraphs?.map((sp, spIdx) => (
-                        <p key={spIdx} className="mt-2 text-slate-800 font-medium">
+                        <p
+                          key={spIdx}
+                          className="mt-2 text-slate-800 font-medium"
+                        >
                           {sp}
                         </p>
                       ))}
@@ -399,7 +431,8 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                 </span>
               </Link>
               <p className="text-xs text-gray-700 font-medium leading-relaxed">
-                Decentralized expense verification engine anchored to Monad Testnet.
+                Decentralized expense verification engine anchored to Monad
+                Testnet.
               </p>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-[#121212] bg-[#f8f9fa] shadow-[2px_2px_0_0_#121212]">
                 <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
@@ -504,7 +537,9 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                   >
                     Privacy Policy
                     {data.slug === "privacy" && (
-                      <span className="text-[10px] text-[#836EF9] font-black">[Active]</span>
+                      <span className="text-[10px] text-[#836EF9] font-black">
+                        [Active]
+                      </span>
                     )}
                   </Link>
                 </li>
@@ -519,7 +554,9 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                   >
                     Terms of Service
                     {data.slug === "terms" && (
-                      <span className="text-[10px] text-[#836EF9] font-black">[Active]</span>
+                      <span className="text-[10px] text-[#836EF9] font-black">
+                        [Active]
+                      </span>
                     )}
                   </Link>
                 </li>
@@ -534,7 +571,9 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                   >
                     Security Details
                     {data.slug === "security" && (
-                      <span className="text-[10px] text-[#836EF9] font-black">[Active]</span>
+                      <span className="text-[10px] text-[#836EF9] font-black">
+                        [Active]
+                      </span>
                     )}
                   </Link>
                 </li>
@@ -549,7 +588,9 @@ export function LegalLayout({ data }: LegalLayoutProps) {
                   >
                     Disclosure
                     {data.slug === "disclosure" && (
-                      <span className="text-[10px] text-[#836EF9] font-black">[Active]</span>
+                      <span className="text-[10px] text-[#836EF9] font-black">
+                        [Active]
+                      </span>
                     )}
                   </Link>
                 </li>
@@ -562,10 +603,13 @@ export function LegalLayout({ data }: LegalLayoutProps) {
             <div className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-wider text-[#121212]">
               <span>© 2026 Clario Protocol</span>
               <span className="text-gray-400">•</span>
-              <span className="text-gray-600 font-bold">All rights reserved</span>
+              <span className="text-gray-600 font-bold">
+                All rights reserved
+              </span>
             </div>
             <span className="font-mono text-[11px] font-bold text-gray-600 max-w-xl text-center sm:text-right leading-relaxed uppercase">
-              Experimental software on Monad Testnet. Zero cloud leak. Immutable by code.
+              Experimental software on Monad Testnet. Zero cloud leak. Immutable
+              by code.
             </span>
           </div>
         </div>

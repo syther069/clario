@@ -4,9 +4,11 @@ import { ProtocolError } from "@clario/protocol";
 
 describe("Safe API Error Handler", () => {
   it("sanitizes unexpected database errors without leaking internal details", async () => {
-    const rawDbError = new Error("relation 'users' does not exist at character 14 (postgres internal)");
+    const rawDbError = new Error(
+      "relation 'users' does not exist at character 14 (postgres internal)",
+    );
     const response = handleSafeApiError(rawDbError, "Failed to load resource.");
-    
+
     expect(response.status).toBe(500);
     const json = await response.json();
     expect(json.error.code).toBe("INTERNAL_ERROR");
@@ -38,8 +40,11 @@ describe("Safe API Error Handler", () => {
   });
 
   it("sanitizes connection string leaks via sanitizeErrorMessage", () => {
-    const leak = "connect ECONNREFUSED postgresql://user:secret123@db.internal:5432/clario";
-    expect(sanitizeErrorMessage(leak, "Database connection failed.")).toBe("Database connection failed.");
+    const leak =
+      "connect ECONNREFUSED postgresql://user:secret123@db.internal:5432/clario";
+    expect(sanitizeErrorMessage(leak, "Database connection failed.")).toBe(
+      "Database connection failed.",
+    );
 
     const safe = "Expense title is required.";
     expect(sanitizeErrorMessage(safe)).toBe("Expense title is required.");

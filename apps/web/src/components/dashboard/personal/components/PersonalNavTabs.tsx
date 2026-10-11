@@ -37,7 +37,11 @@ export function PersonalNavTabs({
   const tabs =
     subLedger === "onchain"
       ? [
-          { id: "overview" as PersonalView, label: "Web3 Overview", icon: LayoutDashboard },
+          {
+            id: "overview" as PersonalView,
+            label: "Web3 Overview",
+            icon: LayoutDashboard,
+          },
           {
             id: "expenses" as PersonalView,
             label: "On-Chain Activity",
@@ -52,7 +56,11 @@ export function PersonalNavTabs({
           },
         ]
       : [
-          { id: "overview" as PersonalView, label: "Overview", icon: LayoutDashboard },
+          {
+            id: "overview" as PersonalView,
+            label: "Overview",
+            icon: LayoutDashboard,
+          },
           {
             id: "expenses" as PersonalView,
             label: "Expenses",
@@ -113,7 +121,9 @@ export function PersonalNavTabs({
             >
               <Icon
                 className={`h-4 w-4 shrink-0 transition-colors ${
-                  isActive ? "text-white" : "text-[#836EF9] group-hover:text-[#7257f8]"
+                  isActive
+                    ? "text-white"
+                    : "text-[#836EF9] group-hover:text-[#7257f8]"
                 }`}
                 aria-hidden="true"
               />

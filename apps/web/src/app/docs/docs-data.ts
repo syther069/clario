@@ -9,7 +9,13 @@ export interface DocSection {
   title: string;
   badge?: string;
   description: string;
-  group: "Getting Started" | "Product & Modes" | "Architecture & Verification" | "Integrations" | "Security & Ops" | "Hackathon";
+  group:
+    | "Getting Started"
+    | "Product & Modes"
+    | "Architecture & Verification"
+    | "Integrations"
+    | "Security & Ops"
+    | "Hackathon";
   subsections: DocSubsection[];
 }
 
@@ -20,7 +26,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "overview",
     title: "Overview & Vision",
     badge: "Core",
-    description: "What Clario is, the problem it solves, target audiences, and founder invariants.",
+    description:
+      "What Clario is, the problem it solves, target audiences, and founder invariants.",
     group: "Getting Started",
     subsections: [
       { id: "what-is-clario", title: "What is Clario?" },
@@ -35,7 +42,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "quickstart",
     title: "Developer Quickstart",
     badge: "Setup",
-    description: "Install, configure environment variables, and run Clario locally in under 3 minutes.",
+    description:
+      "Install, configure environment variables, and run Clario locally in under 3 minutes.",
     group: "Getting Started",
     subsections: [
       { id: "prerequisites", title: "System Prerequisites" },
@@ -52,7 +60,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "product-modes",
     title: "Platform Modes",
     badge: "Product",
-    description: "Detailed specification of the 4 core operating modes and unified ledger architecture.",
+    description:
+      "Detailed specification of the 4 core operating modes and unified ledger architecture.",
     group: "Product & Modes",
     subsections: [
       { id: "unified-ledger", title: "Unified Ledger Foundation" },
@@ -67,7 +76,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "ai-copilot",
     title: "AI & OCR Intelligence",
     badge: "AI",
-    description: "Multimodal Gemini OCR receipt extraction, Copilot anomaly signals, and authority boundaries.",
+    description:
+      "Multimodal Gemini OCR receipt extraction, Copilot anomaly signals, and authority boundaries.",
     group: "Product & Modes",
     subsections: [
       { id: "ai-principles", title: "AI Has No Authority Invariant" },
@@ -83,7 +93,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "architecture",
     title: "System Architecture",
     badge: "Deep Dive",
-    description: "High-level end-to-end data pipeline from user auth to Monad consensus.",
+    description:
+      "High-level end-to-end data pipeline from user auth to Monad consensus.",
     group: "Architecture & Verification",
     subsections: [
       { id: "pipeline-overview", title: "End-to-End Pipeline" },
@@ -97,7 +108,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "verification",
     title: "Verification Engine",
     badge: "Cryptographic",
-    description: "Canonical RFC 8785 JSON encoding, SHA-256 digests, Keccak-256 commitments, and offline verifier CLI.",
+    description:
+      "Canonical RFC 8785 JSON encoding, SHA-256 digests, Keccak-256 commitments, and offline verifier CLI.",
     group: "Architecture & Verification",
     subsections: [
       { id: "canonical-json", title: "Canonical JSON (RFC 8785)" },
@@ -112,13 +124,17 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "monad-integration",
     title: "Monad Integration",
     badge: "10,000 TPS",
-    description: "Why Monad, sub-second finality, Testnet parameters, registry contracts, and USDC settlement.",
+    description:
+      "Why Monad, sub-second finality, Testnet parameters, registry contracts, and USDC settlement.",
     group: "Architecture & Verification",
     subsections: [
       { id: "why-monad", title: "Why Monad?" },
       { id: "network-spec", title: "Testnet Provenance & Specs" },
       { id: "smart-contracts", title: "Deployed Smart Contracts" },
-      { id: "onchain-vs-offchain", title: "Onchain Commitments vs Offchain Data" },
+      {
+        id: "onchain-vs-offchain",
+        title: "Onchain Commitments vs Offchain Data",
+      },
       { id: "settlement-asset", title: "Supported USDC Settlement Asset" },
     ],
   },
@@ -129,15 +145,25 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "privy-auth",
     title: "Privy Authentication & Embedded Wallets",
     badge: "Wallets & Signers",
-    description: "Non-custodial identity, embedded wallets, 1-click session signing (delegated actions), native wallet funding onramp, passkeys, multi-wallet linking, and real-time security webhooks.",
+    description:
+      "Non-custodial identity, embedded wallets, 1-click session signing (delegated actions), native wallet funding onramp, passkeys, multi-wallet linking, and real-time security webhooks.",
     group: "Integrations",
     subsections: [
       { id: "auth-model", title: "Privy Identity & Embedded Wallets" },
-      { id: "one-click-session-signing", title: "1-Click Session Signing (Delegated Actions)" },
+      {
+        id: "one-click-session-signing",
+        title: "1-Click Session Signing (Delegated Actions)",
+      },
       { id: "wallet-funding", title: "Native Wallet Funding (useFundWallet)" },
       { id: "custom-chain-injection", title: "Viem Monad Chain Injection" },
-      { id: "passkeys-self-custody", title: "Passkeys, Recovery & Self-Custody" },
-      { id: "progressive-account-linking", title: "Progressive Multi-Account Linking & Nicknames" },
+      {
+        id: "passkeys-self-custody",
+        title: "Passkeys, Recovery & Self-Custody",
+      },
+      {
+        id: "progressive-account-linking",
+        title: "Progressive Multi-Account Linking & Nicknames",
+      },
       { id: "privy-webhooks", title: "Privy Webhooks & Security Audit Trail" },
     ],
   },
@@ -146,13 +172,17 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "alchemy-ingestion",
     title: "Alchemy Ingestion",
     badge: "Multi-Chain",
-    description: "Multi-chain transaction retrieval via Alchemy Asset Transfers API across 8+ EVM networks.",
+    description:
+      "Multi-chain transaction retrieval via Alchemy Asset Transfers API across 8+ EVM networks.",
     group: "Integrations",
     subsections: [
       { id: "alchemy-role", title: "Role of Alchemy in Clario" },
       { id: "supported-networks", title: "Supported Networks & Priority" },
       { id: "ingestion-rules", title: "Strict 8 Ingestion Rules" },
-      { id: "normalization-pipeline", title: "Data Normalization & Deduplication" },
+      {
+        id: "normalization-pipeline",
+        title: "Data Normalization & Deduplication",
+      },
     ],
   },
   {
@@ -160,7 +190,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "supabase-schema",
     title: "Database & Storage",
     badge: "Supabase",
-    description: "PostgreSQL schema, Row Level Security (RLS), encrypted blob buckets, and relationships.",
+    description:
+      "PostgreSQL schema, Row Level Security (RLS), encrypted blob buckets, and relationships.",
     group: "Integrations",
     subsections: [
       { id: "database-overview", title: "Relational Data Model" },
@@ -176,13 +207,20 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "security",
     title: "Security & Threat Model",
     badge: "Hardened",
-    description: "Envelope encryption, key management (DEK/KEK), zero private key exposure, and double-reimbursement prevention.",
+    description:
+      "Envelope encryption, key management (DEK/KEK), zero private key exposure, and double-reimbursement prevention.",
     group: "Security & Ops",
     subsections: [
       { id: "threat-model", title: "Threat Model & Trust Boundaries" },
       { id: "envelope-encryption", title: "Envelope Encryption (DEK/KEK)" },
-      { id: "double-spend-prevention", title: "Duplicate Reimbursement Prevention" },
-      { id: "client-server-boundaries", title: "Client/Server Cryptographic Separation" },
+      {
+        id: "double-spend-prevention",
+        title: "Duplicate Reimbursement Prevention",
+      },
+      {
+        id: "client-server-boundaries",
+        title: "Client/Server Cryptographic Separation",
+      },
     ],
   },
   {
@@ -190,7 +228,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "environment-variables",
     title: "Environment Variables",
     badge: "Config",
-    description: "Complete catalog of public client variables vs server-only secrets with safe placeholders.",
+    description:
+      "Complete catalog of public client variables vs server-only secrets with safe placeholders.",
     group: "Security & Ops",
     subsections: [
       { id: "public-vars", title: "Public Client Variables (NEXT_PUBLIC_*)" },
@@ -205,7 +244,8 @@ export const DOC_SECTIONS: DocSection[] = [
     slug: "metropolis-hackathon",
     title: "Metropolis Hackathon",
     badge: "Judges",
-    description: "Hackathon submission evidence, track alignment, Monad integration audit, AI disclosure, and license.",
+    description:
+      "Hackathon submission evidence, track alignment, Monad integration audit, AI disclosure, and license.",
     group: "Hackathon",
     subsections: [
       { id: "track-problem-solution", title: "Track, Problem & Solution" },

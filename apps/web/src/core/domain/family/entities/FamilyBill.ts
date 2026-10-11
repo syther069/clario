@@ -55,14 +55,17 @@ export class FamilyBillEntity {
     this.name = billName;
     this.amount = Math.max(0, props.amount);
     this.currency = props.currency || "USD";
-    this.dueDate = props.dueDate || props.due_date || new Date().toISOString().slice(0, 10);
+    this.dueDate =
+      props.dueDate || props.due_date || new Date().toISOString().slice(0, 10);
     this.category = props.category || "utilities";
-    this.paidByMemberId = props.paidByMemberId ?? props.paid_by_member_id ?? null;
+    this.paidByMemberId =
+      props.paidByMemberId ?? props.paid_by_member_id ?? null;
     this.paidByName = props.paidByName ?? props.paid_by_name ?? null;
     this.isRecurring = props.isRecurring ?? props.is_recurring ?? true;
     this.frequency = props.frequency;
     this.status = props.status || "unpaid";
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): FamilyBillDTO {
@@ -78,7 +81,8 @@ export class FamilyBillEntity {
       status: this.status,
       created_at: this.createdAt,
     };
-    if (this.paidByMemberId !== null) dto.paid_by_member_id = this.paidByMemberId;
+    if (this.paidByMemberId !== null)
+      dto.paid_by_member_id = this.paidByMemberId;
     if (this.paidByName !== null) dto.paid_by_name = this.paidByName;
     if (this.frequency !== undefined) dto.frequency = this.frequency;
     return dto;

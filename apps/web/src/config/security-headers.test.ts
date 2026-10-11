@@ -18,9 +18,7 @@ describe("Next.js Security Headers Configuration", () => {
     expect(rootRule).toBeDefined();
     expect(rootRule?.headers).toBeDefined();
 
-    const headersMap = new Map(
-      rootRule?.headers.map((h) => [h.key, h.value]),
-    );
+    const headersMap = new Map(rootRule?.headers.map((h) => [h.key, h.value]));
 
     // 1. Anti-clickjacking
     expect(headersMap.get("X-Frame-Options")).toBe("DENY");

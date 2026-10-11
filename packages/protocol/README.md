@@ -1,5 +1,25 @@
 # @clario/protocol
 
-Shared public protocol types, canonicalization, golden vectors, and verifier-compatible schemas belong here.
+Shared canonical protocol schemas, cryptographic hashing libraries, golden vectors, and independent export verification engine for the Clario platform.
 
-The package is intentionally uninitialized during `FND-001`. Do not add expense fields or commitment encoding until `PRO-001` defines the canonical schema and `PRO-002` supplies cross-runtime golden vectors.
+---
+
+## Capabilities
+
+- **Canonical Schema v1**: Type definitions and JSON normalization adhering to the canonical schema standard.
+- **Deterministic Hashing**: RFC 8785 JSON canonicalization (`canonicalize`) and salted SHA-256 commitment generation.
+- **EIP-712 Typed Data**: Decision domain separation, signing structures, and hash calculation for exact-version human reviewer approvals.
+- **Export Package Verification**: Standalone verification engine capable of validating Clario ZIP packages against Monad onchain state without backend authentication.
+- **Cross-Runtime Golden Vectors**: Verified cryptographic test fixtures ensuring parity between TypeScript and Solidity implementations.
+
+---
+
+## Build & Test
+
+```bash
+# Build package
+pnpm --filter @clario/protocol build
+
+# Run unit and golden vector tests
+pnpm --filter @clario/protocol test
+```

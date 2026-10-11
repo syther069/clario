@@ -6,7 +6,11 @@ import {
   BaseError,
   ContractFunctionRevertedError,
 } from "viem";
-import { monadTestnet, MONAD_TESTNET_RPC, IS_ALCHEMY_MONAD_RPC_ACTIVE } from "./registry";
+import {
+  monadTestnet,
+  MONAD_TESTNET_RPC,
+  IS_ALCHEMY_MONAD_RPC_ACTIVE,
+} from "./registry";
 
 export interface SimulationResult {
   readonly success: boolean;

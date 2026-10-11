@@ -58,7 +58,9 @@ export function AuthCard({
     }
   };
 
-  const handleLoginMethod = async (method?: "wallet" | "email" | "google" | "passkey") => {
+  const handleLoginMethod = async (
+    method?: "wallet" | "email" | "google" | "passkey",
+  ) => {
     try {
       setAuthError(null);
       setIsAuthenticating(true);
@@ -69,8 +71,14 @@ export function AuthCard({
       }
       onSuccess?.();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Authentication cancelled or failed";
-      if (!msg.toLowerCase().includes("user exited") && !msg.toLowerCase().includes("cancelled")) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Authentication cancelled or failed";
+      if (
+        !msg.toLowerCase().includes("user exited") &&
+        !msg.toLowerCase().includes("cancelled")
+      ) {
         setAuthError(msg);
       }
     } finally {
@@ -80,7 +88,9 @@ export function AuthCard({
 
   if (!isReady) {
     return (
-      <div className={`rounded-xl border-2 border-[#121212] bg-white p-6 shadow-[4px_4px_0_0_#121212] animate-pulse space-y-4 ${className}`}>
+      <div
+        className={`rounded-xl border-2 border-[#121212] bg-white p-6 shadow-[4px_4px_0_0_#121212] animate-pulse space-y-4 ${className}`}
+      >
         <div className="h-6 w-48 bg-slate-200 rounded" />
         <div className="h-4 w-72 bg-slate-100 rounded" />
         <div className="h-10 w-full bg-slate-200 rounded mt-4" />
@@ -106,7 +116,9 @@ export function AuthCard({
               {displayName}
             </p>
             {primaryEmail && (
-              <p className="text-xs font-mono text-slate-500 truncate">{primaryEmail}</p>
+              <p className="text-xs font-mono text-slate-500 truncate">
+                {primaryEmail}
+              </p>
             )}
           </div>
 

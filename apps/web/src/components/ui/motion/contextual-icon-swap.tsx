@@ -6,8 +6,14 @@ import { cn } from "@/lib/utils";
 
 export interface ContextualIconSwapProps {
   isActive: boolean;
-  ActiveIcon?: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
-  InactiveIcon?: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
+  ActiveIcon?: React.ComponentType<{
+    className?: string;
+    strokeWidth?: number | string;
+  }>;
+  InactiveIcon?: React.ComponentType<{
+    className?: string;
+    strokeWidth?: number | string;
+  }>;
   activeIcon?: React.ReactNode;
   initialIcon?: React.ReactNode;
   inactiveIcon?: React.ReactNode;
@@ -60,14 +66,24 @@ export function ContextualIconSwap({
 
   if (shouldReduceMotion) {
     return (
-      <span className={cn("inline-flex items-center justify-center shrink-0", className)}>
+      <span
+        className={cn(
+          "inline-flex items-center justify-center shrink-0",
+          className,
+        )}
+      >
         {renderContent(isActive)}
       </span>
     );
   }
 
   return (
-    <span className={cn("relative inline-flex items-center justify-center shrink-0", className)}>
+    <span
+      className={cn(
+        "relative inline-flex items-center justify-center shrink-0",
+        className,
+      )}
+    >
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={isActive ? "active" : "inactive"}

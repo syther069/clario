@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Banknote, Smartphone, CreditCard, Building2 } from "lucide-react";
+import {
+  Plus,
+  Banknote,
+  Smartphone,
+  CreditCard,
+  Building2,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import type { Transaction } from "@/lib/supabase/types";

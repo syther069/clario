@@ -66,7 +66,9 @@ export class BusinessReimbursementEntity {
     created_at?: string | undefined;
   }) {
     if (!props.id || !props.id.trim()) {
-      throw new Error("BusinessReimbursementEntity requires a valid non-empty id");
+      throw new Error(
+        "BusinessReimbursementEntity requires a valid non-empty id",
+      );
     }
 
     this.id = props.id.trim();
@@ -78,7 +80,10 @@ export class BusinessReimbursementEntity {
     this.currency = props.currency || "USD";
     this.category = props.category || "General";
     this.department = props.department || "General";
-    this.expenseDate = props.expenseDate || props.expense_date || new Date().toISOString().slice(0, 10);
+    this.expenseDate =
+      props.expenseDate ||
+      props.expense_date ||
+      new Date().toISOString().slice(0, 10);
     this.status = props.status || "submitted";
     this.receiptUrl = props.receiptUrl ?? props.receipt_url ?? null;
     this.receiptHash = props.receiptHash ?? props.receipt_hash ?? null;
@@ -88,7 +93,8 @@ export class BusinessReimbursementEntity {
     this.approvedAt = props.approvedAt ?? props.approved_at ?? null;
     this.paidAt = props.paidAt ?? props.paid_at ?? null;
     this.monadTxHash = props.monadTxHash ?? props.monad_tx_hash ?? null;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): BusinessReimbursementDTO {
@@ -117,7 +123,9 @@ export class BusinessReimbursementEntity {
     return dto;
   }
 
-  public static fromDTO(dto: BusinessReimbursementDTO): BusinessReimbursementEntity {
+  public static fromDTO(
+    dto: BusinessReimbursementDTO,
+  ): BusinessReimbursementEntity {
     return new BusinessReimbursementEntity({
       id: dto.id,
       orgId: dto.org_id,

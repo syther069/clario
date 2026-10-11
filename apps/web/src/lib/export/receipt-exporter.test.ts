@@ -17,7 +17,8 @@ describe("Receipt Exporter", () => {
     receipt_name: "AWS & Vercel Cloud Infrastructure",
     receipt_number: "RCP-2026-0042",
     file_hash: "0xfilehash123",
-    receipt_hash: "0x9876543210abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    receipt_hash:
+      "0x9876543210abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     transaction_count: 2,
     total_amount: 142.5,
     currency: "USD",
@@ -92,9 +93,11 @@ describe("Receipt Exporter", () => {
     const data = extractCanonicalReceiptData(mockBundle);
     const csvStr = generateCsvReceipt(data);
 
-    expect(csvStr).toContain("Receipt Name,\"AWS & Vercel Cloud Infrastructure\"");
+    expect(csvStr).toContain(
+      'Receipt Name,"AWS & Vercel Cloud Infrastructure"',
+    );
     expect(csvStr).toContain("Total Amount,142.50");
-    expect(csvStr).toContain("Verification Status,\"VERIFIED ON MONAD\"");
+    expect(csvStr).toContain('Verification Status,"VERIFIED ON MONAD"');
     expect(csvStr).toContain("Amazon Web Services");
     expect(csvStr).toContain("Vercel Inc");
     expect(csvStr).toContain("100.00");
@@ -106,7 +109,9 @@ describe("Receipt Exporter", () => {
     const txtStr = generateTxtReceipt(data);
 
     expect(txtStr).toContain("CLARIO FINANCIAL RECEIPT");
-    expect(txtStr).toContain("RECEIPT NAME:        AWS & Vercel Cloud Infrastructure");
+    expect(txtStr).toContain(
+      "RECEIPT NAME:        AWS & Vercel Cloud Infrastructure",
+    );
     expect(txtStr).toContain("TOTAL AMOUNT:        $142.50 USD");
     expect(txtStr).toContain("Amazon Web Services");
     expect(txtStr).toContain("Vercel Inc");

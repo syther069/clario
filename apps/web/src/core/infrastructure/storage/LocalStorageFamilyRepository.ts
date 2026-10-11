@@ -14,7 +14,11 @@ export const STORAGE_KEY_FAMILY_MEMBERS = "clario_family_members";
 export const STORAGE_KEY_FAMILY_BILLS = "clario_family_bills";
 export const STORAGE_KEY_FAMILY_SETTLEMENTS = "clario_family_settlements";
 
-function readScoped<T>(baseKey: string, scopeId?: string, fallback: T[] = []): T[] {
+function readScoped<T>(
+  baseKey: string,
+  scopeId?: string,
+  fallback: T[] = [],
+): T[] {
   if (typeof window === "undefined" || !window.localStorage) return fallback;
   if (scopeId) IdentityScope.register(scopeId);
   const scopedKey = IdentityScope.getScopedKey(baseKey, scopeId);
@@ -48,10 +52,18 @@ function writeScoped<T>(baseKey: string, data: T[], scopeId?: string): void {
   }
 }
 
-function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: string, scopeId?: string): void {
+function deleteFromAllScopes<T extends { id: string }>(
+  baseKey: string,
+  itemId: string,
+  scopeId?: string,
+): void {
   if (scopeId) {
     const list = readScoped<T>(baseKey, scopeId, []);
-    writeScoped(baseKey, list.filter((it) => it.id !== itemId), scopeId);
+    writeScoped(
+      baseKey,
+      list.filter((it) => it.id !== itemId),
+      scopeId,
+    );
     return;
   }
 
@@ -59,13 +71,20 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
     try {
       const unscoped = readScoped<T>(baseKey, undefined, []);
       if (unscoped.length > 0) {
-        localStorage.setItem(baseKey, JSON.stringify(unscoped.filter((it) => it.id !== itemId)));
+        localStorage.setItem(
+          baseKey,
+          JSON.stringify(unscoped.filter((it) => it.id !== itemId)),
+        );
       }
 
       for (const scope of IdentityScope.getKnownScopes()) {
         const list = readScoped<T>(baseKey, scope, []);
         if (list.some((it) => it.id === itemId)) {
-          writeScoped(baseKey, list.filter((it) => it.id !== itemId), scope);
+          writeScoped(
+            baseKey,
+            list.filter((it) => it.id !== itemId),
+            scope,
+          );
         }
       }
 
@@ -75,8 +94,14 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
           const raw = localStorage.getItem(k);
           if (raw) {
             const parsed = JSON.parse(raw) as T[];
-            if (Array.isArray(parsed) && parsed.some((it) => it.id === itemId)) {
-              localStorage.setItem(k, JSON.stringify(parsed.filter((it) => it.id !== itemId)));
+            if (
+              Array.isArray(parsed) &&
+              parsed.some((it) => it.id === itemId)
+            ) {
+              localStorage.setItem(
+                k,
+                JSON.stringify(parsed.filter((it) => it.id !== itemId)),
+              );
             }
           }
         }
@@ -94,7 +119,9 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
  */
 export class LocalStorageFamilyRepository implements IFamilyRepository {
   // Members
-  public async getFamilyMembers(householdId: string): Promise<FamilyMemberEntity[]> {
+  public async getFamilyMembers(
+    householdId: string,
+  ): Promise<FamilyMemberEntity[]> {
     try {
       const supabase = getSupabaseClient(householdId);
       const { data, error } = await supabase
@@ -104,21 +131,40 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_FAMILY_MEMBERS, data as FamilyMemberDTO[], householdId);
-        return (data as FamilyMemberDTO[]).map((dto) => FamilyMemberEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_FAMILY_MEMBERS,
+          data as FamilyMemberDTO[],
+          householdId,
+        );
+        return (data as FamilyMemberDTO[]).map((dto) =>
+          FamilyMemberEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<FamilyMemberDTO>(STORAGE_KEY_FAMILY_MEMBERS, householdId, []);
+    const local = readScoped<FamilyMemberDTO>(
+      STORAGE_KEY_FAMILY_MEMBERS,
+      householdId,
+      [],
+    );
     return local.map((dto) => FamilyMemberEntity.fromDTO(dto));
   }
 
-  public async saveFamilyMember(member: FamilyMemberEntity): Promise<FamilyMemberEntity> {
+  public async saveFamilyMember(
+    member: FamilyMemberEntity,
+  ): Promise<FamilyMemberEntity> {
     const scopeId = member.householdId;
-    const local = readScoped<FamilyMemberDTO>(STORAGE_KEY_FAMILY_MEMBERS, scopeId, []);
-    const updated = [...local.filter((m) => m.id !== member.id), member.toDTO()];
+    const local = readScoped<FamilyMemberDTO>(
+      STORAGE_KEY_FAMILY_MEMBERS,
+      scopeId,
+      [],
+    );
+    const updated = [
+      ...local.filter((m) => m.id !== member.id),
+      member.toDTO(),
+    ];
     writeScoped(STORAGE_KEY_FAMILY_MEMBERS, updated, scopeId);
 
     try {
@@ -131,8 +177,15 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
     return member;
   }
 
-  public async deleteFamilyMember(memberId: string, householdId?: string): Promise<void> {
-    deleteFromAllScopes<FamilyMemberDTO>(STORAGE_KEY_FAMILY_MEMBERS, memberId, householdId);
+  public async deleteFamilyMember(
+    memberId: string,
+    householdId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<FamilyMemberDTO>(
+      STORAGE_KEY_FAMILY_MEMBERS,
+      memberId,
+      householdId,
+    );
 
     try {
       const supabase = getSupabaseClient(householdId);
@@ -143,7 +196,9 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
   }
 
   // Bills
-  public async getFamilyBills(householdId: string): Promise<FamilyBillEntity[]> {
+  public async getFamilyBills(
+    householdId: string,
+  ): Promise<FamilyBillEntity[]> {
     try {
       const supabase = getSupabaseClient(householdId);
       const { data, error } = await supabase
@@ -153,20 +208,36 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
         .order("due_date", { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_FAMILY_BILLS, data as FamilyBillDTO[], householdId);
-        return (data as FamilyBillDTO[]).map((dto) => FamilyBillEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_FAMILY_BILLS,
+          data as FamilyBillDTO[],
+          householdId,
+        );
+        return (data as FamilyBillDTO[]).map((dto) =>
+          FamilyBillEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<FamilyBillDTO>(STORAGE_KEY_FAMILY_BILLS, householdId, []);
+    const local = readScoped<FamilyBillDTO>(
+      STORAGE_KEY_FAMILY_BILLS,
+      householdId,
+      [],
+    );
     return local.map((dto) => FamilyBillEntity.fromDTO(dto));
   }
 
-  public async saveFamilyBill(bill: FamilyBillEntity): Promise<FamilyBillEntity> {
+  public async saveFamilyBill(
+    bill: FamilyBillEntity,
+  ): Promise<FamilyBillEntity> {
     const scopeId = bill.householdId;
-    const local = readScoped<FamilyBillDTO>(STORAGE_KEY_FAMILY_BILLS, scopeId, []);
+    const local = readScoped<FamilyBillDTO>(
+      STORAGE_KEY_FAMILY_BILLS,
+      scopeId,
+      [],
+    );
     const updated = [bill.toDTO(), ...local.filter((b) => b.id !== bill.id)];
     writeScoped(STORAGE_KEY_FAMILY_BILLS, updated, scopeId);
 
@@ -180,8 +251,15 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
     return bill;
   }
 
-  public async deleteFamilyBill(billId: string, householdId?: string): Promise<void> {
-    deleteFromAllScopes<FamilyBillDTO>(STORAGE_KEY_FAMILY_BILLS, billId, householdId);
+  public async deleteFamilyBill(
+    billId: string,
+    householdId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<FamilyBillDTO>(
+      STORAGE_KEY_FAMILY_BILLS,
+      billId,
+      householdId,
+    );
 
     try {
       const supabase = getSupabaseClient(householdId);
@@ -197,10 +275,16 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
     paidByName?: string,
     householdId?: string,
   ): Promise<void> {
-    const scopesToUpdate = householdId ? [householdId] : [undefined, ...IdentityScope.getKnownScopes()];
+    const scopesToUpdate = householdId
+      ? [householdId]
+      : [undefined, ...IdentityScope.getKnownScopes()];
 
     for (const scope of scopesToUpdate) {
-      const local = readScoped<FamilyBillDTO>(STORAGE_KEY_FAMILY_BILLS, scope, []);
+      const local = readScoped<FamilyBillDTO>(
+        STORAGE_KEY_FAMILY_BILLS,
+        scope,
+        [],
+      );
       const target = local.find((b) => b.id === billId);
       if (target) {
         target.status = status;
@@ -221,7 +305,9 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
   }
 
   // Settlements
-  public async getFamilySettlements(householdId: string): Promise<FamilySettlementEntity[]> {
+  public async getFamilySettlements(
+    householdId: string,
+  ): Promise<FamilySettlementEntity[]> {
     try {
       const supabase = getSupabaseClient(householdId);
       const { data, error } = await supabase
@@ -231,21 +317,40 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
         .order("created_at", { ascending: false });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_FAMILY_SETTLEMENTS, data as FamilySettlementDTO[], householdId);
-        return (data as FamilySettlementDTO[]).map((dto) => FamilySettlementEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_FAMILY_SETTLEMENTS,
+          data as FamilySettlementDTO[],
+          householdId,
+        );
+        return (data as FamilySettlementDTO[]).map((dto) =>
+          FamilySettlementEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<FamilySettlementDTO>(STORAGE_KEY_FAMILY_SETTLEMENTS, householdId, []);
+    const local = readScoped<FamilySettlementDTO>(
+      STORAGE_KEY_FAMILY_SETTLEMENTS,
+      householdId,
+      [],
+    );
     return local.map((dto) => FamilySettlementEntity.fromDTO(dto));
   }
 
-  public async saveFamilySettlement(settlement: FamilySettlementEntity): Promise<FamilySettlementEntity> {
+  public async saveFamilySettlement(
+    settlement: FamilySettlementEntity,
+  ): Promise<FamilySettlementEntity> {
     const scopeId = settlement.householdId;
-    const local = readScoped<FamilySettlementDTO>(STORAGE_KEY_FAMILY_SETTLEMENTS, scopeId, []);
-    const updated = [settlement.toDTO(), ...local.filter((s) => s.id !== settlement.id)];
+    const local = readScoped<FamilySettlementDTO>(
+      STORAGE_KEY_FAMILY_SETTLEMENTS,
+      scopeId,
+      [],
+    );
+    const updated = [
+      settlement.toDTO(),
+      ...local.filter((s) => s.id !== settlement.id),
+    ];
     writeScoped(STORAGE_KEY_FAMILY_SETTLEMENTS, updated, scopeId);
 
     try {
@@ -258,8 +363,15 @@ export class LocalStorageFamilyRepository implements IFamilyRepository {
     return settlement;
   }
 
-  public async deleteFamilySettlement(settlementId: string, householdId?: string): Promise<void> {
-    deleteFromAllScopes<FamilySettlementDTO>(STORAGE_KEY_FAMILY_SETTLEMENTS, settlementId, householdId);
+  public async deleteFamilySettlement(
+    settlementId: string,
+    householdId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<FamilySettlementDTO>(
+      STORAGE_KEY_FAMILY_SETTLEMENTS,
+      settlementId,
+      householdId,
+    );
 
     try {
       const supabase = getSupabaseClient(householdId);

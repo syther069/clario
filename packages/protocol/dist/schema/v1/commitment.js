@@ -73,6 +73,9 @@ export function computeExpenseCommitmentV1(params) {
     const normalizedPrivateHash = params.privateRecordHash.toLowerCase();
     const normalizedEvidenceHash = params.evidenceManifestHash.toLowerCase();
     const normalizedSalt = params.salt.toLowerCase();
+    if (normalizedSalt === `0x${"00".repeat(32)}`) {
+        throw new Error("salt must not be all zeros (insecure zero salt).");
+    }
     const encoded = encodeAbiParameters([
         { type: "bytes32" },
         { type: "uint256" },

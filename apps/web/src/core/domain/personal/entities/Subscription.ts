@@ -56,11 +56,14 @@ export class SubscriptionEntity {
     this.currency = props.currency || "USD";
     this.frequency = props.frequency || "monthly";
     this.categoryId = props.categoryId ?? props.category_id ?? null;
-    this.lastPaymentDate = props.lastPaymentDate ?? props.last_payment_date ?? null;
-    this.nextBillingDate = props.nextBillingDate ?? props.next_billing_date ?? null;
+    this.lastPaymentDate =
+      props.lastPaymentDate ?? props.last_payment_date ?? null;
+    this.nextBillingDate =
+      props.nextBillingDate ?? props.next_billing_date ?? null;
     this.status = props.status || "active";
     this.autoDetected = props.autoDetected ?? props.auto_detected ?? false;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
     this.updatedAt = props.updatedAt ?? props.updated_at ?? null;
   }
 
@@ -77,8 +80,10 @@ export class SubscriptionEntity {
     };
     if (this.merchant !== null) dto.merchant = this.merchant;
     if (this.categoryId !== null) dto.category_id = this.categoryId;
-    if (this.lastPaymentDate !== null) dto.last_payment_date = this.lastPaymentDate;
-    if (this.nextBillingDate !== null) dto.next_billing_date = this.nextBillingDate;
+    if (this.lastPaymentDate !== null)
+      dto.last_payment_date = this.lastPaymentDate;
+    if (this.nextBillingDate !== null)
+      dto.next_billing_date = this.nextBillingDate;
     if (this.autoDetected) dto.auto_detected = this.autoDetected;
     if (this.updatedAt !== null) dto.updated_at = this.updatedAt;
     return dto;

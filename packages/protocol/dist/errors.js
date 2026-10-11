@@ -1,7 +1,6 @@
 import { parseRequestId } from "./identifiers.js";
 /**
  * Stable protocol error codes defined across Clario architecture.
- * See architecture.md §10.7 and TASKS.md PRO-003 requirements.
  */
 export const PROTOCOL_ERROR_CODES = [
     "UNAUTHORIZED",

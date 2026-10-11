@@ -40,7 +40,8 @@ export class BusinessAuditEventEntity {
     this.orgId = (props.orgId || props.org_id || "").trim().toLowerCase();
     this.actorName = props.actorName || props.actor_name || "System";
     this.action = props.action;
-    this.entityType = props.entityType || props.entity_type || props.target || "General";
+    this.entityType =
+      props.entityType || props.entity_type || props.target || "General";
     this.entityId = props.entityId || props.entity_id || props.id;
     this.details = props.details || "";
     this.severity = props.severity || "info";

@@ -44,9 +44,14 @@ export async function POST(req: Request) {
     }
 
     // 3. Extract receipt data via Gemini OCR
-    const ocrResult = await extractReceiptWithGemini(buffer, file.type, undefined, {
-      allowFallback: true,
-    });
+    const ocrResult = await extractReceiptWithGemini(
+      buffer,
+      file.type,
+      undefined,
+      {
+        allowFallback: true,
+      },
+    );
 
     // 4. Try saving into Supabase 'receipts' table if it exists
     let dbRecordId: string | null = null;
@@ -87,9 +92,6 @@ export async function POST(req: Request) {
     });
   } catch (error: unknown) {
     const message = sanitizeErrorMessage(error, "Receipt processing failed.");
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

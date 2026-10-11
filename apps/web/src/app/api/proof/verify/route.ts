@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
     const formattedHex = rawInput.startsWith("0x") ? rawInput : `0x${rawInput}`;
     const is32ByteHex = /^0x[0-9a-fA-F]{64}$/.test(formattedHex);
     const isUuid = isValidUuid(rawInput);
-    const isAlphanumericId = !rawInput.startsWith("0x") && /^[a-zA-Z0-9_-]{3,64}$/.test(rawInput);
+    const isAlphanumericId =
+      !rawInput.startsWith("0x") && /^[a-zA-Z0-9_-]{3,64}$/.test(rawInput);
 
     if (!is32ByteHex && !isUuid && !isAlphanumericId) {
       return NextResponse.json(
@@ -268,4 +269,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

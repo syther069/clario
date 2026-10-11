@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {
-          error: "Too many AI Copilot requests. Please wait before asking another question.",
+          error:
+            "Too many AI Copilot requests. Please wait before asking another question.",
         },
         {
           status: 429,

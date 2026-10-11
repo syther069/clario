@@ -7,12 +7,7 @@ describe("Landing Components Suite", () => {
   describe("WORKSPACES_DATA typed metadata", () => {
     it("defines specifications for all core workspaces", () => {
       const modeIds = WORKSPACES_DATA.map((m) => m.id);
-      expect(modeIds).toEqual([
-        "personal",
-        "freelancer",
-        "family",
-        "business",
-      ]);
+      expect(modeIds).toEqual(["personal", "freelancer", "family", "business"]);
     });
 
     it("includes a one-line promise, description, bestFor, and exactly 3 real-life situations per mode", () => {

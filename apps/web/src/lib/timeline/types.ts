@@ -1,8 +1,8 @@
 /**
  * Authoritative Activity Timeline & Proof Spine Types
  *
- * Reconstructs local, submitted, confirmed, replaced, failed, and indexed workflow events.
- * Adheres strictly to PRD 9.10, DESIGN.md Proof Spine rules, and RULES.md.
+ * Reconstructs local, submitted, confirmed, replaced, failed, and indexed workflow events
+ * for the Proof Spine timeline visualizer.
  */
 
 export type TimelineEventType =

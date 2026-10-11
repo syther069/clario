@@ -1,4 +1,10 @@
-import { createWalletClient, custom, encodeFunctionData, type Address, type Hash } from "viem";
+import {
+  createWalletClient,
+  custom,
+  encodeFunctionData,
+  type Address,
+  type Hash,
+} from "viem";
 import { simulateMonadTransaction, type SimulationResult } from "./simulation";
 import { listenToMonadEvents } from "./websocket-listener";
 import type { ConnectedWallet } from "@privy-io/react-auth";
@@ -267,7 +273,10 @@ export async function executeSaveTransaction({
       stopListening = listenToMonadEvents({
         userAddress: userAddress as Address,
         onTransactionSaved: (ev) => {
-          if (ev.transactionId.toLowerCase() === transactionIdBytes32.toLowerCase()) {
+          if (
+            ev.transactionId.toLowerCase() ===
+            transactionIdBytes32.toLowerCase()
+          ) {
             wsEventReceived = true;
             step(
               "event_received",

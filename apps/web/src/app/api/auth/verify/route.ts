@@ -24,7 +24,8 @@ export async function POST(req: Request) {
         {
           error: {
             code: "RATE_LIMITED",
-            message: "Too many verification attempts. Please try again shortly.",
+            message:
+              "Too many verification attempts. Please try again shortly.",
           },
         },
         {

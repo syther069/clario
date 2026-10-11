@@ -1,5 +1,5 @@
 /**
- * Privacy classification of Clario protocol fields according to RULES.md and THREAT_MODEL.md.
+ * Privacy classification of Clario protocol fields according to Canonical Schema v1.
  */
 export type PrivacyClass = "PUBLIC" | "WORKSPACE_CONFIDENTIAL" | "EVIDENCE_CONFIDENTIAL" | "SECURITY_SENSITIVE";
 /**

@@ -15,11 +15,16 @@ import { redactSensitiveString } from "@/lib/security/audit-logger";
 import { IdentityScope } from "../../domain/common/IdentityScope";
 
 export const STORAGE_KEY_BUSINESS_TEAM = "clario_business_team";
-export const STORAGE_KEY_BUSINESS_REIMBURSEMENTS = "clario_business_reimbursements";
+export const STORAGE_KEY_BUSINESS_REIMBURSEMENTS =
+  "clario_business_reimbursements";
 export const STORAGE_KEY_BUSINESS_POLICIES = "clario_business_policies";
 export const STORAGE_KEY_BUSINESS_AUDIT = "clario_business_audit_events";
 
-function readScoped<T>(baseKey: string, scopeId?: string, fallback: T[] = []): T[] {
+function readScoped<T>(
+  baseKey: string,
+  scopeId?: string,
+  fallback: T[] = [],
+): T[] {
   if (typeof window === "undefined" || !window.localStorage) return fallback;
   if (scopeId) IdentityScope.register(scopeId);
   const scopedKey = IdentityScope.getScopedKey(baseKey, scopeId);
@@ -53,10 +58,18 @@ function writeScoped<T>(baseKey: string, data: T[], scopeId?: string): void {
   }
 }
 
-function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: string, scopeId?: string): void {
+function deleteFromAllScopes<T extends { id: string }>(
+  baseKey: string,
+  itemId: string,
+  scopeId?: string,
+): void {
   if (scopeId) {
     const list = readScoped<T>(baseKey, scopeId, []);
-    writeScoped(baseKey, list.filter((it) => it.id !== itemId), scopeId);
+    writeScoped(
+      baseKey,
+      list.filter((it) => it.id !== itemId),
+      scopeId,
+    );
     return;
   }
 
@@ -64,13 +77,20 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
     try {
       const unscoped = readScoped<T>(baseKey, undefined, []);
       if (unscoped.length > 0) {
-        localStorage.setItem(baseKey, JSON.stringify(unscoped.filter((it) => it.id !== itemId)));
+        localStorage.setItem(
+          baseKey,
+          JSON.stringify(unscoped.filter((it) => it.id !== itemId)),
+        );
       }
 
       for (const scope of IdentityScope.getKnownScopes()) {
         const list = readScoped<T>(baseKey, scope, []);
         if (list.some((it) => it.id === itemId)) {
-          writeScoped(baseKey, list.filter((it) => it.id !== itemId), scope);
+          writeScoped(
+            baseKey,
+            list.filter((it) => it.id !== itemId),
+            scope,
+          );
         }
       }
 
@@ -80,8 +100,14 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
           const raw = localStorage.getItem(k);
           if (raw) {
             const parsed = JSON.parse(raw) as T[];
-            if (Array.isArray(parsed) && parsed.some((it) => it.id === itemId)) {
-              localStorage.setItem(k, JSON.stringify(parsed.filter((it) => it.id !== itemId)));
+            if (
+              Array.isArray(parsed) &&
+              parsed.some((it) => it.id === itemId)
+            ) {
+              localStorage.setItem(
+                k,
+                JSON.stringify(parsed.filter((it) => it.id !== itemId)),
+              );
             }
           }
         }
@@ -99,7 +125,9 @@ function deleteFromAllScopes<T extends { id: string }>(baseKey: string, itemId: 
  */
 export class LocalStorageBusinessRepository implements IBusinessRepository {
   // Team
-  public async getBusinessTeam(orgId: string): Promise<BusinessTeamMemberEntity[]> {
+  public async getBusinessTeam(
+    orgId: string,
+  ): Promise<BusinessTeamMemberEntity[]> {
     try {
       const supabase = getSupabaseClient(orgId);
       const { data, error } = await supabase
@@ -109,21 +137,40 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_BUSINESS_TEAM, data as BusinessTeamMemberDTO[], orgId);
-        return (data as BusinessTeamMemberDTO[]).map((dto) => BusinessTeamMemberEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_BUSINESS_TEAM,
+          data as BusinessTeamMemberDTO[],
+          orgId,
+        );
+        return (data as BusinessTeamMemberDTO[]).map((dto) =>
+          BusinessTeamMemberEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<BusinessTeamMemberDTO>(STORAGE_KEY_BUSINESS_TEAM, orgId, []);
+    const local = readScoped<BusinessTeamMemberDTO>(
+      STORAGE_KEY_BUSINESS_TEAM,
+      orgId,
+      [],
+    );
     return local.map((dto) => BusinessTeamMemberEntity.fromDTO(dto));
   }
 
-  public async saveBusinessTeamMember(member: BusinessTeamMemberEntity): Promise<BusinessTeamMemberEntity> {
+  public async saveBusinessTeamMember(
+    member: BusinessTeamMemberEntity,
+  ): Promise<BusinessTeamMemberEntity> {
     const scopeId = member.orgId;
-    const local = readScoped<BusinessTeamMemberDTO>(STORAGE_KEY_BUSINESS_TEAM, scopeId, []);
-    const updated = [...local.filter((m) => m.id !== member.id), member.toDTO()];
+    const local = readScoped<BusinessTeamMemberDTO>(
+      STORAGE_KEY_BUSINESS_TEAM,
+      scopeId,
+      [],
+    );
+    const updated = [
+      ...local.filter((m) => m.id !== member.id),
+      member.toDTO(),
+    ];
     writeScoped(STORAGE_KEY_BUSINESS_TEAM, updated, scopeId);
 
     try {
@@ -136,8 +183,15 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
     return member;
   }
 
-  public async deleteBusinessTeamMember(memberId: string, orgId?: string): Promise<void> {
-    deleteFromAllScopes<BusinessTeamMemberDTO>(STORAGE_KEY_BUSINESS_TEAM, memberId, orgId);
+  public async deleteBusinessTeamMember(
+    memberId: string,
+    orgId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<BusinessTeamMemberDTO>(
+      STORAGE_KEY_BUSINESS_TEAM,
+      memberId,
+      orgId,
+    );
 
     try {
       const supabase = getSupabaseClient(orgId);
@@ -148,7 +202,9 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
   }
 
   // Reimbursements
-  public async getBusinessReimbursements(orgId: string): Promise<BusinessReimbursementEntity[]> {
+  public async getBusinessReimbursements(
+    orgId: string,
+  ): Promise<BusinessReimbursementEntity[]> {
     try {
       const supabase = getSupabaseClient(orgId);
       const { data, error } = await supabase
@@ -158,20 +214,36 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
         .order("created_at", { ascending: false });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, data as BusinessReimbursementDTO[], orgId);
-        return (data as BusinessReimbursementDTO[]).map((dto) => BusinessReimbursementEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_BUSINESS_REIMBURSEMENTS,
+          data as BusinessReimbursementDTO[],
+          orgId,
+        );
+        return (data as BusinessReimbursementDTO[]).map((dto) =>
+          BusinessReimbursementEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<BusinessReimbursementDTO>(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, orgId, []);
+    const local = readScoped<BusinessReimbursementDTO>(
+      STORAGE_KEY_BUSINESS_REIMBURSEMENTS,
+      orgId,
+      [],
+    );
     return local.map((dto) => BusinessReimbursementEntity.fromDTO(dto));
   }
 
-  public async saveBusinessReimbursement(claim: BusinessReimbursementEntity): Promise<BusinessReimbursementEntity> {
+  public async saveBusinessReimbursement(
+    claim: BusinessReimbursementEntity,
+  ): Promise<BusinessReimbursementEntity> {
     const scopeId = claim.orgId;
-    const local = readScoped<BusinessReimbursementDTO>(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, scopeId, []);
+    const local = readScoped<BusinessReimbursementDTO>(
+      STORAGE_KEY_BUSINESS_REIMBURSEMENTS,
+      scopeId,
+      [],
+    );
     const updated = [claim.toDTO(), ...local.filter((c) => c.id !== claim.id)];
     writeScoped(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, updated, scopeId);
 
@@ -193,17 +265,24 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
     monadTxHash?: string,
     orgId?: string,
   ): Promise<void> {
-    const scopesToUpdate = orgId ? [orgId] : [undefined, ...IdentityScope.getKnownScopes()];
+    const scopesToUpdate = orgId
+      ? [orgId]
+      : [undefined, ...IdentityScope.getKnownScopes()];
 
     for (const scope of scopesToUpdate) {
-      const local = readScoped<BusinessReimbursementDTO>(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, scope, []);
+      const local = readScoped<BusinessReimbursementDTO>(
+        STORAGE_KEY_BUSINESS_REIMBURSEMENTS,
+        scope,
+        [],
+      );
       const target = local.find((c) => c.id === claimId);
       if (target) {
         target.status = status;
         if (reviewerName) target.reviewed_by = reviewerName;
         if (reviewNotes) target.review_notes = reviewNotes;
         if (monadTxHash) target.monad_tx_hash = monadTxHash;
-        if (status === "approved") target.approved_at = new Date().toISOString();
+        if (status === "approved")
+          target.approved_at = new Date().toISOString();
         if (status === "paid") target.paid_at = new Date().toISOString();
         writeScoped(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, local, scope);
       }
@@ -218,7 +297,8 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
           reviewed_by: reviewerName || null,
           review_notes: reviewNotes || null,
           monad_tx_hash: monadTxHash || null,
-          approved_at: status === "approved" ? new Date().toISOString() : undefined,
+          approved_at:
+            status === "approved" ? new Date().toISOString() : undefined,
           paid_at: status === "paid" ? new Date().toISOString() : undefined,
         })
         .eq("id", claimId);
@@ -227,8 +307,15 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
     }
   }
 
-  public async deleteBusinessReimbursement(claimId: string, orgId?: string): Promise<void> {
-    deleteFromAllScopes<BusinessReimbursementDTO>(STORAGE_KEY_BUSINESS_REIMBURSEMENTS, claimId, orgId);
+  public async deleteBusinessReimbursement(
+    claimId: string,
+    orgId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<BusinessReimbursementDTO>(
+      STORAGE_KEY_BUSINESS_REIMBURSEMENTS,
+      claimId,
+      orgId,
+    );
 
     try {
       const supabase = getSupabaseClient(orgId);
@@ -239,7 +326,9 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
   }
 
   // Policies
-  public async getExpensePolicies(orgId: string): Promise<ExpensePolicyEntity[]> {
+  public async getExpensePolicies(
+    orgId: string,
+  ): Promise<ExpensePolicyEntity[]> {
     try {
       const supabase = getSupabaseClient(orgId);
       const { data, error } = await supabase
@@ -249,21 +338,40 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
         .order("created_at", { ascending: false });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_BUSINESS_POLICIES, data as ExpensePolicyDTO[], orgId);
-        return (data as ExpensePolicyDTO[]).map((dto) => ExpensePolicyEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_BUSINESS_POLICIES,
+          data as ExpensePolicyDTO[],
+          orgId,
+        );
+        return (data as ExpensePolicyDTO[]).map((dto) =>
+          ExpensePolicyEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<ExpensePolicyDTO>(STORAGE_KEY_BUSINESS_POLICIES, orgId, []);
+    const local = readScoped<ExpensePolicyDTO>(
+      STORAGE_KEY_BUSINESS_POLICIES,
+      orgId,
+      [],
+    );
     return local.map((dto) => ExpensePolicyEntity.fromDTO(dto));
   }
 
-  public async saveExpensePolicy(policy: ExpensePolicyEntity): Promise<ExpensePolicyEntity> {
+  public async saveExpensePolicy(
+    policy: ExpensePolicyEntity,
+  ): Promise<ExpensePolicyEntity> {
     const scopeId = policy.orgId;
-    const local = readScoped<ExpensePolicyDTO>(STORAGE_KEY_BUSINESS_POLICIES, scopeId, []);
-    const updated = [policy.toDTO(), ...local.filter((p) => p.id !== policy.id)];
+    const local = readScoped<ExpensePolicyDTO>(
+      STORAGE_KEY_BUSINESS_POLICIES,
+      scopeId,
+      [],
+    );
+    const updated = [
+      policy.toDTO(),
+      ...local.filter((p) => p.id !== policy.id),
+    ];
     writeScoped(STORAGE_KEY_BUSINESS_POLICIES, updated, scopeId);
 
     try {
@@ -276,8 +384,15 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
     return policy;
   }
 
-  public async deleteExpensePolicy(policyId: string, orgId?: string): Promise<void> {
-    deleteFromAllScopes<ExpensePolicyDTO>(STORAGE_KEY_BUSINESS_POLICIES, policyId, orgId);
+  public async deleteExpensePolicy(
+    policyId: string,
+    orgId?: string,
+  ): Promise<void> {
+    deleteFromAllScopes<ExpensePolicyDTO>(
+      STORAGE_KEY_BUSINESS_POLICIES,
+      policyId,
+      orgId,
+    );
 
     try {
       const supabase = getSupabaseClient(orgId);
@@ -288,7 +403,9 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
   }
 
   // Audit Events
-  public async getBusinessAuditEvents(orgId: string): Promise<BusinessAuditEventEntity[]> {
+  public async getBusinessAuditEvents(
+    orgId: string,
+  ): Promise<BusinessAuditEventEntity[]> {
     try {
       const supabase = getSupabaseClient(orgId);
       const { data, error } = await supabase
@@ -298,18 +415,30 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
         .order("timestamp", { ascending: false });
 
       if (!error && Array.isArray(data)) {
-        writeScoped(STORAGE_KEY_BUSINESS_AUDIT, data as BusinessAuditEventDTO[], orgId);
-        return (data as BusinessAuditEventDTO[]).map((dto) => BusinessAuditEventEntity.fromDTO(dto));
+        writeScoped(
+          STORAGE_KEY_BUSINESS_AUDIT,
+          data as BusinessAuditEventDTO[],
+          orgId,
+        );
+        return (data as BusinessAuditEventDTO[]).map((dto) =>
+          BusinessAuditEventEntity.fromDTO(dto),
+        );
       }
     } catch {
       // offline
     }
 
-    const local = readScoped<BusinessAuditEventDTO>(STORAGE_KEY_BUSINESS_AUDIT, orgId, []);
+    const local = readScoped<BusinessAuditEventDTO>(
+      STORAGE_KEY_BUSINESS_AUDIT,
+      orgId,
+      [],
+    );
     return local.map((dto) => BusinessAuditEventEntity.fromDTO(dto));
   }
 
-  public async recordBusinessAuditEvent(event: BusinessAuditEventEntity): Promise<BusinessAuditEventEntity> {
+  public async recordBusinessAuditEvent(
+    event: BusinessAuditEventEntity,
+  ): Promise<BusinessAuditEventEntity> {
     const sanitizedDTO: BusinessAuditEventDTO = {
       ...event.toDTO(),
       details: redactSensitiveString(event.details || ""),
@@ -317,7 +446,11 @@ export class LocalStorageBusinessRepository implements IBusinessRepository {
     const sanitizedEntity = BusinessAuditEventEntity.fromDTO(sanitizedDTO);
 
     const scopeId = sanitizedEntity.orgId;
-    const local = readScoped<BusinessAuditEventDTO>(STORAGE_KEY_BUSINESS_AUDIT, scopeId, []);
+    const local = readScoped<BusinessAuditEventDTO>(
+      STORAGE_KEY_BUSINESS_AUDIT,
+      scopeId,
+      [],
+    );
     const updated = [sanitizedDTO, ...local];
     writeScoped(STORAGE_KEY_BUSINESS_AUDIT, updated, scopeId);
 

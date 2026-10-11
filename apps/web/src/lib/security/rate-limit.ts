@@ -1,7 +1,7 @@
 /**
  * In-Memory Sliding-Window Rate Limiter
  * Provides zero-dependency, IP/key-based rate limiting for sensitive API routes
- * as required by Clario Security Policy and the Security Prompt Pack.
+ * as required by Clario Security Policy.
  */
 
 export interface RateLimitConfig {
@@ -33,7 +33,9 @@ function purgeStaleBuckets(now: number, maxWindowMs: number) {
   lastCleanup = now;
 
   for (const [key, bucket] of buckets.entries()) {
-    bucket.timestamps = bucket.timestamps.filter((ts) => now - ts < maxWindowMs);
+    bucket.timestamps = bucket.timestamps.filter(
+      (ts) => now - ts < maxWindowMs,
+    );
     if (bucket.timestamps.length === 0) {
       buckets.delete(key);
     }
@@ -42,12 +44,15 @@ function purgeStaleBuckets(now: number, maxWindowMs: number) {
 
 /**
  * Check and record a request against a rate-limiting key.
- * 
+ *
  * @param key Unique key (e.g., `auth:challenge:${ip}` or `wallet:${address}`)
  * @param config RateLimitConfig
  * @returns RateLimitResult
  */
-export function checkRateLimit(key: string, config: RateLimitConfig): RateLimitResult {
+export function checkRateLimit(
+  key: string,
+  config: RateLimitConfig,
+): RateLimitResult {
   const now = Date.now();
   purgeStaleBuckets(now, config.windowMs);
 
@@ -58,7 +63,9 @@ export function checkRateLimit(key: string, config: RateLimitConfig): RateLimitR
   }
 
   // Filter timestamps within the sliding window
-  bucket.timestamps = bucket.timestamps.filter((ts) => now - ts < config.windowMs);
+  bucket.timestamps = bucket.timestamps.filter(
+    (ts) => now - ts < config.windowMs,
+  );
 
   const count = bucket.timestamps.length;
   if (count >= config.maxRequests) {

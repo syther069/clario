@@ -56,7 +56,10 @@ export function calculateTotalExpenses(transactions: Transaction[]): number {
 /**
  * Calculates net cash flow (Income - Expenses).
  */
-export function calculateNetCashFlow(totalIncome: number, totalExpenses: number): number {
+export function calculateNetCashFlow(
+  totalIncome: number,
+  totalExpenses: number,
+): number {
   return totalIncome - totalExpenses;
 }
 
@@ -97,7 +100,9 @@ export function calculateMonthlySpending(
 /**
  * Calculates monthly cost of active recurring subscriptions, normalized to a monthly basis.
  */
-export function calculateMonthlySubscriptionsCost(subscriptions: Subscription[]): number {
+export function calculateMonthlySubscriptionsCost(
+  subscriptions: Subscription[],
+): number {
   return subscriptions
     .filter((s) => s.status === "active")
     .reduce((sum, s) => {
@@ -132,7 +137,9 @@ export function calculateSavingsRate(
 /**
  * Aggregates expense amounts grouped by category slug.
  */
-export function calculateCategoryTotals(transactions: Transaction[]): Record<string, number> {
+export function calculateCategoryTotals(
+  transactions: Transaction[],
+): Record<string, number> {
   const acc: Record<string, number> = {};
   for (const tx of transactions) {
     if (tx.type === "expense" || !tx.type) {

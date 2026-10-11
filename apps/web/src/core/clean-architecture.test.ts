@@ -120,8 +120,20 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
         invoiceNumber: "INV-2026-001",
         clientName: "Acme Web3 Labs",
         items: [
-          { id: "item-1", description: "Smart Contract Audit", quantity: 1, rate: 3000, amount: 3000 },
-          { id: "item-2", description: "Architecture Refactoring", quantity: 10, rate: 200, amount: 2000 },
+          {
+            id: "item-1",
+            description: "Smart Contract Audit",
+            quantity: 1,
+            rate: 3000,
+            amount: 3000,
+          },
+          {
+            id: "item-2",
+            description: "Architecture Refactoring",
+            quantity: 10,
+            rate: 200,
+            amount: 2000,
+          },
         ],
         taxRate: 10,
         issueDate: "2026-10-01",
@@ -154,7 +166,8 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
       expect(saved.name).toBe("Monad Ventures");
       expect(eventFired).toBe(true);
 
-      const list = await container.manageClientsUseCase.getClients("0xFreelancerA");
+      const list =
+        await container.manageClientsUseCase.getClients("0xFreelancerA");
       expect(list.length).toBe(1);
       expect(list[0]?.id).toBe("cli-event-1");
     });
@@ -180,7 +193,8 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
       await container.manageFamilyUseCase.saveFamilyBill(bill);
       expect(eventFired).toBe(true);
 
-      let bills = await container.manageFamilyUseCase.getFamilyBills("hh-clean-1");
+      let bills =
+        await container.manageFamilyUseCase.getFamilyBills("hh-clean-1");
       expect(bills).toHaveLength(1);
       expect(bills[0]?.name).toBe("Fiber Internet");
       expect(bills[0]?.status).toBe("unpaid");
@@ -209,12 +223,17 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
       });
 
       await container.manageFamilyUseCase.saveFamilySettlement(settlement);
-      let settlements = await container.manageFamilyUseCase.getFamilySettlements("hh-clean-1");
+      let settlements =
+        await container.manageFamilyUseCase.getFamilySettlements("hh-clean-1");
       expect(settlements).toHaveLength(1);
       expect(settlements[0]?.amount).toBe(45);
 
-      await container.manageFamilyUseCase.deleteFamilySettlement("settle-clean-1", "hh-clean-1");
-      settlements = await container.manageFamilyUseCase.getFamilySettlements("hh-clean-1");
+      await container.manageFamilyUseCase.deleteFamilySettlement(
+        "settle-clean-1",
+        "hh-clean-1",
+      );
+      settlements =
+        await container.manageFamilyUseCase.getFamilySettlements("hh-clean-1");
       expect(settlements).toHaveLength(0);
     });
   });
@@ -242,7 +261,10 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
       await container.manageBusinessUseCase.saveBusinessReimbursement(claim);
       expect(eventFired).toBe(true);
 
-      let list = await container.manageBusinessUseCase.getBusinessReimbursements("org-clean-1");
+      let list =
+        await container.manageBusinessUseCase.getBusinessReimbursements(
+          "org-clean-1",
+        );
       expect(list).toHaveLength(1);
       expect(list[0]?.status).toBe("submitted");
 
@@ -255,7 +277,10 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
         "org-clean-1",
       );
 
-      list = await container.manageBusinessUseCase.getBusinessReimbursements("org-clean-1");
+      list =
+        await container.manageBusinessUseCase.getBusinessReimbursements(
+          "org-clean-1",
+        );
       expect(list[0]?.status).toBe("approved");
       expect(list[0]?.reviewedBy).toBe("Lead Architect");
       expect(list[0]?.monadTxHash).toBe("0xmonadtxhash123");
@@ -271,7 +296,8 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
       });
 
       await container.manageBusinessUseCase.saveExpensePolicy(policy);
-      const policies = await container.manageBusinessUseCase.getExpensePolicies("org-clean-1");
+      const policies =
+        await container.manageBusinessUseCase.getExpensePolicies("org-clean-1");
       expect(policies).toHaveLength(1);
       expect(policies[0]?.requiresApprovalAbove).toBe(250);
 
@@ -285,10 +311,14 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
         details: "Policy applied to transaction",
       });
 
-      const recorded = await container.manageBusinessUseCase.recordBusinessAuditEvent(audit);
+      const recorded =
+        await container.manageBusinessUseCase.recordBusinessAuditEvent(audit);
       expect(recorded.actorName).toBe("SecurityBot");
 
-      const auditTrail = await container.manageBusinessUseCase.getBusinessAuditEvents("org-clean-1");
+      const auditTrail =
+        await container.manageBusinessUseCase.getBusinessAuditEvents(
+          "org-clean-1",
+        );
       expect(auditTrail).toHaveLength(1);
       expect(auditTrail[0]?.action).toBe("POLICY_ENFORCED");
     });
@@ -308,10 +338,14 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
         amountLimit: 400,
       });
 
-      container.managePersonalModeUseCase.saveBudgets([budget], "0xUserPersonal");
+      container.managePersonalModeUseCase.saveBudgets(
+        [budget],
+        "0xUserPersonal",
+      );
       expect(eventFired).toBe(true);
 
-      const budgets = container.managePersonalModeUseCase.getBudgets("0xUserPersonal");
+      const budgets =
+        container.managePersonalModeUseCase.getBudgets("0xUserPersonal");
       expect(budgets).toHaveLength(1);
       expect(budgets[0]?.amountLimit).toBe(400);
 
@@ -323,8 +357,12 @@ describe("Clean Architecture: Multi-Domain Entities, Use Cases & IoC Container",
         frequency: "monthly",
       });
 
-      container.managePersonalModeUseCase.saveSubscriptions([sub], "0xUserPersonal");
-      const subs = container.managePersonalModeUseCase.getSubscriptions("0xUserPersonal");
+      container.managePersonalModeUseCase.saveSubscriptions(
+        [sub],
+        "0xUserPersonal",
+      );
+      const subs =
+        container.managePersonalModeUseCase.getSubscriptions("0xUserPersonal");
       expect(subs).toHaveLength(1);
       expect(subs[0]?.name).toBe("GitHub Enterprise");
     });

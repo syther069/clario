@@ -40,7 +40,10 @@ export class LocalStorageTransactionRepository implements ITransactionRepository
         if (Array.isArray(parsed)) {
           for (const item of parsed) {
             if (item && item.id) {
-              txMap.set(item.id, TransactionEntity.fromDTO(item as StorageTransaction));
+              txMap.set(
+                item.id,
+                TransactionEntity.fromDTO(item as StorageTransaction),
+              );
             }
           }
         }
@@ -55,7 +58,10 @@ export class LocalStorageTransactionRepository implements ITransactionRepository
           if (Array.isArray(parsed)) {
             for (const item of parsed) {
               if (item && item.id) {
-                txMap.set(item.id, TransactionEntity.fromDTO(item as StorageTransaction));
+                txMap.set(
+                  item.id,
+                  TransactionEntity.fromDTO(item as StorageTransaction),
+                );
               }
             }
           }
@@ -64,23 +70,36 @@ export class LocalStorageTransactionRepository implements ITransactionRepository
 
       if (txMap.size > 0) {
         return Array.from(txMap.values()).sort((a, b) => {
-          const timeA = new Date(a.date || a.timestamp || a.createdAt || 0).getTime();
-          const timeB = new Date(b.date || b.timestamp || b.createdAt || 0).getTime();
+          const timeA = new Date(
+            a.date || a.timestamp || a.createdAt || 0,
+          ).getTime();
+          const timeB = new Date(
+            b.date || b.timestamp || b.createdAt || 0,
+          ).getTime();
           return timeB - timeA;
         });
       }
     } catch (err) {
-      console.warn("Notice: Error reading transactions from storage repository:", err);
+      console.warn(
+        "Notice: Error reading transactions from storage repository:",
+        err,
+      );
     }
 
     return [];
   }
 
-  public async save(transactions: TransactionEntity[], scopeId?: string | null): Promise<void> {
+  public async save(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): Promise<void> {
     this.saveSync(transactions, scopeId);
   }
 
-  public saveSync(transactions: TransactionEntity[], scopeId?: string | null): void {
+  public saveSync(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): void {
     if (typeof window === "undefined" || !window.localStorage) {
       return;
     }
@@ -94,7 +113,10 @@ export class LocalStorageTransactionRepository implements ITransactionRepository
         localStorage.setItem(scopedKey, json);
       }
     } catch (err) {
-      console.warn("Notice: Error saving transactions to storage repository:", err);
+      console.warn(
+        "Notice: Error saving transactions to storage repository:",
+        err,
+      );
     }
   }
 
@@ -143,8 +165,12 @@ export class LocalStorageTransactionRepository implements ITransactionRepository
     }
 
     const updated = Array.from(txMap.values()).sort((a, b) => {
-      const timeA = new Date(a.date || a.timestamp || a.createdAt || 0).getTime();
-      const timeB = new Date(b.date || b.timestamp || b.createdAt || 0).getTime();
+      const timeA = new Date(
+        a.date || a.timestamp || a.createdAt || 0,
+      ).getTime();
+      const timeB = new Date(
+        b.date || b.timestamp || b.createdAt || 0,
+      ).getTime();
       return timeB - timeA;
     });
 

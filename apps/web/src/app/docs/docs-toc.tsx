@@ -68,14 +68,18 @@ export function DocsToc({
                   <div className="flex items-center gap-1.5 truncate">
                     <span
                       className={`text-[10px] font-mono font-bold ${
-                        isActive ? "text-white/90" : "text-slate-400 group-hover:text-[#836EF9]"
+                        isActive
+                          ? "text-white/90"
+                          : "text-slate-400 group-hover:text-[#836EF9]"
                       }`}
                     >
                       {String(idx + 1).padStart(2, "0")}.
                     </span>
                     <span
                       className={`truncate text-xs tracking-tight ${
-                        isActive ? "font-bold text-white" : "font-medium text-slate-700 group-hover:text-black"
+                        isActive
+                          ? "font-bold text-white"
+                          : "font-medium text-slate-700 group-hover:text-black"
                       }`}
                     >
                       {sub.title}
@@ -98,7 +102,9 @@ export function DocsToc({
         {/* Monad Protocol Badge */}
         <div className="pt-2 border-t border-[#121212]/15 flex items-center justify-between text-[10px] font-mono text-slate-500">
           <span>SPEC 1.0</span>
-          <span className="text-[#836EF9] font-black uppercase">MONAD TESTNET</span>
+          <span className="text-[#836EF9] font-black uppercase">
+            MONAD TESTNET
+          </span>
         </div>
       </div>
     </div>

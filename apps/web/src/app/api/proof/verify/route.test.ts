@@ -199,7 +199,9 @@ describe("Proof Verification API (/api/proof/verify)", () => {
       const res = await POST(req);
       expect(res.status).toBe(400);
       const json = await res.json();
-      expect(json.error).toContain("Invalid cryptographic fingerprint or identifier format");
+      expect(json.error).toContain(
+        "Invalid cryptographic fingerprint or identifier format",
+      );
     }
   });
 

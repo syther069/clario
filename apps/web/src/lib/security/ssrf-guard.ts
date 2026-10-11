@@ -2,7 +2,7 @@
  * Server-Side Request Forgery (SSRF) Guard
  * Validates destination URLs against private IP probing, cloud metadata services,
  * loopback interfaces, and unauthorized schemes.
- * 
+ *
  * Complies with OWASP Top 10 A10:2021 (SSRF) and Clario Network Security Guidelines.
  */
 
@@ -74,7 +74,12 @@ function isPrivateOrReservedIpv6(ip: string): boolean {
   if (normalized === "::1" || normalized === "::") return true;
 
   // Link-local unicast (fe80::/10)
-  if (normalized.startsWith("fe80:") || normalized.startsWith("fe9") || normalized.startsWith("fea") || normalized.startsWith("feb")) {
+  if (
+    normalized.startsWith("fe80:") ||
+    normalized.startsWith("fe9") ||
+    normalized.startsWith("fea") ||
+    normalized.startsWith("feb")
+  ) {
     return true;
   }
 
@@ -116,9 +121,10 @@ export function assertSafeUrl(
 
   const rawHost = parsed.hostname.toLowerCase();
   // Strip brackets from IPv6 hostnames like [::1]
-  const hostname = rawHost.startsWith("[") && rawHost.endsWith("]")
-    ? rawHost.slice(1, -1)
-    : rawHost;
+  const hostname =
+    rawHost.startsWith("[") && rawHost.endsWith("]")
+      ? rawHost.slice(1, -1)
+      : rawHost;
 
   // Allow localhost only if explicitly enabled AND not running in production
   const isLocalhost =
@@ -167,7 +173,10 @@ export function assertSafeUrl(
 /**
  * Returns true if the URL is safe, false otherwise.
  */
-export function isSafeUrl(input: string | URL, options?: SsrGuardOptions): boolean {
+export function isSafeUrl(
+  input: string | URL,
+  options?: SsrGuardOptions,
+): boolean {
   try {
     assertSafeUrl(input, options);
     return true;

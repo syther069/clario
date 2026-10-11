@@ -988,7 +988,9 @@ export function ReviewDetailView({
                     initialIcon={<Copy className="h-3 w-3" />}
                     activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
                   />
-                  <span>{copiedField === "commitment" ? "Copied!" : "Copy"}</span>
+                  <span>
+                    {copiedField === "commitment" ? "Copied!" : "Copy"}
+                  </span>
                 </button>
               </div>
             </div>

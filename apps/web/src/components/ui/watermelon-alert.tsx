@@ -2,10 +2,17 @@
 
 import { cn } from "@/lib/utils";
 import React from "react";
-import { AlertCircle, CheckCircle2, Info, TriangleAlert, X } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 import { motion } from "motion/react";
 
-export type AlertVariant = "default" | "success" | "warning" | "error" | "info" | "monad";
+export type AlertVariant =
+  "default" | "success" | "warning" | "error" | "info" | "monad";
 
 export interface WatermelonAlertProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: AlertVariant;
@@ -17,7 +24,10 @@ export interface WatermelonAlertProps extends React.HTMLAttributes<HTMLDivElemen
   className?: string;
 }
 
-const variantStyles: Record<AlertVariant, { container: string; iconColor: string; defaultIcon: React.ReactNode }> = {
+const variantStyles: Record<
+  AlertVariant,
+  { container: string; iconColor: string; defaultIcon: React.ReactNode }
+> = {
   default: {
     container: "bg-white text-[#121212] border-[#121212]",
     iconColor: "text-[#121212]",
@@ -73,9 +83,11 @@ export function WatermelonAlert({
       className={cn(
         "relative flex items-start gap-3 p-4 rounded-xl border-2 shadow-[3px_3px_0_0_#121212] transition-all",
         currentVariant.container,
-        className
+        className,
       )}
-      {...(props as unknown as React.ComponentPropsWithoutRef<typeof motion.div>)}
+      {...(props as unknown as React.ComponentPropsWithoutRef<
+        typeof motion.div
+      >)}
     >
       <div className={cn("shrink-0 mt-0.5", currentVariant.iconColor)}>
         {icon || currentVariant.defaultIcon}

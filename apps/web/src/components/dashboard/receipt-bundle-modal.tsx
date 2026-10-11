@@ -15,7 +15,11 @@ import {
   RefreshCw,
   Pencil,
 } from "lucide-react";
-import type { ReceiptBundle, Transaction, CanonicalReceiptTransaction } from "@/lib/supabase/types";
+import type {
+  ReceiptBundle,
+  Transaction,
+  CanonicalReceiptTransaction,
+} from "@/lib/supabase/types";
 import {
   getMonadExplorerTxUrl,
   CLARIO_REGISTRY_ADDRESS,
@@ -110,7 +114,10 @@ export function ReceiptBundleModal({
       amount: Number(t.amount) || 0,
       currency: t.currency || "USD",
       date: (t.date || t.timestamp || new Date().toISOString()).slice(0, 10),
-      category: typeof t.category === "string" ? t.category : t.category?.name || "General",
+      category:
+        typeof t.category === "string"
+          ? t.category
+          : t.category?.name || "General",
       type: t.type || "expense",
     }));
   } else if (
@@ -145,7 +152,10 @@ export function ReceiptBundleModal({
           "Recorded Transaction",
         amount: Number(activeBundle.total_amount) || 0,
         currency: activeBundle.currency || "USD",
-        date: (activeBundle.created_at || new Date().toISOString()).slice(0, 10),
+        date: (activeBundle.created_at || new Date().toISOString()).slice(
+          0,
+          10,
+        ),
         category: "Recorded Expense",
         type: "expense",
       },
@@ -249,7 +259,10 @@ export function ReceiptBundleModal({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 0.15, ease: "easeOut" },
+            }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -266,392 +279,402 @@ export function ReceiptBundleModal({
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="relative z-10 neo-card bg-white w-full max-w-xl overflow-hidden shadow-[6px_6px_0_0_#121212]"
           >
-        {/* Header */}
-        <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <div className="h-8 w-8 rounded-lg bg-[#836EF9]/10 border border-[#121212] flex items-center justify-center text-[#836EF9] shadow-[1px_1px_0_0_#121212] shrink-0">
-              <Receipt className="h-4 w-4 stroke-[2.5]" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] truncate">
-                {receiptName
-                  ? receiptName
-                  : `Receipt #${activeBundle.receipt_number || activeBundle.id.slice(0, 12)}`}
-              </h2>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="relative size-8 flex items-center justify-center rounded-md border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] shrink-0 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
-            aria-label="Close"
-          >
-            <X className="h-4 w-4 stroke-[2.5] text-[#121212]" />
-          </button>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Main Card Proof Box */}
-          <div className="neo-card bg-[#f8f9fa] p-4 relative overflow-hidden">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-                    Receipt
-                  </span>
-                  {activeBundle.receipt_data?.version &&
-                    activeBundle.receipt_data.version > 1 && (
-                      <span className="text-[9px] font-mono font-black px-1.5 py-0.2 bg-amber-100 text-amber-900 border border-amber-400 rounded">
-                        v{activeBundle.receipt_data.version}
-                      </span>
-                    )}
+            {/* Header */}
+            <div className="p-4 border-b-2 border-[#121212] bg-[#fbf9fe] flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                <div className="h-8 w-8 rounded-lg bg-[#836EF9]/10 border border-[#121212] flex items-center justify-center text-[#836EF9] shadow-[1px_1px_0_0_#121212] shrink-0">
+                  <Receipt className="h-4 w-4 stroke-[2.5]" />
                 </div>
-                <h3 className="text-lg font-black text-[#121212] mt-0.5 leading-snug break-words">
-                  {receiptName || `Receipt #${activeBundle.receipt_number}`}
-                </h3>
-                <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                  <span className="text-xs font-mono font-bold text-slate-700 bg-white border border-[#121212] px-1.5 py-0.5 rounded shadow-[1px_1px_0_0_#121212]">
-                    #{activeBundle.receipt_number}
-                  </span>
-                  <span className="text-xs text-slate-500 font-mono flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>
-                      {formatTransactionDateTime(activeBundle.created_at)}
+                <div className="min-w-0">
+                  <h2 className="text-sm font-black uppercase tracking-wide text-[#121212] truncate">
+                    {receiptName
+                      ? receiptName
+                      : `Receipt #${activeBundle.receipt_number || activeBundle.id.slice(0, 12)}`}
+                  </h2>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="relative size-8 flex items-center justify-center rounded-md border border-[#121212] hover:bg-slate-100 transition-colors duration-150 shadow-[1px_1px_0_0_#121212] shrink-0 cursor-pointer after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4 stroke-[2.5] text-[#121212]" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Main Card Proof Box */}
+              <div className="neo-card bg-[#f8f9fa] p-4 relative overflow-hidden">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                        Receipt
+                      </span>
+                      {activeBundle.receipt_data?.version &&
+                        activeBundle.receipt_data.version > 1 && (
+                          <span className="text-[9px] font-mono font-black px-1.5 py-0.2 bg-amber-100 text-amber-900 border border-amber-400 rounded">
+                            v{activeBundle.receipt_data.version}
+                          </span>
+                        )}
+                    </div>
+                    <h3 className="text-lg font-black text-[#121212] mt-0.5 leading-snug break-words">
+                      {receiptName || `Receipt #${activeBundle.receipt_number}`}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                      <span className="text-xs font-mono font-bold text-slate-700 bg-white border border-[#121212] px-1.5 py-0.5 rounded shadow-[1px_1px_0_0_#121212]">
+                        #{activeBundle.receipt_number}
+                      </span>
+                      <span className="text-xs text-slate-500 font-mono flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {formatTransactionDateTime(activeBundle.created_at)}
+                        </span>
+                      </span>
+                      {!isRenaming && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsRenaming(true);
+                            setRenameValue(receiptName || "");
+                            setRenameError(null);
+                          }}
+                          className="text-[10px] font-mono font-black uppercase text-[#836EF9] hover:underline flex items-center gap-1 ml-1"
+                          title="Rename receipt (creates new version & requires re-verification)"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                          <span>Rename</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                      Total Amount
                     </span>
+                    <p className="text-xl font-mono font-black tabular-nums text-[#121212] mt-0.5">
+                      -${Number(activeBundle.total_amount).toFixed(2)}{" "}
+                      {activeBundle.currency}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold tabular-nums text-[#836EF9] bg-[#f3f0ff] border border-[#836EF9]/40 px-2 py-0.5 rounded shadow-[1px_1px_0_0_#121212] mt-1">
+                      <Layers className="h-3 w-3" />
+                      <span>{activeBundle.transaction_count} Transactions</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Rename Input Panel */}
+                {isRenaming && (
+                  <div className="mt-3 p-3 bg-white border-2 border-amber-500 rounded-xl shadow-[2px_2px_0_0_#121212] space-y-2 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-black uppercase text-amber-900 flex items-center gap-1">
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                        <span>Rename Receipt Notice</span>
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {renameValue.length}/80
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-normal text-pretty">
+                      The on-chain proof commits to the canonical name. Renaming
+                      creates a new version and invalidates existing
+                      verification until re-anchored on Monad.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        maxLength={80}
+                        disabled={isSubmittingRename}
+                        className="flex-1 px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-[#121212] rounded-lg shadow-[1px_1px_0_0_#121212] focus:outline-none focus:border-[#836EF9]"
+                        placeholder="Enter new receipt name"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleConfirmRename}
+                        disabled={isSubmittingRename || !renameValue.trim()}
+                        className="neo-btn neo-btn-primary !py-1 !px-3 text-xs font-mono font-black uppercase shadow-[1px_1px_0_0_#121212] disabled:opacity-50"
+                      >
+                        {isSubmittingRename ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsRenaming(false);
+                          setRenameError(null);
+                        }}
+                        disabled={isSubmittingRename}
+                        className="neo-btn neo-btn-secondary !py-1 !px-2.5 text-xs font-mono font-black uppercase"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {renameError && (
+                      <p className="text-[10px] font-mono font-bold text-red-600">
+                        {renameError}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Rename Success Notice */}
+                {renameSuccessNotice && (
+                  <div className="mt-3 p-2.5 bg-amber-50 border-2 border-amber-500 rounded-xl text-xs font-mono text-amber-900 shadow-[1px_1px_0_0_#121212] flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px]">{renameSuccessNotice}</p>
+                  </div>
+                )}
+
+                {/* Status Pill */}
+                <div className="mt-4 pt-3 border-t-2 border-[#121212] flex items-center justify-between">
+                  <span className="text-xs font-mono font-black uppercase text-slate-600">
+                    Verification Status
                   </span>
-                  {!isRenaming && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsRenaming(true);
-                        setRenameValue(receiptName || "");
-                        setRenameError(null);
-                      }}
-                      className="text-[10px] font-mono font-black uppercase text-[#836EF9] hover:underline flex items-center gap-1 ml-1"
-                      title="Rename receipt (creates new version & requires re-verification)"
-                    >
-                      <Pencil className="h-2.5 w-2.5" />
-                      <span>Rename</span>
-                    </button>
+                  {isVerified ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black uppercase font-mono bg-[#dcfce7] text-[#15803d] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Verified on Monad</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black uppercase font-mono bg-amber-100 text-amber-900 border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                      <span>
+                        {activeBundle.receipt_data?.version &&
+                        activeBundle.receipt_data.version > 1
+                          ? "Re-verification Required"
+                          : "Verification Pending"}
+                      </span>
+                    </span>
                   )}
                 </div>
               </div>
 
-              <div className="text-right shrink-0">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-                  Total Amount
-                </span>
-                <p className="text-xl font-mono font-black tabular-nums text-[#121212] mt-0.5">
-                  -${Number(activeBundle.total_amount).toFixed(2)}{" "}
-                  {activeBundle.currency}
-                </p>
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold tabular-nums text-[#836EF9] bg-[#f3f0ff] border border-[#836EF9]/40 px-2 py-0.5 rounded shadow-[1px_1px_0_0_#121212] mt-1">
-                  <Layers className="h-3 w-3" />
-                  <span>{activeBundle.transaction_count} Transactions</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Rename Input Panel */}
-            {isRenaming && (
-              <div className="mt-3 p-3 bg-white border-2 border-amber-500 rounded-xl shadow-[2px_2px_0_0_#121212] space-y-2 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-black uppercase text-amber-900 flex items-center gap-1">
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-                    <span>Rename Receipt Notice</span>
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    {renameValue.length}/80
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-600 leading-normal text-pretty">
-                  The on-chain proof commits to the canonical name. Renaming
-                  creates a new version and invalidates existing verification
-                  until re-anchored on Monad.
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    maxLength={80}
-                    disabled={isSubmittingRename}
-                    className="flex-1 px-2.5 py-1.5 text-xs font-bold font-mono border-2 border-[#121212] rounded-lg shadow-[1px_1px_0_0_#121212] focus:outline-none focus:border-[#836EF9]"
-                    placeholder="Enter new receipt name"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={handleConfirmRename}
-                    disabled={isSubmittingRename || !renameValue.trim()}
-                    className="neo-btn neo-btn-primary !py-1 !px-3 text-xs font-mono font-black uppercase shadow-[1px_1px_0_0_#121212] disabled:opacity-50"
-                  >
-                    {isSubmittingRename ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsRenaming(false);
-                      setRenameError(null);
-                    }}
-                    disabled={isSubmittingRename}
-                    className="neo-btn neo-btn-secondary !py-1 !px-2.5 text-xs font-mono font-black uppercase"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {renameError && (
-                  <p className="text-[10px] font-mono font-bold text-red-600">
-                    {renameError}
+              {/* Cryptographic Proof Details */}
+              <div className="border-2 border-[#121212] rounded-xl p-3.5 bg-white shadow-[2px_2px_0_0_#121212] space-y-3 font-mono text-xs">
+                {/* Receipt Name in Canonical Commitment */}
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase font-black">
+                    <span>Receipt Name (Anchored in Canonical Commitment)</span>
+                  </div>
+                  <p className="text-[11px] font-mono font-bold text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1">
+                    {receiptName || "Unnamed Receipt"}
                   </p>
+                </div>
+
+                {/* Receipt Hash */}
+                <div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
+                    <span>Receipt Canonical Hash (keccak256)</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(receiptHash, "receiptHash")}
+                      className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                      title="Copy receipt canonical hash"
+                      aria-label="Copy receipt canonical hash"
+                    >
+                      <ContextualIconSwap
+                        isActive={copiedField === "receiptHash"}
+                        initialIcon={<Copy className="h-3 w-3" />}
+                        activeIcon={
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        }
+                      />
+                      <span>
+                        {copiedField === "receiptHash" ? "Copied" : "Copy"}
+                      </span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
+                    {receiptHash}
+                  </p>
+                </div>
+
+                {/* Monad Tx Hash */}
+                {txHash && (
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
+                      <span>Monad Testnet Transaction Hash</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(txHash, "txHash")}
+                        className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                        title="Copy transaction hash"
+                        aria-label="Copy transaction hash"
+                      >
+                        <ContextualIconSwap
+                          isActive={copiedField === "txHash"}
+                          initialIcon={<Copy className="h-3 w-3" />}
+                          activeIcon={
+                            <Check className="h-3 w-3 text-emerald-600" />
+                          }
+                        />
+                        <span>
+                          {copiedField === "txHash" ? "Copied" : "Copy"}
+                        </span>
+                      </button>
+                    </div>
+                    <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
+                      {txHash}
+                    </p>
+                  </div>
+                )}
+
+                {/* Contract Address */}
+                <div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
+                    <span>Registry Contract (Monad Testnet 10143)</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(contractAddress, "contract")}
+                      className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
+                      title="Copy contract address"
+                      aria-label="Copy contract address"
+                    >
+                      <ContextualIconSwap
+                        isActive={copiedField === "contract"}
+                        initialIcon={<Copy className="h-3 w-3" />}
+                        activeIcon={
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        }
+                      />
+                      <span>
+                        {copiedField === "contract" ? "Copied" : "Copy"}
+                      </span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
+                    {contractAddress}
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Hash Verification Box */}
+              <div className="p-3.5 bg-[#fbf9fe] border-2 border-[#836EF9]/50 rounded-xl shadow-[2px_2px_0_0_#121212] space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
+                    <span className="text-xs font-mono font-black uppercase text-[#121212]">
+                      Deterministic Verification
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleVerifyOnchain}
+                    disabled={isVerifying}
+                    className="neo-btn neo-btn-secondary !py-1 !px-2.5 text-[10px] font-mono font-black uppercase flex items-center gap-1.5 shadow-[1px_1px_0_0_#121212]"
+                  >
+                    <RefreshCw
+                      className={`h-3 w-3 ${isVerifying ? "animate-spin" : ""}`}
+                    />
+                    <span>{isVerifying ? "Verifying..." : "Verify Hash"}</span>
+                  </button>
+                </div>
+
+                {verifyStatus === "match" && (
+                  <div className="p-2 bg-emerald-50 border border-emerald-500 rounded text-xs font-mono text-emerald-800 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>
+                      Cryptographic Match: Receipt canonical hash exactly
+                      matches the Monad Testnet commitment.
+                    </span>
+                  </div>
+                )}
+
+                {verifyStatus === "mismatch" && (
+                  <div className="p-2 bg-red-50 border border-red-500 rounded text-xs font-mono text-red-800 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+                    <span>
+                      Verification Failed: Receipt file does not match the
+                      blockchain commitment.
+                    </span>
+                  </div>
                 )}
               </div>
-            )}
 
-            {/* Rename Success Notice */}
-            {renameSuccessNotice && (
-              <div className="mt-3 p-2.5 bg-amber-50 border-2 border-amber-500 rounded-xl text-xs font-mono text-amber-900 shadow-[1px_1px_0_0_#121212] flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px]">{renameSuccessNotice}</p>
-              </div>
-            )}
-
-            {/* Status Pill */}
-            <div className="mt-4 pt-3 border-t-2 border-[#121212] flex items-center justify-between">
-              <span className="text-xs font-mono font-black uppercase text-slate-600">
-                Verification Status
-              </span>
-              {isVerified ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black uppercase font-mono bg-[#dcfce7] text-[#15803d] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Verified on Monad</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black uppercase font-mono bg-amber-100 text-amber-900 border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-                  <span>
-                    {activeBundle.receipt_data?.version &&
-                    activeBundle.receipt_data.version > 1
-                      ? "Re-verification Required"
-                      : "Verification Pending"}
-                  </span>
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Cryptographic Proof Details */}
-          <div className="border-2 border-[#121212] rounded-xl p-3.5 bg-white shadow-[2px_2px_0_0_#121212] space-y-3 font-mono text-xs">
-            {/* Receipt Name in Canonical Commitment */}
-            <div>
-              <div className="text-[10px] text-slate-500 uppercase font-black">
-                <span>Receipt Name (Anchored in Canonical Commitment)</span>
-              </div>
-              <p className="text-[11px] font-mono font-bold text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1">
-                {receiptName || "Unnamed Receipt"}
-              </p>
-            </div>
-
-            {/* Receipt Hash */}
-            <div>
-              <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
-                <span>Receipt Canonical Hash (keccak256)</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(receiptHash, "receiptHash")}
-                  className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
-                  title="Copy receipt canonical hash"
-                  aria-label="Copy receipt canonical hash"
-                >
-                  <ContextualIconSwap
-                    isActive={copiedField === "receiptHash"}
-                    initialIcon={<Copy className="h-3 w-3" />}
-                    activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
-                  />
-                  <span>
-                    {copiedField === "receiptHash" ? "Copied" : "Copy"}
-                  </span>
-                </button>
-              </div>
-              <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
-                {receiptHash}
-              </p>
-            </div>
-
-            {/* Monad Tx Hash */}
-            {txHash && (
-              <div>
-                <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
-                  <span>Monad Testnet Transaction Hash</span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(txHash, "txHash")}
-                    className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
-                    title="Copy transaction hash"
-                    aria-label="Copy transaction hash"
-                  >
-                    <ContextualIconSwap
-                      isActive={copiedField === "txHash"}
-                      initialIcon={<Copy className="h-3 w-3" />}
-                      activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
-                    />
-                    <span>{copiedField === "txHash" ? "Copied" : "Copy"}</span>
-                  </button>
+              {/* Included Transactions List */}
+              <div className="border-2 border-[#121212] rounded-xl overflow-hidden bg-white shadow-[2px_2px_0_0_#121212]">
+                <div className="bg-[#f3f4f6] px-3 py-2 border-b-2 border-[#121212] flex items-center justify-between text-[10px] font-black uppercase font-mono text-slate-600">
+                  <span>Included Transactions ({bundledTxs.length})</span>
+                  <span>Amount</span>
                 </div>
-                <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
-                  {txHash}
-                </p>
-              </div>
-            )}
 
-            {/* Contract Address */}
-            <div>
-              <div className="flex items-center justify-between text-[10px] text-slate-500 uppercase font-black">
-                <span>Registry Contract (Monad Testnet 10143)</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(contractAddress, "contract")}
-                  className="relative hover:text-[#836EF9] flex items-center gap-1 transition-colors duration-150 ease-out after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']"
-                  title="Copy contract address"
-                  aria-label="Copy contract address"
-                >
-                  <ContextualIconSwap
-                    isActive={copiedField === "contract"}
-                    initialIcon={<Copy className="h-3 w-3" />}
-                    activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
-                  />
-                  <span>{copiedField === "contract" ? "Copied" : "Copy"}</span>
-                </button>
-              </div>
-              <p className="text-[11px] font-mono break-all text-slate-800 bg-[#f8f9fa] p-1.5 rounded border border-slate-300 mt-1 select-all">
-                {contractAddress}
-              </p>
-            </div>
-          </div>
+                <div className="divide-y divide-slate-200 max-h-48 overflow-y-auto">
+                  {bundledTxs.map((tx, idx) => (
+                    <div
+                      key={tx.id || idx}
+                      className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition-colors duration-150 ease-out"
+                    >
+                      <div className="min-w-0 pr-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono text-slate-400">
+                            {idx + 1}.
+                          </span>
+                          <p className="text-xs font-black uppercase text-[#121212] truncate">
+                            {tx.merchant}
+                          </p>
+                        </div>
+                        <p className="text-[10px] font-mono text-slate-500 mt-0.5">
+                          {"date" in tx && tx.date
+                            ? tx.date
+                            : "date" in tx
+                              ? String(tx.date)
+                              : ""}
+                        </p>
+                      </div>
 
-          {/* Live Hash Verification Box */}
-          <div className="p-3.5 bg-[#fbf9fe] border-2 border-[#836EF9]/50 rounded-xl shadow-[2px_2px_0_0_#121212] space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
-                <span className="text-xs font-mono font-black uppercase text-[#121212]">
-                  Deterministic Verification
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleVerifyOnchain}
-                disabled={isVerifying}
-                className="neo-btn neo-btn-secondary !py-1 !px-2.5 text-[10px] font-mono font-black uppercase flex items-center gap-1.5 shadow-[1px_1px_0_0_#121212]"
-              >
-                <RefreshCw
-                  className={`h-3 w-3 ${isVerifying ? "animate-spin" : ""}`}
-                />
-                <span>{isVerifying ? "Verifying..." : "Verify Hash"}</span>
-              </button>
-            </div>
-
-            {verifyStatus === "match" && (
-              <div className="p-2 bg-emerald-50 border border-emerald-500 rounded text-xs font-mono text-emerald-800 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>
-                  Cryptographic Match: Receipt canonical hash exactly matches
-                  the Monad Testnet commitment.
-                </span>
-              </div>
-            )}
-
-            {verifyStatus === "mismatch" && (
-              <div className="p-2 bg-red-50 border border-red-500 rounded text-xs font-mono text-red-800 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-                <span>
-                  Verification Failed: Receipt file does not match the
-                  blockchain commitment.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Included Transactions List */}
-          <div className="border-2 border-[#121212] rounded-xl overflow-hidden bg-white shadow-[2px_2px_0_0_#121212]">
-            <div className="bg-[#f3f4f6] px-3 py-2 border-b-2 border-[#121212] flex items-center justify-between text-[10px] font-black uppercase font-mono text-slate-600">
-              <span>Included Transactions ({bundledTxs.length})</span>
-              <span>Amount</span>
-            </div>
-
-            <div className="divide-y divide-slate-200 max-h-48 overflow-y-auto">
-              {bundledTxs.map((tx, idx) => (
-                <div
-                  key={tx.id || idx}
-                  className="px-3 py-2 flex items-center justify-between hover:bg-[#faf5ff] transition-colors duration-150 ease-out"
-                >
-                  <div className="min-w-0 pr-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {idx + 1}.
-                      </span>
-                      <p className="text-xs font-black uppercase text-[#121212] truncate">
-                        {tx.merchant}
-                      </p>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs font-mono font-black tabular-nums text-[#121212]">
+                          -${Number(tx.amount).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[10px] font-mono text-slate-500 mt-0.5">
-                      {"date" in tx && tx.date
-                        ? tx.date
-                        : "date" in tx
-                          ? String(tx.date)
-                          : ""}
-                    </p>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <p className="text-xs font-mono font-black tabular-nums text-[#121212]">
-                      -${Number(tx.amount).toFixed(2)}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+
+            {/* Footer Actions */}
+            <div className="p-4 border-t-2 border-[#121212] bg-[#fbf9fe] flex flex-wrap items-center justify-between gap-2">
+              <ReceiptExportDropdown
+                align="left"
+                receiptData={extractCanonicalReceiptData(
+                  activeBundle,
+                  bundledTxs,
+                  contractAddress,
+                )}
+              />
+
+              <div className="flex items-center gap-2">
+                {explorerUrl && (
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="neo-btn neo-btn-primary !py-2 !px-3 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
+                  >
+                    <MonadLogo className="h-3.5 w-3.5" />
+                    <span>View on Monad</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="neo-btn neo-btn-secondary !py-2 !px-3 text-xs font-mono font-black uppercase"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        {/* Footer Actions */}
-        <div className="p-4 border-t-2 border-[#121212] bg-[#fbf9fe] flex flex-wrap items-center justify-between gap-2">
-          <ReceiptExportDropdown
-            align="left"
-            receiptData={extractCanonicalReceiptData(
-              activeBundle,
-              bundledTxs,
-              contractAddress,
-            )}
-          />
-
-          <div className="flex items-center gap-2">
-            {explorerUrl && (
-              <a
-                href={explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="neo-btn neo-btn-primary !py-2 !px-3 text-xs font-mono font-black uppercase flex items-center gap-1.5 shadow-[2px_2px_0_0_#121212]"
-              >
-                <MonadLogo className="h-3.5 w-3.5" />
-                <span>View on Monad</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="neo-btn neo-btn-secondary !py-2 !px-3 text-xs font-mono font-black uppercase"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  )}
-</AnimatePresence>
+      )}
+    </AnimatePresence>
   );
 }

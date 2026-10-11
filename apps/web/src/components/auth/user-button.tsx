@@ -71,7 +71,9 @@ export function UserButton() {
   const [copied, setCopied] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
-  const [targetWalletForEdit, setTargetWalletForEdit] = useState<string | null>(null);
+  const [targetWalletForEdit, setTargetWalletForEdit] = useState<string | null>(
+    null,
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -119,21 +121,21 @@ export function UserButton() {
   // Check which accounts are linked
   const hasLinkedExternalWallet = Boolean(
     (externalEvmWallets && externalEvmWallets.length > 0) ||
-      wallets.some((w) => w.walletClientType !== "privy") ||
-      user?.linkedAccounts?.some(
-        (a) =>
-          a.type === "wallet" &&
-          (a as { walletClientType?: string }).walletClientType !== "privy",
-      ),
+    wallets.some((w) => w.walletClientType !== "privy") ||
+    user?.linkedAccounts?.some(
+      (a) =>
+        a.type === "wallet" &&
+        (a as { walletClientType?: string }).walletClientType !== "privy",
+    ),
   );
   const hasLinkedEmail = Boolean(
     user?.email?.address ||
-      (user?.email && typeof user.email === "string") ||
-      user?.linkedAccounts?.some((a) => a.type === "email"),
+    (user?.email && typeof user.email === "string") ||
+    user?.linkedAccounts?.some((a) => a.type === "email"),
   );
   const hasLinkedGoogle = Boolean(
     user?.google ||
-      user?.linkedAccounts?.some((a) => a.type === "google_oauth"),
+    user?.linkedAccounts?.some((a) => a.type === "google_oauth"),
   );
   const hasLinkedPasskey = Boolean(
     user?.linkedAccounts?.some((a) => a.type === "passkey"),
@@ -158,35 +160,30 @@ export function UserButton() {
     (typeof user?.email === "string" ? user.email : null) ||
     (
       user?.linkedAccounts?.find((a) => a.type === "email") as
-        | { address?: string }
-        | undefined
+        { address?: string } | undefined
     )?.address;
 
   const linkedGoogleEmail =
     user?.google?.email ||
     (
       user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
-        | { email?: string }
-        | undefined
+        { email?: string } | undefined
     )?.email;
   const linkedGoogleSubject =
     user?.google?.subject ||
     (
       user?.linkedAccounts?.find((a) => a.type === "google_oauth") as
-        | { subject?: string }
-        | undefined
+        { subject?: string } | undefined
     )?.subject;
 
   const linkedPasskeyId =
     (
       user?.linkedAccounts?.find((a) => a.type === "passkey") as
-        | { credentialId?: string; id?: string }
-        | undefined
+        { credentialId?: string; id?: string } | undefined
     )?.credentialId ||
     (
       user?.linkedAccounts?.find((a) => a.type === "passkey") as
-        | { credentialId?: string; id?: string }
-        | undefined
+        { credentialId?: string; id?: string } | undefined
     )?.id;
 
   // Unlinking is permitted when user has at least 2 connected identity methods
@@ -377,7 +374,8 @@ export function UserButton() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 font-mono leading-tight mb-2.5">
-                  Connect an EVM wallet to fetch transaction history and anchor receipts on Monad.
+                  Connect an EVM wallet to fetch transaction history and anchor
+                  receipts on Monad.
                 </p>
                 <button
                   type="button"
@@ -600,7 +598,9 @@ export function UserButton() {
                   )}
                   {canUnlink && linkedExternalWalletAddress && (
                     <button
-                      onClick={() => handleUnlinkWallet(linkedExternalWalletAddress)}
+                      onClick={() =>
+                        handleUnlinkWallet(linkedExternalWalletAddress)
+                      }
                       className="text-[9px] font-mono font-black uppercase text-slate-400 hover:text-red-600 px-1 py-0.5 transition hover:underline"
                       title="Unlink external wallet"
                     >
@@ -818,7 +818,9 @@ export function UserButton() {
         isOpen={nicknameModalOpen}
         onClose={() => setNicknameModalOpen(false)}
         walletAddress={targetWalletForEdit}
-        currentNickname={targetWalletForEdit ? getNickname(targetWalletForEdit) : nickname}
+        currentNickname={
+          targetWalletForEdit ? getNickname(targetWalletForEdit) : nickname
+        }
         onSave={(newNickname, targetAddress) => {
           setNickname(newNickname, targetAddress || undefined);
         }}
@@ -826,4 +828,3 @@ export function UserButton() {
     </div>
   );
 }
-

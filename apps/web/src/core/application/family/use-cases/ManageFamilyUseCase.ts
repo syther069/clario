@@ -18,33 +18,47 @@ export class ManageFamilyUseCase {
   ) {}
 
   // Members
-  public async getFamilyMembers(householdId: string): Promise<FamilyMemberEntity[]> {
+  public async getFamilyMembers(
+    householdId: string,
+  ): Promise<FamilyMemberEntity[]> {
     return this.repository.getFamilyMembers(householdId);
   }
 
-  public async saveFamilyMember(member: FamilyMemberEntity): Promise<FamilyMemberEntity> {
+  public async saveFamilyMember(
+    member: FamilyMemberEntity,
+  ): Promise<FamilyMemberEntity> {
     const saved = await this.repository.saveFamilyMember(member);
     this.notifyUpdate(member.householdId);
     return saved;
   }
 
-  public async deleteFamilyMember(memberId: string, householdId?: string): Promise<void> {
+  public async deleteFamilyMember(
+    memberId: string,
+    householdId?: string,
+  ): Promise<void> {
     await this.repository.deleteFamilyMember(memberId, householdId);
     this.notifyUpdate(householdId);
   }
 
   // Bills
-  public async getFamilyBills(householdId: string): Promise<FamilyBillEntity[]> {
+  public async getFamilyBills(
+    householdId: string,
+  ): Promise<FamilyBillEntity[]> {
     return this.repository.getFamilyBills(householdId);
   }
 
-  public async saveFamilyBill(bill: FamilyBillEntity): Promise<FamilyBillEntity> {
+  public async saveFamilyBill(
+    bill: FamilyBillEntity,
+  ): Promise<FamilyBillEntity> {
     const saved = await this.repository.saveFamilyBill(bill);
     this.notifyUpdate(bill.householdId);
     return saved;
   }
 
-  public async deleteFamilyBill(billId: string, householdId?: string): Promise<void> {
+  public async deleteFamilyBill(
+    billId: string,
+    householdId?: string,
+  ): Promise<void> {
     await this.repository.deleteFamilyBill(billId, householdId);
     this.notifyUpdate(householdId);
   }
@@ -55,22 +69,34 @@ export class ManageFamilyUseCase {
     paidByName?: string,
     householdId?: string,
   ): Promise<void> {
-    await this.repository.updateFamilyBillStatus(billId, status, paidByName, householdId);
+    await this.repository.updateFamilyBillStatus(
+      billId,
+      status,
+      paidByName,
+      householdId,
+    );
     this.notifyUpdate(householdId);
   }
 
   // Settlements
-  public async getFamilySettlements(householdId: string): Promise<FamilySettlementEntity[]> {
+  public async getFamilySettlements(
+    householdId: string,
+  ): Promise<FamilySettlementEntity[]> {
     return this.repository.getFamilySettlements(householdId);
   }
 
-  public async saveFamilySettlement(settlement: FamilySettlementEntity): Promise<FamilySettlementEntity> {
+  public async saveFamilySettlement(
+    settlement: FamilySettlementEntity,
+  ): Promise<FamilySettlementEntity> {
     const saved = await this.repository.saveFamilySettlement(settlement);
     this.notifyUpdate(settlement.householdId);
     return saved;
   }
 
-  public async deleteFamilySettlement(settlementId: string, householdId?: string): Promise<void> {
+  public async deleteFamilySettlement(
+    settlementId: string,
+    householdId?: string,
+  ): Promise<void> {
     await this.repository.deleteFamilySettlement(settlementId, householdId);
     this.notifyUpdate(householdId);
   }

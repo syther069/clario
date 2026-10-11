@@ -26,8 +26,10 @@ describe("Domain: Transaction Filter Engine", () => {
       merchant: "Monad Gas",
       description: "Gas Fee",
       payment_method: "onchain_monad",
-      blockchain_tx_hash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-      monad_tx_hash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      blockchain_tx_hash:
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      monad_tx_hash:
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
       amount: 150,
       date: "2026-10-08",
       category_id: "crypto_ops",
@@ -49,27 +51,47 @@ describe("Domain: Transaction Filter Engine", () => {
   });
 
   it("filters expenses by search query", () => {
-    const results = filterExpenses(sampleTransactions, { search: "Trader" }, refDate);
+    const results = filterExpenses(
+      sampleTransactions,
+      { search: "Trader" },
+      refDate,
+    );
     expect(results).toHaveLength(1);
     expect(results[0]?.id).toBe("tx-fiat");
   });
 
   it("filters expenses by amount criteria", () => {
-    const under50 = filterExpenses(sampleTransactions, { amount: "under50" }, refDate);
+    const under50 = filterExpenses(
+      sampleTransactions,
+      { amount: "under50" },
+      refDate,
+    );
     expect(under50).toHaveLength(1);
     expect(under50[0]?.id).toBe("tx-fiat");
 
-    const mid = filterExpenses(sampleTransactions, { amount: "50to200" }, refDate);
+    const mid = filterExpenses(
+      sampleTransactions,
+      { amount: "50to200" },
+      refDate,
+    );
     expect(mid).toHaveLength(1);
     expect(mid[0]?.id).toBe("tx-onchain");
   });
 
   it("filters expenses by verification status", () => {
-    const verified = filterExpenses(sampleTransactions, { verification: "verified" }, refDate);
+    const verified = filterExpenses(
+      sampleTransactions,
+      { verification: "verified" },
+      refDate,
+    );
     expect(verified).toHaveLength(1);
     expect(verified[0]?.id).toBe("tx-onchain");
 
-    const unverified = filterExpenses(sampleTransactions, { verification: "unverified" }, refDate);
+    const unverified = filterExpenses(
+      sampleTransactions,
+      { verification: "unverified" },
+      refDate,
+    );
     expect(unverified).toHaveLength(1);
     expect(unverified[0]?.id).toBe("tx-fiat");
   });

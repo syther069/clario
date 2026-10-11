@@ -75,7 +75,7 @@ export type VerificationResult = (typeof VERIFICATION_RESULTS)[number];
 
 /**
  * Supported workspace roles.
- * Governed by RULES.md section 8.
+ * Governed by Clario Workspace Role Specification.
  */
 export const WORKSPACE_ROLES = [
   "OWNER_ROLE",

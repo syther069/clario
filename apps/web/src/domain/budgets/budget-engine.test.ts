@@ -49,7 +49,10 @@ describe("Domain: Budget Engine", () => {
   });
 
   it("calculates budget status list with overrun detection", () => {
-    const statuses = calculateBudgetStatusList(sampleBudgets, sampleTransactions);
+    const statuses = calculateBudgetStatusList(
+      sampleBudgets,
+      sampleTransactions,
+    );
     expect(statuses).toHaveLength(2);
 
     const food = statuses.find((s) => s.id === "b-1");

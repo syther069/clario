@@ -1,4 +1,7 @@
-import type { FamilyMember as FamilyMemberDTO, FamilyRole } from "@/lib/supabase/types";
+import type {
+  FamilyMember as FamilyMemberDTO,
+  FamilyRole,
+} from "@/lib/supabase/types";
 
 /**
  * Clean Architecture - Domain Layer
@@ -42,7 +45,8 @@ export class FamilyMemberEntity {
     this.email = props.email ?? null;
     this.role = props.role || "member";
     this.avatarColor = props.avatarColor ?? props.avatar_color ?? null;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): FamilyMemberDTO {

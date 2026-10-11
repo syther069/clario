@@ -43,7 +43,10 @@ export async function POST(req: Request) {
     // Verify cryptographic signature
     const verification = verifyPrivyWebhook(rawBody, headers, webhookSecret);
     if (!verification.isValid) {
-      console.warn("[Privy Webhook] Rejected invalid webhook:", verification.error);
+      console.warn(
+        "[Privy Webhook] Rejected invalid webhook:",
+        verification.error,
+      );
       return NextResponse.json(
         {
           error: {
@@ -60,7 +63,12 @@ export async function POST(req: Request) {
       event = JSON.parse(rawBody) as PrivyWebhookEvent;
     } catch {
       return NextResponse.json(
-        { error: { code: "INVALID_JSON", message: "Malformed webhook JSON payload" } },
+        {
+          error: {
+            code: "INVALID_JSON",
+            message: "Malformed webhook JSON payload",
+          },
+        },
         { status: 400 },
       );
     }
@@ -73,10 +81,16 @@ export async function POST(req: Request) {
     if (event.type === "user.wallet_created") {
       const data = event.data as {
         user?: { id?: string };
-        wallet?: { address?: string; chain_type?: string; wallet_client_type?: string };
+        wallet?: {
+          address?: string;
+          chain_type?: string;
+          wallet_client_type?: string;
+        };
       };
 
-      const walletAddress = data.wallet?.address?.toLowerCase() || "0x0000000000000000000000000000000000000000";
+      const walletAddress =
+        data.wallet?.address?.toLowerCase() ||
+        "0x0000000000000000000000000000000000000000";
       const userId = data.user?.id || "unknown";
       const chainType = data.wallet?.chain_type || "ethereum";
       const walletClientType = data.wallet?.wallet_client_type || "privy";
@@ -99,7 +113,10 @@ export async function POST(req: Request) {
           timestamp,
         });
       } catch (err) {
-        console.warn("[Privy Webhook] Supabase audit insert non-fatal error:", err);
+        console.warn(
+          "[Privy Webhook] Supabase audit insert non-fatal error:",
+          err,
+        );
       }
 
       // Record in PostgreSQL Database audit_events if available
@@ -142,7 +159,9 @@ export async function POST(req: Request) {
         wallet?: { address?: string };
       };
 
-      const walletAddress = (data.wallet?.address || "0x0000000000000000000000000000000000000000").toLowerCase();
+      const walletAddress = (
+        data.wallet?.address || "0x0000000000000000000000000000000000000000"
+      ).toLowerCase();
       const userId = data.user?.id || "unknown";
       const auditEventId = randomUUID();
       const timestamp = new Date().toISOString();
@@ -161,7 +180,10 @@ export async function POST(req: Request) {
           timestamp,
         });
       } catch (err) {
-        console.warn("[Privy Webhook] Supabase wallet.restored audit error:", err);
+        console.warn(
+          "[Privy Webhook] Supabase wallet.restored audit error:",
+          err,
+        );
       }
 
       return NextResponse.json({
@@ -188,7 +210,9 @@ export async function POST(req: Request) {
         timestamp?: number | string;
       };
 
-      const walletAddress = data.wallet?.address?.toLowerCase() || "0x0000000000000000000000000000000000000000";
+      const walletAddress =
+        data.wallet?.address?.toLowerCase() ||
+        "0x0000000000000000000000000000000000000000";
       const userId = data.user?.id || "unknown";
       const auditEventId = randomUUID();
       const timestamp = new Date().toISOString();
@@ -212,7 +236,10 @@ export async function POST(req: Request) {
           timestamp,
         });
       } catch (err) {
-        console.warn("[Privy Webhook] Supabase security audit log non-fatal error:", err);
+        console.warn(
+          "[Privy Webhook] Supabase security audit log non-fatal error:",
+          err,
+        );
       }
 
       // Record in PostgreSQL Database audit_events if available
@@ -230,7 +257,11 @@ export async function POST(req: Request) {
             workspaceId,
             walletAddress,
             walletAddress,
-            JSON.stringify({ userId, address: walletAddress, exportTimestamp: data.timestamp }),
+            JSON.stringify({
+              userId,
+              address: walletAddress,
+              exportTimestamp: data.timestamp,
+            }),
           ],
         );
       } catch {
@@ -270,7 +301,11 @@ export async function POST(req: Request) {
 
       const txHash = data.transaction_hash || data.hash || "0xunknown";
       const chainId = String(data.chain_id || data.chainId || "10143");
-      const walletAddress = (data.wallet_address || data.from || "0x0000000000000000000000000000000000000000").toLowerCase();
+      const walletAddress = (
+        data.wallet_address ||
+        data.from ||
+        "0x0000000000000000000000000000000000000000"
+      ).toLowerCase();
       const blockNumber = data.block_number || data.blockNumber;
       const timestamp = new Date().toISOString();
       const auditEventId = randomUUID();
@@ -347,7 +382,10 @@ export async function POST(req: Request) {
             .or(`monad_tx_hash.eq.${txHash},blockchain_tx_hash.eq.${txHash}`);
         }
       } catch (err) {
-        console.warn("[Privy Webhook] Supabase transaction audit non-fatal error:", err);
+        console.warn(
+          "[Privy Webhook] Supabase transaction audit non-fatal error:",
+          err,
+        );
       }
 
       // Record in PostgreSQL Database audit_events if available
@@ -366,7 +404,12 @@ export async function POST(req: Request) {
             walletAddress,
             `PRIVY_${action}`,
             txHash,
-            JSON.stringify({ chainId, blockNumber, error: data.error, eventType: event.type }),
+            JSON.stringify({
+              chainId,
+              blockNumber,
+              error: data.error,
+              eventType: event.type,
+            }),
           ],
         );
       } catch {
@@ -421,6 +464,7 @@ export async function GET() {
       "wallet.restored",
       "wallet.private_key_export (private_key.exported)",
     ],
-    signatureSpecification: "Svix HMAC-SHA256 (svix-id, svix-timestamp, svix-signature)",
+    signatureSpecification:
+      "Svix HMAC-SHA256 (svix-id, svix-timestamp, svix-signature)",
   });
 }

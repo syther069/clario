@@ -92,13 +92,13 @@ export function NeoSelect({
       case "ArrowDown":
         e.preventDefault();
         setHighlightedIndex((prev) =>
-          prev < options.length - 1 ? prev + 1 : 0
+          prev < options.length - 1 ? prev + 1 : 0,
         );
         break;
       case "ArrowUp":
         e.preventDefault();
         setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : options.length - 1
+          prev > 0 ? prev - 1 : options.length - 1,
         );
         break;
       case "Home":

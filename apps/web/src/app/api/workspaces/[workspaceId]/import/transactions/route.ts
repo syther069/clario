@@ -52,7 +52,7 @@ export async function GET(
     const cursor = url.searchParams.get("cursor") ?? undefined;
 
     const service = new TransactionImportService(db);
-    
+
     // Serverless execution timeout guard: Ensure route always completes well within Vercel execution bounds (8.5s)
     const result = await Promise.race([
       service.listCandidates(workspaceId, {
@@ -61,21 +61,30 @@ export async function GET(
         limit,
         cursor,
       }),
-      new Promise<{ items: never[]; nextCursor: null; provider: string; disclaimer: string }>((resolve) =>
+      new Promise<{
+        items: never[];
+        nextCursor: null;
+        provider: string;
+        disclaimer: string;
+      }>((resolve) =>
         setTimeout(
           () =>
             resolve({
               items: [],
               nextCursor: null,
               provider: "alchemy",
-              disclaimer: "Provider query timed out across networks. Please select a specific chain.",
+              disclaimer:
+                "Provider query timed out across networks. Please select a specific chain.",
             }),
           8500,
         ),
       ),
     ]);
 
-    return NextResponse.json({ ok: true, ...result }, { status: 200, headers: { "Content-Type": "application/json" } });
+    return NextResponse.json(
+      { ok: true, ...result },
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   } catch (error) {
     if (error instanceof RecordNotFoundError) {
       return NextResponse.json(

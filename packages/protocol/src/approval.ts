@@ -59,7 +59,6 @@ export interface ClarioApprovalDomain {
 
 /**
  * EIP-712 message payload for reviewer approval / rejection / changes request.
- * See architecture.md §7.3.
  */
 export interface ClarioApprovalMessage {
   readonly workspaceId: WorkspaceId;

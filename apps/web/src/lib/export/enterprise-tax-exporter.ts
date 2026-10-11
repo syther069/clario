@@ -13,7 +13,11 @@
  * - All exports include Monad explorer URLs for instant external auditor verification.
  */
 
-import { CLARIO_REGISTRY_ADDRESS, MONAD_TESTNET_CHAIN_ID, getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
+import {
+  CLARIO_REGISTRY_ADDRESS,
+  MONAD_TESTNET_CHAIN_ID,
+  getMonadExplorerTxUrl,
+} from "@/lib/blockchain/registry";
 
 export type ExportableTransaction = {
   id?: string | undefined;
@@ -77,7 +81,11 @@ export function mapCategoryToScheduleCLine(categorySlug: string): {
     case "marketing":
     case "advertising":
     case "promotion":
-      return { lineNumber: "Line 8", lineTitle: "Advertising", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 8",
+        lineTitle: "Advertising",
+        deductiblePct: 100,
+      };
 
     case "transportation":
     case "travel_transport":
@@ -86,41 +94,69 @@ export function mapCategoryToScheduleCLine(categorySlug: string): {
     case "fuel":
     case "rideshare":
     case "uber":
-      return { lineNumber: "Line 9", lineTitle: "Car and truck expenses", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 9",
+        lineTitle: "Car and truck expenses",
+        deductiblePct: 100,
+      };
 
     case "contract_labor":
     case "contractor":
     case "freelancer":
     case "subcontractor":
-      return { lineNumber: "Line 11", lineTitle: "Contract labor", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 11",
+        lineTitle: "Contract labor",
+        deductiblePct: 100,
+      };
 
     case "equipment":
     case "hardware":
     case "machinery":
-      return { lineNumber: "Line 13", lineTitle: "Depreciation and section 179 expense", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 13",
+        lineTitle: "Depreciation and section 179 expense",
+        deductiblePct: 100,
+      };
 
     case "office_expenses":
     case "office":
     case "stationery":
     case "postage":
-      return { lineNumber: "Line 18", lineTitle: "Office expense", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 18",
+        lineTitle: "Office expense",
+        deductiblePct: 100,
+      };
 
     case "cloud_hosting":
     case "hosting":
     case "server_rental":
     case "aws":
     case "equipment_rent":
-      return { lineNumber: "Line 20b", lineTitle: "Rent or lease: Other business property", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 20b",
+        lineTitle: "Rent or lease: Other business property",
+        deductiblePct: 100,
+      };
 
     case "supplies":
     case "materials":
-      return { lineNumber: "Line 22", lineTitle: "Supplies", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 22",
+        lineTitle: "Supplies",
+        deductiblePct: 100,
+      };
 
     case "travel":
     case "lodging":
     case "hotel":
     case "flight":
-      return { lineNumber: "Line 24a", lineTitle: "Travel (away from home)", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 24a",
+        lineTitle: "Travel (away from home)",
+        deductiblePct: 100,
+      };
 
     case "food_dining":
     case "meals":
@@ -128,14 +164,22 @@ export function mapCategoryToScheduleCLine(categorySlug: string): {
     case "business_meals":
     case "restaurant":
       // Standard IRS 50% business meal deduction rule
-      return { lineNumber: "Line 24b", lineTitle: "Deductible meals (50% limit)", deductiblePct: 50 };
+      return {
+        lineNumber: "Line 24b",
+        lineTitle: "Deductible meals (50% limit)",
+        deductiblePct: 50,
+      };
 
     case "utilities":
     case "internet":
     case "telecom":
     case "phone":
     case "electricity":
-      return { lineNumber: "Line 25", lineTitle: "Utilities", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 25",
+        lineTitle: "Utilities",
+        deductiblePct: 100,
+      };
 
     case "software_tools":
     case "software":
@@ -144,7 +188,11 @@ export function mapCategoryToScheduleCLine(categorySlug: string): {
     case "dev_tools":
     case "domain_names":
     default:
-      return { lineNumber: "Line 27a", lineTitle: "Other expenses (Software, SaaS, Services)", deductiblePct: 100 };
+      return {
+        lineNumber: "Line 27a",
+        lineTitle: "Other expenses (Software, SaaS, Services)",
+        deductiblePct: 100,
+      };
   }
 }
 
@@ -169,17 +217,29 @@ export function generateQuickBooksCsv(
   ];
 
   const rows = transactions.map((tx) => {
-    const date = tx.date || (tx.timestamp ? tx.timestamp.split("T")[0] : "") || new Date().toISOString().split("T")[0]!;
-    const txType = (tx.type || "expense").toLowerCase() === "income" ? "Deposit" : "Expense";
+    const date =
+      tx.date ||
+      (tx.timestamp ? tx.timestamp.split("T")[0] : "") ||
+      new Date().toISOString().split("T")[0]!;
+    const txType =
+      (tx.type || "expense").toLowerCase() === "income" ? "Deposit" : "Expense";
     const payee = escapeCsv(tx.merchant || tx.description || "Vendor");
     const category = escapeCsv(
       typeof tx.category === "string"
         ? tx.category
-        : (tx.category as { name?: string })?.name || tx.category_id || "General Expense",
+        : (tx.category as { name?: string })?.name ||
+            tx.category_id ||
+            "General Expense",
     );
     const amount = Number(tx.amount || 0).toFixed(2);
-    const memo = escapeCsv(tx.notes || tx.description || `Clario Verifiable Expense (${workspaceName})`);
-    const refNum = escapeCsv(tx.id ? `CLR-${tx.id.slice(0, 8).toUpperCase()}` : "CLR-TX");
+    const memo = escapeCsv(
+      tx.notes ||
+        tx.description ||
+        `Clario Verifiable Expense (${workspaceName})`,
+    );
+    const refNum = escapeCsv(
+      tx.id ? `CLR-${tx.id.slice(0, 8).toUpperCase()}` : "CLR-TX",
+    );
     const monadHash = tx.blockchain_tx_hash || tx.monad_tx_hash || "";
     const explorerUrl = monadHash ? getMonadExplorerTxUrl(monadHash) : "";
 
@@ -217,10 +277,14 @@ export function generateXeroCsv(
   ];
 
   const rows = transactions.map((tx) => {
-    const date = tx.date || (tx.timestamp ? tx.timestamp.split("T")[0] : "") || new Date().toISOString().split("T")[0]!;
-    const amount = (tx.type || "expense").toLowerCase() === "expense"
-      ? `-${Number(tx.amount || 0).toFixed(2)}`
-      : Number(tx.amount || 0).toFixed(2);
+    const date =
+      tx.date ||
+      (tx.timestamp ? tx.timestamp.split("T")[0] : "") ||
+      new Date().toISOString().split("T")[0]!;
+    const amount =
+      (tx.type || "expense").toLowerCase() === "expense"
+        ? `-${Number(tx.amount || 0).toFixed(2)}`
+        : Number(tx.amount || 0).toFixed(2);
     const payee = escapeCsv(tx.merchant || tx.description || "Payee");
     const desc = escapeCsv(tx.description || `${payee} - Clario Verified`);
     const monadRef = tx.blockchain_tx_hash
@@ -273,16 +337,27 @@ export function generateScheduleCReport(
   // Initialize
   scheduleCOrders.forEach((lineNum) => {
     const sample = mapCategoryToScheduleCLine(
-      lineNum === "Line 8" ? "marketing" :
-      lineNum === "Line 9" ? "transportation" :
-      lineNum === "Line 11" ? "contractor" :
-      lineNum === "Line 13" ? "equipment" :
-      lineNum === "Line 18" ? "office" :
-      lineNum === "Line 20b" ? "cloud_hosting" :
-      lineNum === "Line 22" ? "supplies" :
-      lineNum === "Line 24a" ? "travel" :
-      lineNum === "Line 24b" ? "meals" :
-      lineNum === "Line 25" ? "utilities" : "software",
+      lineNum === "Line 8"
+        ? "marketing"
+        : lineNum === "Line 9"
+          ? "transportation"
+          : lineNum === "Line 11"
+            ? "contractor"
+            : lineNum === "Line 13"
+              ? "equipment"
+              : lineNum === "Line 18"
+                ? "office"
+                : lineNum === "Line 20b"
+                  ? "cloud_hosting"
+                  : lineNum === "Line 22"
+                    ? "supplies"
+                    : lineNum === "Line 24a"
+                      ? "travel"
+                      : lineNum === "Line 24b"
+                        ? "meals"
+                        : lineNum === "Line 25"
+                          ? "utilities"
+                          : "software",
     );
     lineMap[lineNum] = {
       lineNumber: lineNum,
@@ -302,13 +377,17 @@ export function generateScheduleCReport(
     // Only process deductible expenses
     if (tx.type && tx.type !== "expense") return;
 
-    const catSlug = typeof tx.category === "string"
-      ? tx.category
-      : (tx.category as { slug?: string; name?: string })?.slug || tx.category_id || "other";
+    const catSlug =
+      typeof tx.category === "string"
+        ? tx.category
+        : (tx.category as { slug?: string; name?: string })?.slug ||
+          tx.category_id ||
+          "other";
 
     const mapping = mapCategoryToScheduleCLine(catSlug);
     const amount = Number(tx.amount || 0);
-    const deductiblePortion = Math.round((amount * (mapping.deductiblePct / 100)) * 100) / 100;
+    const deductiblePortion =
+      Math.round(amount * (mapping.deductiblePct / 100) * 100) / 100;
 
     if (!lineMap[mapping.lineNumber]) {
       lineMap[mapping.lineNumber] = {
@@ -351,14 +430,16 @@ export function generateScheduleCReport(
     "Transaction Count",
   ];
 
-  const csvRows = lines.map((l) => [
-    escapeCsv(l.lineNumber),
-    escapeCsv(l.lineTitle),
-    l.totalSpent.toFixed(2),
-    `${l.deductiblePercentage}%`,
-    l.deductibleAmount.toFixed(2),
-    l.transactionCount,
-  ].join(","));
+  const csvRows = lines.map((l) =>
+    [
+      escapeCsv(l.lineNumber),
+      escapeCsv(l.lineTitle),
+      l.totalSpent.toFixed(2),
+      `${l.deductiblePercentage}%`,
+      l.deductibleAmount.toFixed(2),
+      l.transactionCount,
+    ].join(","),
+  );
 
   const csvSummary = [
     "",
@@ -370,14 +451,17 @@ export function generateScheduleCReport(
     `Registry Contract,${CLARIO_REGISTRY_ADDRESS}`,
   ].join("\n");
 
-  const csvContent = [csvHeaders.join(","), ...csvRows, "", csvSummary].join("\n");
+  const csvContent = [csvHeaders.join(","), ...csvRows, "", csvSummary].join(
+    "\n",
+  );
 
   return {
     taxYear,
     generatedAt: new Date().toISOString(),
     totalGrossExpenses: Math.round(totalGross * 100) / 100,
     totalDeductibleExpenses: Math.round(totalDeductible * 100) / 100,
-    nonDeductiblePortion: Math.round((totalGross - totalDeductible) * 100) / 100,
+    nonDeductiblePortion:
+      Math.round((totalGross - totalDeductible) * 100) / 100,
     lines,
     csvContent,
   };
@@ -464,7 +548,9 @@ export function generateCorporateAuditPackagePdf(
   c("/F2 16 Tf");
   c("0.07 0.07 0.07 rg");
   c("50 728 Td");
-  c(`(${escapePdf(data.companyName.toUpperCase())} - CORPORATE AUDIT PACKAGE) Tj`);
+  c(
+    `(${escapePdf(data.companyName.toUpperCase())} - CORPORATE AUDIT PACKAGE) Tj`,
+  );
   c("ET");
 
   // Subtitle
@@ -472,7 +558,9 @@ export function generateCorporateAuditPackagePdf(
   c("/F1 9 Tf");
   c("0.4 0.4 0.4 rg");
   c("50 716 Td");
-  c(`(Cryptographically Anchored on Monad Testnet [Chain ID ${data.monadChainId}] - Period: ${escapePdf(data.reportPeriod)}) Tj`);
+  c(
+    `(Cryptographically Anchored on Monad Testnet [Chain ID ${data.monadChainId}] - Period: ${escapePdf(data.reportPeriod)}) Tj`,
+  );
   c("ET");
 
   // Metadata cards
@@ -489,10 +577,14 @@ export function generateCorporateAuditPackagePdf(
   c(`(TOTAL RECONCILED EXPENSES: $${data.totalVolumeUsd.toFixed(2)} USD) Tj`);
   c("0 -15 Td");
   c(`/F1 9 Tf`);
-  c(`(Transaction Count: ${data.totalExpensesCount} | Verified Contract: ${data.contractAddress}) Tj`);
+  c(
+    `(Transaction Count: ${data.totalExpensesCount} | Verified Contract: ${data.contractAddress}) Tj`,
+  );
   c("0 -15 Td");
   c(`/F3 8 Tf`);
-  c(`(Invariant Guarantees: Strict Dual Authorization, Zero-Duplicate Payout, AI Has No Autonomous Authority) Tj`);
+  c(
+    `(Invariant Guarantees: Strict Dual Authorization, Zero-Duplicate Payout, AI Has No Autonomous Authority) Tj`,
+  );
   c("ET");
 
   // Table Header
@@ -523,7 +615,9 @@ export function generateCorporateAuditPackagePdf(
     c("0.5 w");
     c(`36 ${currY - 4} 540 0.5 re s`);
 
-    const shortTxHash = tx.monadTxHash ? `${tx.monadTxHash.slice(0, 10)}...` : "Committed";
+    const shortTxHash = tx.monadTxHash
+      ? `${tx.monadTxHash.slice(0, 10)}...`
+      : "Committed";
 
     c("BT");
     c("/F3 8 Tf");
@@ -567,7 +661,9 @@ export function generateCorporateAuditPackagePdf(
   c("/F1 7 Tf");
   c("0.3 0.3 0.3 rg");
   c(`0 -12 Td`);
-  c(`(Private evidence stored securely off-chain. Hashes, approvals, and commitments verified on Monad Testnet.) Tj`);
+  c(
+    `(Private evidence stored securely off-chain. Hashes, approvals, and commitments verified on Monad Testnet.) Tj`,
+  );
   c("ET");
 
   // Signoff Box
@@ -587,11 +683,17 @@ export function generateCorporateAuditPackagePdf(
   objects.push(
     `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 7 0 R /Resources << /Font << /F1 4 0 R /F2 5 0 R /F3 6 0 R >> >> >>\nendobj`,
   );
-  objects.push(`7 0 obj\n<< /Length ${streamLength} >>\nstream\n${streamContent}\nendstream\nendobj`);
+  objects.push(
+    `7 0 obj\n<< /Length ${streamLength} >>\nstream\n${streamContent}\nendstream\nendobj`,
+  );
 
   // Build final PDF buffer
   let offset = 0;
-  const xref: string[] = ["xref", "0 " + (objects.length + 1), "0000000000 65535 f "];
+  const xref: string[] = [
+    "xref",
+    "0 " + (objects.length + 1),
+    "0000000000 65535 f ",
+  ];
 
   const body: string[] = [];
   body.push("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
@@ -620,8 +722,5 @@ function escapeCsv(str: string): string {
 }
 
 function escapePdf(str: string): string {
-  return str
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)");
+  return str.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }

@@ -31,7 +31,8 @@ export async function POST(req: Request) {
         {
           error: {
             code: "RATE_LIMITED",
-            message: "Too many workspace creation attempts. Please retry shortly.",
+            message:
+              "Too many workspace creation attempts. Please retry shortly.",
           },
         },
         {

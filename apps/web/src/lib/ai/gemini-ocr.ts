@@ -109,7 +109,9 @@ Output strictly valid JSON matching this schema with no markdown or formatting o
 
     if (!response.ok) {
       const errText = await response.text();
-      console.warn(`Gemini API returned ${response.status}: ${errText}. Using intelligent fallback.`);
+      console.warn(
+        `Gemini API returned ${response.status}: ${errText}. Using intelligent fallback.`,
+      );
       return generateFallbackOcrResult();
     }
 
@@ -132,12 +134,15 @@ Output strictly valid JSON matching this schema with no markdown or formatting o
   }
 }
 
-export function sanitizeAndEnrichReceiptData(data: ExtractedReceiptData): ExtractedReceiptData {
+export function sanitizeAndEnrichReceiptData(
+  data: ExtractedReceiptData,
+): ExtractedReceiptData {
   const anomalies: ReceiptAnomaly[] = [...(data.anomalies || [])];
 
   // Mathematical consistency verification
   if (data.subtotal && data.taxAmount && data.totalAmount) {
-    const expectedTotal = Math.round((data.subtotal + data.taxAmount) * 100) / 100;
+    const expectedTotal =
+      Math.round((data.subtotal + data.taxAmount) * 100) / 100;
     const diff = Math.abs(expectedTotal - data.totalAmount);
     if (diff > 0.05) {
       anomalies.push({
@@ -152,9 +157,10 @@ export function sanitizeAndEnrichReceiptData(data: ExtractedReceiptData): Extrac
   const fieldConfidences = {
     merchant: data.fieldConfidences?.merchant ?? (data.confidenceScore || 0.95),
     date: data.fieldConfidences?.date ?? 0.98,
-    totalAmount: data.fieldConfidences?.totalAmount ?? (data.confidenceScore || 0.94),
+    totalAmount:
+      data.fieldConfidences?.totalAmount ?? (data.confidenceScore || 0.94),
     subtotal: data.fieldConfidences?.subtotal ?? 0.92,
-    taxAmount: data.fieldConfidences?.taxAmount ?? 0.90,
+    taxAmount: data.fieldConfidences?.taxAmount ?? 0.9,
     paymentMethod: data.fieldConfidences?.paymentMethod ?? 0.88,
   };
 
@@ -165,7 +171,10 @@ export function sanitizeAndEnrichReceiptData(data: ExtractedReceiptData): Extrac
   };
 }
 
-export function generateFallbackOcrResult(): { success: boolean; data: ExtractedReceiptData } {
+export function generateFallbackOcrResult(): {
+  success: boolean;
+  data: ExtractedReceiptData;
+} {
   return {
     success: true,
     data: {
@@ -190,13 +199,15 @@ export function generateFallbackOcrResult(): { success: boolean; data: Extracted
       anomalies: [
         {
           field: "taxAmount",
-          issue: "Sales tax rate is 9.0% (standard CA state rate). Review applicable exemption certificates if non-profit.",
+          issue:
+            "Sales tax rate is 9.0% (standard CA state rate). Review applicable exemption certificates if non-profit.",
           severity: "low",
         },
       ],
       items: [
         {
-          description: "Monad RPC Full Node Hosting (Compute Instance c7g.4xlarge)",
+          description:
+            "Monad RPC Full Node Hosting (Compute Instance c7g.4xlarge)",
           quantity: 1,
           unitPrice: 189.9,
           total: 189.9,

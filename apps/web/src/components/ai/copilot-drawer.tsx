@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import {
-  X,
-  Send,
-  Bot,
-  User,
-  Loader2,
-  AlertTriangle,
-} from "lucide-react";
+import { X, Send, Bot, User, Loader2, AlertTriangle } from "lucide-react";
 import {
   type CopilotMessage,
   type CopilotContext,
@@ -140,9 +133,7 @@ export function CopilotDrawer({
             </div>
             <div>
               <h2 className="text-base font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
-                <TextRoll className="text-base font-black">
-                  Clario
-                </TextRoll>
+                <TextRoll className="text-base font-black">Clario</TextRoll>
                 <span className="neo-badge neo-badge-purple">ASSISTANT</span>
               </h2>
               <p className="text-xs text-slate-500">

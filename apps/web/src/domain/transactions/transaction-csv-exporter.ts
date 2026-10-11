@@ -48,10 +48,12 @@ export function triggerCsvDownload(csvString: string, filename: string): void {
 /**
  * Convenience function to build and trigger CSV download.
  */
-export function exportTransactionsToCsv(transactions: Transaction[], filename?: string): void {
+export function exportTransactionsToCsv(
+  transactions: Transaction[],
+  filename?: string,
+): void {
   const dateStr = new Date().toISOString().split("T")[0]!;
   const name = filename || `clario_expenses_${dateStr}.csv`;
   const csv = buildExpensesCsv(transactions);
   triggerCsvDownload(csv, name);
 }
-

@@ -1,13 +1,20 @@
 import type { IPersonalModeRepository } from "../../domain/personal/ports/IPersonalModeRepository";
 import { BudgetEntity } from "../../domain/personal/entities/Budget";
 import { SubscriptionEntity } from "../../domain/personal/entities/Subscription";
-import type { Budget as BudgetDTO, Subscription as SubscriptionDTO } from "@/lib/supabase/types";
+import type {
+  Budget as BudgetDTO,
+  Subscription as SubscriptionDTO,
+} from "@/lib/supabase/types";
 import { IdentityScope } from "../../domain/common/IdentityScope";
 
 export const STORAGE_KEY_BUDGETS = "clario_personal_budgets";
 export const STORAGE_KEY_SUBSCRIPTIONS = "clario_personal_subscriptions";
 
-function readScoped<T>(baseKey: string, scopeId?: string, fallback: T[] = []): T[] {
+function readScoped<T>(
+  baseKey: string,
+  scopeId?: string,
+  fallback: T[] = [],
+): T[] {
   if (typeof window === "undefined" || !window.localStorage) return fallback;
   if (scopeId) IdentityScope.register(scopeId);
   const scopedKey = IdentityScope.getScopedKey(baseKey, scopeId);
@@ -58,11 +65,18 @@ export class LocalStoragePersonalRepository implements IPersonalModeRepository {
   }
 
   public getSubscriptions(scopeId?: string): SubscriptionEntity[] {
-    const dtoArray = readScoped<SubscriptionDTO>(STORAGE_KEY_SUBSCRIPTIONS, scopeId, []);
+    const dtoArray = readScoped<SubscriptionDTO>(
+      STORAGE_KEY_SUBSCRIPTIONS,
+      scopeId,
+      [],
+    );
     return dtoArray.map((dto) => SubscriptionEntity.fromDTO(dto));
   }
 
-  public saveSubscriptions(subscriptions: SubscriptionEntity[], scopeId?: string): void {
+  public saveSubscriptions(
+    subscriptions: SubscriptionEntity[],
+    scopeId?: string,
+  ): void {
     const dtoArray = subscriptions.map((s) => s.toDTO());
     writeScoped<SubscriptionDTO>(STORAGE_KEY_SUBSCRIPTIONS, dtoArray, scopeId);
   }

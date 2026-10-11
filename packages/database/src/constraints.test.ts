@@ -418,7 +418,8 @@ describe("PostgreSQL Constraints and Invariants Suite", () => {
     ).rejects.toThrow();
 
     // But a legitimate SEPARATE expense MUST SUCCEED
-    const otherExpenseId = "0x9999999999999999999999999999999999999999999999999999999999999999";
+    const otherExpenseId =
+      "0x9999999999999999999999999999999999999999999999999999999999999999";
     await client.query(
       `INSERT INTO expenses (workspace_id, expense_id, created_by, current_version)
        VALUES ($1, $2, $3, NULL);`,

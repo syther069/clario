@@ -72,7 +72,8 @@ export function BeforeAfterSection() {
           Why Crypto Teams Switch to Clario
         </h2>
         <p className="text-base sm:text-lg text-gray-700 mt-3 font-medium leading-relaxed text-pretty">
-          Verifiable cryptographic certainty versus traditional expense friction.
+          Verifiable cryptographic certainty versus traditional expense
+          friction.
         </p>
       </div>
 

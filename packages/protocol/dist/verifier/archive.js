@@ -3,6 +3,12 @@ import { validateVerificationPackageManifestV1 } from "../package/validate.js";
 const MAX_ARCHIVE_BYTES = 512 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 128 * 1024 * 1024;
 const MAX_ENTRIES = 10_000;
+const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+export function safeJsonReviver(key, value) {
+    if (DANGEROUS_KEYS.has(key))
+        return undefined;
+    return value;
+}
 function safePath(value) {
     const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
     const segments = normalized.split("/");
@@ -106,7 +112,7 @@ export function loadVerificationPackageZip(archive) {
         throw new Error("Verification package is missing manifest.json.");
     let parsed;
     try {
-        parsed = JSON.parse(manifestBytes.toString("utf8"));
+        parsed = JSON.parse(manifestBytes.toString("utf8"), safeJsonReviver);
     }
     catch {
         throw new Error("Verification package manifest.json is not valid JSON.");

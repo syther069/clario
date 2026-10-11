@@ -122,7 +122,8 @@ export function EditNicknameModal({
                 className="w-full rounded-xl border-2 border-[#121212] bg-white px-3.5 py-2.5 text-sm font-bold text-[#121212] placeholder:text-slate-400 shadow-[2px_2px_0_0_#121212] focus:outline-none focus:ring-2 focus:ring-[#836EF9] transition"
               />
               <p className="mt-1 text-[11px] text-slate-500">
-                This friendly name will appear across your Clario dashboards, navigation, and exports.
+                This friendly name will appear across your Clario dashboards,
+                navigation, and exports.
               </p>
             </div>
 

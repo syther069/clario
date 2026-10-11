@@ -354,10 +354,7 @@ export async function DELETE(request: NextRequest) {
       message: "Saved receipt successfully removed",
     });
   } catch (err: unknown) {
-    const message = sanitizeErrorMessage(
-      err,
-      "Failed to delete saved receipt",
-    );
+    const message = sanitizeErrorMessage(err, "Failed to delete saved receipt");
     return NextResponse.json(
       { success: false, error: message },
       { status: 500 },

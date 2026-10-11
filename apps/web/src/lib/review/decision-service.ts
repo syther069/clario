@@ -304,7 +304,10 @@ export class ReviewDecisionService {
       }
 
       // Invariant: Cannot approve an expense that is already settled or in active settlement
-      const checkReimb = await this.db.query<{ status: string; version: number }>(
+      const checkReimb = await this.db.query<{
+        status: string;
+        version: number;
+      }>(
         `SELECT status, version FROM reimbursements WHERE workspace_id = $1 AND expense_id = $2 AND status NOT IN ('failed', 'cancelled') LIMIT 1;`,
         [workspaceId, expenseId],
       );

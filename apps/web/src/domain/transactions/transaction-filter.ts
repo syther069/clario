@@ -34,18 +34,18 @@ export function isTxOnChain(t: Transaction): boolean {
 
   return Boolean(
     t.blockchain_tx_hash ||
-      t.monad_tx_hash ||
-      t.source === "onchain_monad" ||
-      t.source === "onchain_other" ||
-      t.category === "crypto_ops" ||
-      t.category_id === "crypto_ops" ||
-      pm.includes("onchain") ||
-      pm.includes("eth") ||
-      pm.includes("monad") ||
-      pm.includes("usdc") ||
-      pm.includes("usdt") ||
-      pm.includes("base") ||
-      pm.includes("arbitrum"),
+    t.monad_tx_hash ||
+    t.source === "onchain_monad" ||
+    t.source === "onchain_other" ||
+    t.category === "crypto_ops" ||
+    t.category_id === "crypto_ops" ||
+    pm.includes("onchain") ||
+    pm.includes("eth") ||
+    pm.includes("monad") ||
+    pm.includes("usdc") ||
+    pm.includes("usdt") ||
+    pm.includes("base") ||
+    pm.includes("arbitrum"),
   );
 }
 
@@ -90,7 +90,10 @@ export function filterExpenses(
           txDate.getFullYear() !== now.getFullYear())
       )
         return false;
-      if (criteria.date === "year" && txDate.getFullYear() !== now.getFullYear())
+      if (
+        criteria.date === "year" &&
+        txDate.getFullYear() !== now.getFullYear()
+      )
         return false;
     }
 
@@ -98,7 +101,8 @@ export function filterExpenses(
     if (criteria.amount && criteria.amount !== "all") {
       const amt = Number(t.amount || 0);
       if (criteria.amount === "under50" && amt >= 50) return false;
-      if (criteria.amount === "50to200" && (amt < 50 || amt > 200)) return false;
+      if (criteria.amount === "50to200" && (amt < 50 || amt > 200))
+        return false;
       if (criteria.amount === "over200" && amt <= 200) return false;
     }
 
@@ -121,8 +125,8 @@ export function filterExpenses(
     if (criteria.verification && criteria.verification !== "all") {
       const isVerified = Boolean(
         t.monad_tx_hash ||
-          t.verification_status === "verified" ||
-          t.blockchain_status === "confirmed",
+        t.verification_status === "verified" ||
+        t.blockchain_status === "confirmed",
       );
       if (criteria.verification === "verified" && !isVerified) return false;
       if (criteria.verification === "unverified" && isVerified) return false;

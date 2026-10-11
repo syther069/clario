@@ -9,21 +9,24 @@ import {
 describe("Security Audit Logger & Redaction Guard", () => {
   describe("redactSensitiveString", () => {
     it("redacts bearer tokens in string messages", () => {
-      const input = "User authenticated with Bearer eyJhbGciOiJIUzI1NiJ9.testToken";
+      const input =
+        "User authenticated with Bearer eyJhbGciOiJIUzI1NiJ9.testToken";
       const sanitized = redactSensitiveString(input);
       expect(sanitized).not.toContain("eyJhbGciOiJIUzI1NiJ9.testToken");
       expect(sanitized).toContain("Bearer [REDACTED]");
     });
 
     it("redacts provider API keys matching alch_ or sbp_ patterns", () => {
-      const input = "Failed request to provider with key alch_0123456789abcdef0123456789";
+      const input =
+        "Failed request to provider with key alch_0123456789abcdef0123456789";
       const sanitized = redactSensitiveString(input);
       expect(sanitized).not.toContain("alch_0123456789abcdef0123456789");
       expect(sanitized).toContain("[REDACTED_API_KEY]");
     });
 
     it("preserves non-sensitive transaction hashes and block numbers", () => {
-      const input = "Transaction 0x1111111111111111111111111111111111111111111111111111111111111111 confirmed at block 12345";
+      const input =
+        "Transaction 0x1111111111111111111111111111111111111111111111111111111111111111 confirmed at block 12345";
       const sanitized = redactSensitiveString(input);
       expect(sanitized).toBe(input);
     });
@@ -79,7 +82,9 @@ describe("Security Audit Logger & Redaction Guard", () => {
 
       const clean = sanitizeAuditPayload(maliciousPayload);
       expect(clean.name).toBe("legit");
-      expect(Object.prototype.hasOwnProperty.call(clean, "__proto__")).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(clean, "__proto__")).toBe(
+        false,
+      );
       expect((clean as Record<string, unknown>).polluted).toBeUndefined();
     });
 
@@ -92,7 +97,9 @@ describe("Security Audit Logger & Redaction Guard", () => {
 
       const clean = sanitizeAuditPayload(payload);
       expect(clean.token_symbol).toBe("USDC");
-      expect(clean.token_address).toBe("0x754704Bc059F8C67012fEd69BC8A327a5aafb603");
+      expect(clean.token_address).toBe(
+        "0x754704Bc059F8C67012fEd69BC8A327a5aafb603",
+      );
       expect(clean.amount).toBe("500000000");
     });
   });
@@ -123,7 +130,9 @@ describe("Security Audit Logger & Redaction Guard", () => {
         },
       });
 
-      expect(event.actorAddress).toBe("0x742d35cc6634c0532925a3b844bc454e4438f44e");
+      expect(event.actorAddress).toBe(
+        "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+      );
       const details = event.details as Record<string, unknown>;
       expect(details.passwordAttempt).toBe(REDACTED_MASK);
     });

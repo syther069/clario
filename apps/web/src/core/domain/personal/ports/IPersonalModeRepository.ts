@@ -10,5 +10,8 @@ export interface IPersonalModeRepository {
   getBudgets(scopeId?: string): BudgetEntity[];
   saveBudgets(budgets: BudgetEntity[], scopeId?: string): void;
   getSubscriptions(scopeId?: string): SubscriptionEntity[];
-  saveSubscriptions(subscriptions: SubscriptionEntity[], scopeId?: string): void;
+  saveSubscriptions(
+    subscriptions: SubscriptionEntity[],
+    scopeId?: string,
+  ): void;
 }

@@ -89,7 +89,9 @@ export function FreelancerDashboard({
   userAddress,
   currencySymbol = "$",
 }: FreelancerDashboardProps) {
-  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(null);
+  const [selectedProofTx, setSelectedProofTx] = useState<Transaction | null>(
+    null,
+  );
 
   const handleViewReceipt = (tx: Transaction) => {
     if (onViewReceipt) {
@@ -703,7 +705,11 @@ export function FreelancerDashboard({
     const rows = deductibleExpenses.map((tx) => [
       tx.date || tx.timestamp?.split("T")[0] || "",
       tx.merchant || "",
-      typeof tx.tax_category === "string" ? tx.tax_category : typeof tx.category === "string" ? tx.category : tx.category?.name || "General",
+      typeof tx.tax_category === "string"
+        ? tx.tax_category
+        : typeof tx.category === "string"
+          ? tx.category
+          : tx.category?.name || "General",
       tx.client_name || tx.project_name || "General Business",
       tx.amount,
       tx.currency || "USD",
@@ -1863,7 +1869,10 @@ export function FreelancerDashboard({
                   { value: "software_tools", label: "Software & Cloud Tools" },
                   { value: "office_expenses", label: "Office & Hardware" },
                   { value: "travel_meals", label: "Travel & Client Meals" },
-                  { value: "professional_services", label: "Professional & Legal" },
+                  {
+                    value: "professional_services",
+                    label: "Professional & Legal",
+                  },
                 ]}
               />
             </div>
@@ -2586,7 +2595,9 @@ export function FreelancerDashboard({
                     Cancel
                   </button>
                   <button type="submit" className="neo-btn neo-btn-primary">
-                    <span>{editingClient ? "Update Client" : "Save Client"}</span>
+                    <span>
+                      {editingClient ? "Update Client" : "Save Client"}
+                    </span>
                   </button>
                 </div>
               </form>

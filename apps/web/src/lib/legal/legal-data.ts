@@ -6,7 +6,14 @@ export interface LegalCalloutData {
 }
 
 export interface LegalTableRow {
-  cells: (string | { text: string; mono?: boolean; status?: "built" | "partial" | "planned" | "not_available" })[];
+  cells: (
+    | string
+    | {
+        text: string;
+        mono?: boolean;
+        status?: "built" | "partial" | "planned" | "not_available";
+      }
+  )[];
 }
 
 export interface LegalTableData {
@@ -86,7 +93,7 @@ export const PRIVACY_POLICY_DATA: LegalDocumentData = {
       number: "01",
       title: "Who We Are",
       paragraphs: [
-        "This Privacy Policy explains how Clario (\"we\", \"us\", or \"our\"), operated by [CONFIRM: legal entity name], processes information through the Clario web application and associated protocol interfaces.",
+        'This Privacy Policy explains how Clario ("we", "us", or "our"), operated by [CONFIRM: legal entity name], processes information through the Clario web application and associated protocol interfaces.',
         "Clario is a decentralized financial operations and cryptographic receipt verification platform. If you have questions about this policy or your data, contact us at [CONFIRM: privacy contact email] or write to [CONFIRM: registered address].",
       ],
     },
@@ -200,7 +207,12 @@ export const PRIVACY_POLICY_DATA: LegalDocumentData = {
       ],
       table: {
         caption: "Third-Party Providers & Data Flow",
-        headers: ["Provider", "Purpose", "Data Transmitted", "Storage Location"],
+        headers: [
+          "Provider",
+          "Purpose",
+          "Data Transmitted",
+          "Storage Location",
+        ],
         rows: [
           {
             cells: [
@@ -304,7 +316,7 @@ export const PRIVACY_POLICY_DATA: LegalDocumentData = {
       number: "10",
       title: "Changes to This Privacy Policy",
       paragraphs: [
-        "We may update this policy periodically to reflect software releases or regulatory changes. When updates occur, we will update the \"Last updated\" date at the top of this page. Material revisions will be highlighted on our official communication channels.",
+        'We may update this policy periodically to reflect software releases or regulatory changes. When updates occur, we will update the "Last updated" date at the top of this page. Material revisions will be highlighted on our official communication channels.',
       ],
     },
   ],
@@ -335,7 +347,7 @@ export const TERMS_OF_SERVICE_DATA: LegalDocumentData = {
       number: "01",
       title: "What Clario Is and Is Not",
       paragraphs: [
-        "These Terms of Service (\"Terms\") form a binding agreement between you and [CONFIRM: legal entity name] (\"Clario\", \"we\", \"us\"). By accessing or using the Clario web application, smart contracts, or offline verification tools, you agree to these Terms.",
+        'These Terms of Service ("Terms") form a binding agreement between you and [CONFIRM: legal entity name] ("Clario", "we", "us"). By accessing or using the Clario web application, smart contracts, or offline verification tools, you agree to these Terms.',
         "Clario is a non-custodial software application that enables users to organize receipt evidence, compute cryptographic commitments, and verify records against EVM-compatible registries.",
       ],
       subsections: [
@@ -444,7 +456,7 @@ export const TERMS_OF_SERVICE_DATA: LegalDocumentData = {
       number: "09",
       title: "Disclaimers and Limitation of Liability",
       paragraphs: [
-        "CLARIO IS PROVIDED \"AS IS\" AND \"AS AVAILABLE\", WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WITHOUT LIMITATION WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, OR NON-INFRINGEMENT.",
+        'CLARIO IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WITHOUT LIMITATION WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, OR NON-INFRINGEMENT.',
         "TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL CLARIO, ITS FOUNDERS, EMPLOYEES, AGENTS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, DATA, USE, GOODWILL, OR ASSETS RESULTING FROM: (A) YOUR USE OF OR INABILITY TO USE THE SERVICE; (B) SMART CONTRACT DEFECTS OR TESTNET BUGS; (C) UNAUTHORIZED ACCESS TO YOUR DEVICE OR WALLET; (D) BLOCKCHAIN NETWORK DOWNTIME OR REORGS; OR (E) LOSS OF UNBACKED LOCAL BROWSER DATA.",
       ],
     },
@@ -601,7 +613,10 @@ export const SECURITY_DATA: LegalDocumentData = {
             cells: [
               { text: "ClarioRegistry (Coordinator)" },
               { text: "Monad Testnet (10143)" },
-              { text: "0x92f9B76673C1D88c9E3c490A88eB95b08823bA87", mono: true },
+              {
+                text: "0x92f9B76673C1D88c9E3c490A88eB95b08823bA87",
+                mono: true,
+              },
               { text: "View on MonadExplorer" },
             ],
           },
@@ -641,14 +656,18 @@ export const SECURITY_DATA: LegalDocumentData = {
             cells: [
               { text: "Onchain Monad Testnet Registries" },
               { text: "Built", status: "built" },
-              { text: "Workspace, Expense, Decision, and Settlement contracts" },
+              {
+                text: "Workspace, Expense, Decision, and Settlement contracts",
+              },
             ],
           },
           {
             cells: [
               { text: "Duplicate Settlement Prevention" },
               { text: "Built", status: "built" },
-              { text: "Enforced by contract revert and database unique constraints" },
+              {
+                text: "Enforced by contract revert and database unique constraints",
+              },
             ],
           },
           {
@@ -676,7 +695,9 @@ export const SECURITY_DATA: LegalDocumentData = {
             cells: [
               { text: "Third-Party Security Audit" },
               { text: "Not Available", status: "not_available" },
-              { text: "Unaudited testnet preview; audit planned before mainnet" },
+              {
+                text: "Unaudited testnet preview; audit planned before mainnet",
+              },
             ],
           },
           {

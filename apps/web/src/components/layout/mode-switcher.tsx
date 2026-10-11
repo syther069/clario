@@ -63,7 +63,10 @@ export function ModeSwitcher({ currentMode, onModeChange }: ModeSwitcherProps) {
       }
     }
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     }

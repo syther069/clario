@@ -26,6 +26,11 @@ export interface IFamilyRepository {
 
   // Settlements
   getFamilySettlements(householdId: string): Promise<FamilySettlementEntity[]>;
-  saveFamilySettlement(settlement: FamilySettlementEntity): Promise<FamilySettlementEntity>;
-  deleteFamilySettlement(settlementId: string, householdId?: string): Promise<void>;
+  saveFamilySettlement(
+    settlement: FamilySettlementEntity,
+  ): Promise<FamilySettlementEntity>;
+  deleteFamilySettlement(
+    settlementId: string,
+    householdId?: string,
+  ): Promise<void>;
 }

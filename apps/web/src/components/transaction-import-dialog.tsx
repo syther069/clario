@@ -176,7 +176,11 @@ export function TransactionImportDialog({
         });
 
         const contentType = res.headers.get("content-type") || "";
-        let data: { items?: TransactionImportCandidate[]; nextCursor?: string | null; error?: { message?: string } } | null = null;
+        let data: {
+          items?: TransactionImportCandidate[];
+          nextCursor?: string | null;
+          error?: { message?: string };
+        } | null = null;
 
         if (contentType.includes("application/json")) {
           data = await res.json();
@@ -190,11 +194,16 @@ export function TransactionImportDialog({
                 : `Indexer service error (HTTP ${res.status}). RPC indexer temporarily unreachable.`,
             );
           }
-          throw new Error("Unexpected response format from transaction service.");
+          throw new Error(
+            "Unexpected response format from transaction service.",
+          );
         }
 
         if (!res.ok) {
-          throw new Error(data?.error?.message || `Failed to fetch transactions (HTTP ${res.status}).`);
+          throw new Error(
+            data?.error?.message ||
+              `Failed to fetch transactions (HTTP ${res.status}).`,
+          );
         }
 
         const newItems: TransactionImportCandidate[] = data?.items || [];
@@ -206,7 +215,9 @@ export function TransactionImportDialog({
         setNextCursor(data?.nextCursor || null);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Error loading transactions from Alchemy API.",
+          err instanceof Error
+            ? err.message
+            : "Error loading transactions from Alchemy API.",
         );
       } finally {
         setLoading(false);
@@ -258,15 +269,22 @@ export function TransactionImportDialog({
       });
 
       const contentType = res.headers.get("content-type") || "";
-      let data: { transaction?: TransactionImportCandidate; error?: { message?: string } } | null = null;
+      let data: {
+        transaction?: TransactionImportCandidate;
+        error?: { message?: string };
+      } | null = null;
 
       if (contentType.includes("application/json")) {
         data = await res.json();
       } else {
         if (!res.ok) {
-          throw new Error(`Server returned HTTP ${res.status} (${res.statusText || "Lookup failed"}).`);
+          throw new Error(
+            `Server returned HTTP ${res.status} (${res.statusText || "Lookup failed"}).`,
+          );
         }
-        throw new Error("Unexpected response format from transaction lookup service.");
+        throw new Error(
+          "Unexpected response format from transaction lookup service.",
+        );
       }
 
       if (!res.ok) {
@@ -336,7 +354,8 @@ export function TransactionImportDialog({
               className="truncate text-xs text-slate-600 font-medium"
               title={IMPORTED_FACTS_DISCLAIMER}
             >
-              Transactions are indexed directly from external blockchain networks.
+              Transactions are indexed directly from external blockchain
+              networks.
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -390,7 +409,9 @@ export function TransactionImportDialog({
                     <Globe className="h-5 w-5 text-[#836EF9]" />
                   ) : (
                     <CryptoChainIcon
-                      chain={activeTab === "wallet" ? selectedChainId : lookupChainId}
+                      chain={
+                        activeTab === "wallet" ? selectedChainId : lookupChainId
+                      }
                       className="h-5 w-5"
                     />
                   )}
@@ -405,10 +426,12 @@ export function TransactionImportDialog({
                       onChange={(val) => setSelectedChainId(Number(val))}
                       options={[
                         { value: "0", label: "✨ All Chains (Auto-Discover)" },
-                        ...SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
-                          value: String(c.chainId),
-                          label: `${c.name} (${c.shortName})`,
-                        })),
+                        ...SUPPORTED_IMPORT_CHAINS.map(
+                          (c: SourceChainConfig) => ({
+                            value: String(c.chainId),
+                            label: `${c.name} (${c.shortName})`,
+                          }),
+                        ),
                       ]}
                     />
                   ) : (
@@ -418,10 +441,12 @@ export function TransactionImportDialog({
                       buttonClassName="h-10 w-full rounded-xl"
                       value={String(lookupChainId)}
                       onChange={(val) => setLookupChainId(Number(val))}
-                      options={SUPPORTED_IMPORT_CHAINS.map((c: SourceChainConfig) => ({
-                        value: String(c.chainId),
-                        label: `${c.name} (${c.shortName})`,
-                      }))}
+                      options={SUPPORTED_IMPORT_CHAINS.map(
+                        (c: SourceChainConfig) => ({
+                          value: String(c.chainId),
+                          label: `${c.name} (${c.shortName})`,
+                        }),
+                      )}
                     />
                   )}
                 </div>
@@ -506,7 +531,8 @@ export function TransactionImportDialog({
                       Connect your wallet to fetch transactions
                     </p>
                     <p className="text-xs text-slate-500 max-w-sm">
-                      An active EVM wallet is required to index onchain transactions.
+                      An active EVM wallet is required to index onchain
+                      transactions.
                     </p>
                   </div>
                   {onConnectWallet && (
@@ -534,7 +560,8 @@ export function TransactionImportDialog({
                       </p>
                       {selectedChainId === 0 && (
                         <p className="text-[11px] text-slate-500 font-mono mt-1">
-                          Tip: Scanning all networks at once may time out. Try selecting a specific chain or use Search by Hash.
+                          Tip: Scanning all networks at once may time out. Try
+                          selecting a specific chain or use Search by Hash.
                         </p>
                       )}
                     </div>
@@ -557,7 +584,10 @@ export function TransactionImportDialog({
                           onClick={() => setSelectedChainId(10143)}
                           className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
-                          <CryptoChainIcon chain={10143} className="h-3.5 w-3.5" />
+                          <CryptoChainIcon
+                            chain={10143}
+                            className="h-3.5 w-3.5"
+                          />
                           <span>Monad</span>
                         </button>
                         <button
@@ -565,7 +595,10 @@ export function TransactionImportDialog({
                           onClick={() => setSelectedChainId(8453)}
                           className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
-                          <CryptoChainIcon chain={8453} className="h-3.5 w-3.5" />
+                          <CryptoChainIcon
+                            chain={8453}
+                            className="h-3.5 w-3.5"
+                          />
                           <span>Base</span>
                         </button>
                         <button
@@ -573,7 +606,10 @@ export function TransactionImportDialog({
                           onClick={() => setSelectedChainId(11155111)}
                           className="border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#121212] font-mono font-black uppercase text-xs px-3 py-2 rounded-xl shadow-[2px_2px_0_0_#121212] flex items-center gap-1.5 transition-[transform,box-shadow,background-color] duration-150 ease-out active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
                         >
-                          <CryptoChainIcon chain={11155111} className="h-3.5 w-3.5" />
+                          <CryptoChainIcon
+                            chain={11155111}
+                            className="h-3.5 w-3.5"
+                          />
                           <span>Sepolia</span>
                         </button>
                       </>
@@ -609,7 +645,8 @@ export function TransactionImportDialog({
                       Scanning EVM Networks...
                     </p>
                     <p className="text-xs font-mono text-slate-600">
-                      Finding wallet activity and calculating values (≥ $1.00 USD)
+                      Finding wallet activity and calculating values (≥ $1.00
+                      USD)
                     </p>
                   </div>
 
@@ -619,7 +656,10 @@ export function TransactionImportDialog({
                         key={chain.chainId}
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-[#121212] bg-white text-[10px] font-mono font-bold text-slate-700 shadow-[1px_1px_0_0_#121212] animate-pulse"
                       >
-                        <CryptoChainIcon chain={chain.chainId} className="h-3 w-3" />
+                        <CryptoChainIcon
+                          chain={chain.chainId}
+                          className="h-3 w-3"
+                        />
                         {chain.shortName}
                       </span>
                     ))}
@@ -644,7 +684,8 @@ export function TransactionImportDialog({
                       <p>
                         No transactions found on{" "}
                         <span className="font-bold text-[#121212]">
-                          {currentChainObj?.name || `Chain ID ${selectedChainId}`}
+                          {currentChainObj?.name ||
+                            `Chain ID ${selectedChainId}`}
                         </span>
                         .
                       </p>
@@ -674,7 +715,9 @@ export function TransactionImportDialog({
                         <span className="text-slate-700 truncate">
                           Most active on{" "}
                           <strong className="text-[#121212] font-black">
-                            {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.name || `Chain ${mostActiveChainId}`}
+                            {SUPPORTED_IMPORT_CHAINS.find(
+                              (c) => c.chainId === mostActiveChainId,
+                            )?.name || `Chain ${mostActiveChainId}`}
                           </strong>{" "}
                           ({chainCounts[mostActiveChainId]} transactions).
                         </span>
@@ -684,7 +727,10 @@ export function TransactionImportDialog({
                         onClick={() => setSelectedChainId(mostActiveChainId)}
                         className="text-[10px] font-mono font-black uppercase px-2.5 py-1 rounded-lg border-2 border-[#121212] bg-white hover:bg-slate-50 text-[#836EF9] shadow-[1px_1px_0_0_#121212] transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 shrink-0"
                       >
-                        Filter to {SUPPORTED_IMPORT_CHAINS.find((c) => c.chainId === mostActiveChainId)?.shortName || "Chain"}
+                        Filter to{" "}
+                        {SUPPORTED_IMPORT_CHAINS.find(
+                          (c) => c.chainId === mostActiveChainId,
+                        )?.shortName || "Chain"}
                       </button>
                     </div>
                   )}
@@ -692,7 +738,11 @@ export function TransactionImportDialog({
                   {/* Summary Bar */}
                   <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1">
                     <span>
-                      Found <strong className="text-[#121212]">{transactions.length}</strong> transactions (≥ $1.00 USD)
+                      Found{" "}
+                      <strong className="text-[#121212]">
+                        {transactions.length}
+                      </strong>{" "}
+                      transactions (≥ $1.00 USD)
                     </span>
                     <span className="text-[10px] font-mono uppercase font-bold text-[#836EF9] flex items-center gap-1">
                       <AlchemyLogo className="h-3 w-3" /> Live Ingestion
@@ -728,7 +778,9 @@ export function TransactionImportDialog({
                                   : "bg-[#dcfce7] text-[#16a34a]"
                               }`}
                               title={
-                                isSender ? "Outgoing / Sent" : "Incoming / Received"
+                                isSender
+                                  ? "Outgoing / Sent"
+                                  : "Incoming / Received"
                               }
                             >
                               {isSender ? (
@@ -753,7 +805,8 @@ export function TransactionImportDialog({
                                   className="font-mono tabular-nums text-base font-black text-[#121212]"
                                   title={`${tx.formattedAmount} ${tx.assetSymbol}`}
                                 >
-                                  {formatCryptoAmount(tx.formattedAmount)} {tx.assetSymbol}
+                                  {formatCryptoAmount(tx.formattedAmount)}{" "}
+                                  {tx.assetSymbol}
                                 </span>
                                 {tx.usdValueFormatted && (
                                   <span className="font-mono tabular-nums text-xs font-bold text-[#15803d] bg-[#dcfce7] px-1.5 py-0.5 rounded-md border border-[#121212]">
@@ -930,8 +983,12 @@ export function TransactionImportDialog({
                       </div>
                       <div className="min-w-0">
                         <div className="font-mono tabular-nums text-base font-black text-[#121212] flex items-center gap-2 flex-wrap">
-                          <span title={`${lookupCandidate.formattedAmount} ${lookupCandidate.assetSymbol}`}>
-                            {formatCryptoAmount(lookupCandidate.formattedAmount)}{" "}
+                          <span
+                            title={`${lookupCandidate.formattedAmount} ${lookupCandidate.assetSymbol}`}
+                          >
+                            {formatCryptoAmount(
+                              lookupCandidate.formattedAmount,
+                            )}{" "}
                             {lookupCandidate.assetSymbol}
                           </span>
                           {lookupCandidate.usdValueFormatted && (
@@ -945,8 +1002,10 @@ export function TransactionImportDialog({
                               className="h-3 w-3"
                             />
                             {SUPPORTED_IMPORT_CHAINS.find(
-                              (c) => c.chainId === lookupCandidate.sourceChainId,
-                            )?.shortName || `Chain ${lookupCandidate.sourceChainId}`}
+                              (c) =>
+                                c.chainId === lookupCandidate.sourceChainId,
+                            )?.shortName ||
+                              `Chain ${lookupCandidate.sourceChainId}`}
                           </span>
                         </div>
                         <div className="text-xs font-mono text-slate-500 mt-1 flex items-center gap-2">
@@ -1000,7 +1059,8 @@ export function TransactionImportDialog({
                     <div className="truncate min-w-0">
                       <span className="text-slate-400">From:</span>{" "}
                       <span className="font-bold text-[#121212]">
-                        {lookupCandidate.sender.slice(0, 6)}...{lookupCandidate.sender.slice(-4)}
+                        {lookupCandidate.sender.slice(0, 6)}...
+                        {lookupCandidate.sender.slice(-4)}
                       </span>
                     </div>
                     <div className="truncate min-w-0">
@@ -1014,25 +1074,30 @@ export function TransactionImportDialog({
                     <div className="sm:text-right min-w-0">
                       <span className="text-slate-400">Time:</span>{" "}
                       <span className="font-bold tabular-nums text-[#121212]">
-                        {formatTransactionDateTime(lookupCandidate.blockTimestamp)}
+                        {formatTransactionDateTime(
+                          lookupCandidate.blockTimestamp,
+                        )}
                       </span>
                     </div>
                   </div>
                 </div>
-              ) : !lookupLoading && (
-                <div className="text-center py-12 border-2 border-dashed border-[#121212] rounded-xl bg-[#fafafa] p-6 flex flex-col items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
-                    <Search className="h-5 w-5" />
+              ) : (
+                !lookupLoading && (
+                  <div className="text-center py-12 border-2 border-dashed border-[#121212] rounded-xl bg-[#fafafa] p-6 flex flex-col items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#836EF9] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212]">
+                      <Search className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-mono text-sm font-bold uppercase text-[#121212] mb-1">
+                        Search by Transaction Hash
+                      </p>
+                      <p className="text-xs font-mono text-slate-500 max-w-sm">
+                        Enter any transaction hash above to look up its details
+                        and import.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-mono text-sm font-bold uppercase text-[#121212] mb-1">
-                      Search by Transaction Hash
-                    </p>
-                    <p className="text-xs font-mono text-slate-500 max-w-sm">
-                      Enter any transaction hash above to look up its details and import.
-                    </p>
-                  </div>
-                </div>
+                )
               )}
             </div>
           )}

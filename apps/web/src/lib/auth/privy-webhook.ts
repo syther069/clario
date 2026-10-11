@@ -131,7 +131,8 @@ export function verifyPrivyWebhook(
   if (!svixId || !svixTimestamp || !svixSignature) {
     return {
       isValid: false,
-      error: "Missing required Svix webhook headers (svix-id, svix-timestamp, svix-signature).",
+      error:
+        "Missing required Svix webhook headers (svix-id, svix-timestamp, svix-signature).",
     };
   }
 

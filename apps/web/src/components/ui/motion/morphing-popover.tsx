@@ -24,9 +24,7 @@ const MorphingPopoverContext = createContext<MorphingPopoverContextType | null>(
 export function useMorphingPopover() {
   const context = useContext(MorphingPopoverContext);
   if (!context) {
-    throw new Error(
-      "useMorphingPopover must be used within a MorphingPopover",
-    );
+    throw new Error("useMorphingPopover must be used within a MorphingPopover");
   }
   return context;
 }

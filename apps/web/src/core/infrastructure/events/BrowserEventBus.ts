@@ -1,4 +1,7 @@
-import type { IEventBus, EventHandler } from "../../application/ports/IEventBus";
+import type {
+  IEventBus,
+  EventHandler,
+} from "../../application/ports/IEventBus";
 
 /**
  * Clean Architecture - Infrastructure Layer
@@ -10,7 +13,10 @@ export class BrowserEventBus implements IEventBus {
   private broadcastChannel: BroadcastChannel | null = null;
 
   public constructor() {
-    if (typeof window !== "undefined" && typeof BroadcastChannel !== "undefined") {
+    if (
+      typeof window !== "undefined" &&
+      typeof BroadcastChannel !== "undefined"
+    ) {
       try {
         this.broadcastChannel = new BroadcastChannel("clario_channel");
         this.broadcastChannel.onmessage = (event) => {
@@ -29,7 +35,10 @@ export class BrowserEventBus implements IEventBus {
     this.notifyLocalListeners(event, payload);
 
     // 2. Dispatch browser DOM window CustomEvent if in browser
-    if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.dispatchEvent === "function"
+    ) {
       try {
         window.dispatchEvent(new CustomEvent(event, { detail: payload }));
       } catch {
@@ -47,7 +56,10 @@ export class BrowserEventBus implements IEventBus {
     }
   }
 
-  public subscribe<T = unknown>(event: string, handler: EventHandler<T>): () => void {
+  public subscribe<T = unknown>(
+    event: string,
+    handler: EventHandler<T>,
+  ): () => void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -56,7 +68,10 @@ export class BrowserEventBus implements IEventBus {
 
     // Also register window listener for DOM custom events
     let domListener: ((e: Event) => void) | null = null;
-    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.addEventListener === "function"
+    ) {
       domListener = (e: Event) => {
         const customEvent = e as CustomEvent<T>;
         handler(customEvent.detail);
@@ -79,7 +94,10 @@ export class BrowserEventBus implements IEventBus {
         try {
           listener(payload);
         } catch (err) {
-          console.warn(`[BrowserEventBus] Error in listener for event ${event}:`, err);
+          console.warn(
+            `[BrowserEventBus] Error in listener for event ${event}:`,
+            err,
+          );
         }
       }
     }

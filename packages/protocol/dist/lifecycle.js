@@ -61,7 +61,7 @@ export const VERIFICATION_RESULTS = [
 ];
 /**
  * Supported workspace roles.
- * Governed by RULES.md section 8.
+ * Governed by Clario Workspace Role Specification.
  */
 export const WORKSPACE_ROLES = [
     "OWNER_ROLE",

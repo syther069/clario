@@ -12,12 +12,18 @@ import type { ReimbursementStatus } from "@/lib/supabase/types";
 export interface IBusinessRepository {
   // Team
   getBusinessTeam(orgId: string): Promise<BusinessTeamMemberEntity[]>;
-  saveBusinessTeamMember(member: BusinessTeamMemberEntity): Promise<BusinessTeamMemberEntity>;
+  saveBusinessTeamMember(
+    member: BusinessTeamMemberEntity,
+  ): Promise<BusinessTeamMemberEntity>;
   deleteBusinessTeamMember(memberId: string, orgId?: string): Promise<void>;
 
   // Reimbursements
-  getBusinessReimbursements(orgId: string): Promise<BusinessReimbursementEntity[]>;
-  saveBusinessReimbursement(claim: BusinessReimbursementEntity): Promise<BusinessReimbursementEntity>;
+  getBusinessReimbursements(
+    orgId: string,
+  ): Promise<BusinessReimbursementEntity[]>;
+  saveBusinessReimbursement(
+    claim: BusinessReimbursementEntity,
+  ): Promise<BusinessReimbursementEntity>;
   updateReimbursementStatus(
     claimId: string,
     status: ReimbursementStatus,
@@ -35,5 +41,7 @@ export interface IBusinessRepository {
 
   // Audit Events
   getBusinessAuditEvents(orgId: string): Promise<BusinessAuditEventEntity[]>;
-  recordBusinessAuditEvent(event: BusinessAuditEventEntity): Promise<BusinessAuditEventEntity>;
+  recordBusinessAuditEvent(
+    event: BusinessAuditEventEntity,
+  ): Promise<BusinessAuditEventEntity>;
 }

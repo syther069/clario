@@ -141,13 +141,17 @@ describe("Secure Session Management and CSRF Defense (APP-002)", () => {
       expect(() => getSessionSecret()).toThrow(/FATAL SECURITY CONFIGURATION/);
 
       // Valid 32+ char secret succeeds
-      env.SESSION_SECRET = "secure-production-secret-must-be-at-least-32-chars-long";
-      expect(getSessionSecret()).toBe("secure-production-secret-must-be-at-least-32-chars-long");
+      env.SESSION_SECRET =
+        "secure-production-secret-must-be-at-least-32-chars-long";
+      expect(getSessionSecret()).toBe(
+        "secure-production-secret-must-be-at-least-32-chars-long",
+      );
     } finally {
       env.NODE_ENV = originalEnv;
       if (originalSecret) env.SESSION_SECRET = originalSecret;
       else delete env.SESSION_SECRET;
-      if (originalClarioSecret) env.CLARIO_SESSION_SECRET = originalClarioSecret;
+      if (originalClarioSecret)
+        env.CLARIO_SESSION_SECRET = originalClarioSecret;
       else delete env.CLARIO_SESSION_SECRET;
       if (originalPrivySecret) env.PRIVY_APP_SECRET = originalPrivySecret;
       else delete env.PRIVY_APP_SECRET;

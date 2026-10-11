@@ -51,7 +51,8 @@ export class FamilySettlementEntity {
     this.currency = props.currency || "USD";
     this.status = props.status || "pending";
     this.settledAt = props.settledAt ?? props.settled_at ?? null;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): FamilySettlementDTO {

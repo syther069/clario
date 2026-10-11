@@ -6,11 +6,14 @@ import { motion, type HTMLMotionProps } from "motion/react";
 import { TextMorph } from "@/components/ui/motion/text-morph";
 import { Loader2 } from "lucide-react";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
+export type ButtonVariant =
+  "primary" | "secondary" | "outline" | "ghost" | "danger" | "success";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
-export interface WatermelonButtonProps
-  extends Omit<HTMLMotionProps<"button">, "children"> {
+export interface WatermelonButtonProps extends Omit<
+  HTMLMotionProps<"button">,
+  "children"
+> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
@@ -66,7 +69,8 @@ export function WatermelonButton({
   const leadingIcon = leftIcon || icon;
   const trailingIcon = rightIcon || iconRight;
   const displayMorphText =
-    morphText || (textMorph && typeof children === "string" ? children : undefined);
+    morphText ||
+    (textMorph && typeof children === "string" ? children : undefined);
 
   return (
     <motion.button
@@ -77,7 +81,7 @@ export function WatermelonButton({
         "inline-flex items-center justify-center font-mono font-black uppercase transition-colors duration-150 ease-out select-none cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
         variantStyles[variant],
         sizeStyles[size],
-        className
+        className,
       )}
       {...props}
     >

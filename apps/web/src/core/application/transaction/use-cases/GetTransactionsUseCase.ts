@@ -13,7 +13,9 @@ export class GetTransactionsUseCase {
     return this.repository.getAllSync(scopeId);
   }
 
-  public async executeAsync(scopeId?: string | null): Promise<TransactionEntity[]> {
+  public async executeAsync(
+    scopeId?: string | null,
+  ): Promise<TransactionEntity[]> {
     return this.repository.getAll(scopeId);
   }
 }

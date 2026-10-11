@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { TrendingUp, TrendingDown, ChartNoAxesCombined, Calendar } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  ChartNoAxesCombined,
+  Calendar,
+} from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { BorderTrail, SlidingNumber } from "@/components/ui/motion";
 
@@ -40,7 +45,9 @@ export function PersonalKpiCards({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-mono font-black uppercase tracking-wider text-slate-500 bg-[#f8f9fa] px-2.5 py-1 rounded-md border-1.5 border-[#121212]">
-                {subLedger === "onchain" ? "Web3 Net Position" : "Personal Net Cashflow"}
+                {subLedger === "onchain"
+                  ? "Web3 Net Position"
+                  : "Personal Net Cashflow"}
               </span>
               <span
                 className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded border border-[#121212] ${
@@ -138,9 +145,7 @@ export function PersonalKpiCards({
           <div className="mt-2">
             <div className="text-2xl font-black font-mono tabular-nums text-[#836EF9] flex items-center">
               <span>{currencySymbol}</span>
-              <SlidingNumber
-                value={Math.round(availableBudget * 100) / 100}
-              />
+              <SlidingNumber value={Math.round(availableBudget * 100) / 100} />
             </div>
             <div className="mt-2 w-full h-2 rounded-full border border-[#121212] bg-[#f3f4f6] overflow-hidden">
               <div

@@ -4,7 +4,7 @@
 **Version:** 1.0.0  
 **Schema Identifier:** `https://clario.xyz/schemas/v1/expense.json`  
 **Domain Identifier:** `CLARIO_EXPENSE_V1`  
-**Governing Documents:** [RULES.md](../RULES.md) · [architecture.md](../architecture.md) · [prd.md](../prd.md)
+**Governing Documents:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [SECURITY.md](./SECURITY.md)
 
 ---
 
@@ -44,7 +44,7 @@ Every field in the Clario protocol belongs to one of four strict privacy classes
 
 ## 4. Materiality & Supersession Rules
 
-In accordance with Founder Invariant **R-003** and **R-005**:
+In accordance with protocol security invariants:
 - A field is marked **`MATERIAL`** if any modification to its value in a successor version invalidates prior approvals and forces the expense into `REAPPROVAL_REQUIRED` state.
 - A field is marked **`NON_MATERIAL`** if it provides purely operational, display, or workspace-internal notes that do not alter the financial, evidentiary, or settlement terms approved by the reviewer.
 

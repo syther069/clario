@@ -23,7 +23,9 @@ export function PersonalRecurringView({
   onToggleSubscriptionStatus,
   onDeleteSubscription,
 }: PersonalRecurringViewProps) {
-  const activeCount = localSubscriptions.filter((s) => s.status === "active").length;
+  const activeCount = localSubscriptions.filter(
+    (s) => s.status === "active",
+  ).length;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -34,7 +36,8 @@ export function PersonalRecurringView({
             Active Subscriptions & Recurring Bills
           </h2>
           <p className="text-xs text-slate-500">
-            Track renewal dates, frequencies, and projected annualized cash burn.
+            Track renewal dates, frequencies, and projected annualized cash
+            burn.
           </p>
         </div>
 
@@ -95,12 +98,16 @@ export function PersonalRecurringView({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {localSubscriptions.length === 0 ? (
           <div className="col-span-full rounded-xl border-2 border-dashed border-[#121212] p-12 text-center bg-white">
-            <RotateCcw className="h-10 w-10 text-slate-400 mx-auto mb-2" aria-hidden="true" />
+            <RotateCcw
+              className="h-10 w-10 text-slate-400 mx-auto mb-2"
+              aria-hidden="true"
+            />
             <h3 className="text-sm font-black uppercase tracking-wider text-[#121212]">
               No Subscriptions Tracked
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Add subscriptions and recurring bills to forecast cash flow accurately.
+              Add subscriptions and recurring bills to forecast cash flow
+              accurately.
             </p>
             <button
               type="button"

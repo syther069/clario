@@ -39,7 +39,9 @@ export function PersonalHeader({
             <>
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700 bg-white px-2 py-0.5 rounded border border-[#121212] shadow-[1px_1px_0_0_#121212] flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                {subLedger === "all" ? "Complete Financial Ledger" : "Personal Finance Ledger"}
+                {subLedger === "all"
+                  ? "Complete Financial Ledger"
+                  : "Personal Finance Ledger"}
               </span>
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-[#121212]">
                 100% Private & Off-Chain

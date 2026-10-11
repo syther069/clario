@@ -1,7 +1,6 @@
 import { type RequestId } from "./identifiers.js";
 /**
  * Stable protocol error codes defined across Clario architecture.
- * See architecture.md §10.7 and TASKS.md PRO-003 requirements.
  */
 export declare const PROTOCOL_ERROR_CODES: readonly ["UNAUTHORIZED", "VERSION_MISMATCH", "EXPENSE_VERSION_SUPERSEDED", "STALE_APPROVAL", "DUPLICATE_SETTLEMENT", "UNSUPPORTED_CHAIN", "UNSUPPORTED_TOKEN", "UNVERIFIABLE_EVIDENCE", "INVALID_COMMITMENT", "INVALID_IDENTIFIER", "INVALID_LIFECYCLE_TRANSITION", "INVALID_TYPED_DATA", "RATE_LIMITED", "INTERNAL_ERROR"];
 export type ProtocolErrorCode = (typeof PROTOCOL_ERROR_CODES)[number];
@@ -25,7 +24,7 @@ export interface ProtocolErrorDetail {
     readonly retryable: boolean;
 }
 /**
- * Standard error response envelope matching architecture.md §10.7:
+ * Standard error response envelope:
  * {
  *   "error": {
  *     "code": "EXPENSE_VERSION_SUPERSEDED",

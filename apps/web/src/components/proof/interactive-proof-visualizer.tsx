@@ -247,7 +247,9 @@ export function InteractiveProofVisualizer({
   }
 
   // Tamper presets
-  function applyPreset(preset: "amount" | "vendor" | "recipient" | "typo" | "reset") {
+  function applyPreset(
+    preset: "amount" | "vendor" | "recipient" | "typo" | "reset",
+  ) {
     if (preset === "reset") {
       setRecord({ ...AUTHENTIC_RECORD_BASELINE });
       return;
@@ -434,10 +436,13 @@ export function InteractiveProofVisualizer({
                     <div>
                       <h3 className="text-sm font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
                         <Code className="h-4 w-4 text-[#836EF9]" />
-                        <span>Step 1: RFC 8785 Canonical JSON Serialization (JCS)</span>
+                        <span>
+                          Step 1: RFC 8785 Canonical JSON Serialization (JCS)
+                        </span>
                       </h3>
                       <p className="text-xs text-slate-600">
-                        Keys are strictly sorted lexicographically by UTF-16 code units. Whitespace outside strings is eliminated.
+                        Keys are strictly sorted lexicographically by UTF-16
+                        code units. Whitespace outside strings is eliminated.
                       </p>
                     </div>
                     <button
@@ -450,9 +455,13 @@ export function InteractiveProofVisualizer({
                       <ContextualIconSwap
                         isActive={copiedKey === "step1"}
                         initialIcon={<Copy className="h-3 w-3" />}
-                        activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                        activeIcon={
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        }
                       />
-                      <span>{copiedKey === "step1" ? "Copied" : "Copy Canonical"}</span>
+                      <span>
+                        {copiedKey === "step1" ? "Copied" : "Copy Canonical"}
+                      </span>
                     </button>
                   </div>
 
@@ -461,9 +470,12 @@ export function InteractiveProofVisualizer({
                   </div>
 
                   <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-white p-3 rounded-lg border border-[#121212]">
-                    <span className="font-bold uppercase text-[#836EF9]">Invariant:</span>
+                    <span className="font-bold uppercase text-[#836EF9]">
+                      Invariant:
+                    </span>
                     <span>
-                      Guaranteeing cross-platform parity between TypeScript, Go indexers, and Solidity verifiers.
+                      Guaranteeing cross-platform parity between TypeScript, Go
+                      indexers, and Solidity verifiers.
                     </span>
                   </div>
                 </div>
@@ -478,7 +490,9 @@ export function InteractiveProofVisualizer({
                         <span>Step 2: Private Record Digest (Keccak-256)</span>
                       </h3>
                       <p className="text-xs text-slate-600">
-                        The canonical string bytes are hashed with Keccak-256 to produce privateRecordHash. Cleartext is never revealed onchain.
+                        The canonical string bytes are hashed with Keccak-256 to
+                        produce privateRecordHash. Cleartext is never revealed
+                        onchain.
                       </p>
                     </div>
                     <button
@@ -491,9 +505,13 @@ export function InteractiveProofVisualizer({
                       <ContextualIconSwap
                         isActive={copiedKey === "step2"}
                         initialIcon={<Copy className="h-3 w-3" />}
-                        activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                        activeIcon={
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        }
                       />
-                      <span>{copiedKey === "step2" ? "Copied" : "Copy Hash"}</span>
+                      <span>
+                        {copiedKey === "step2" ? "Copied" : "Copy Hash"}
+                      </span>
                     </button>
                   </div>
 
@@ -503,12 +521,20 @@ export function InteractiveProofVisualizer({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-3 bg-white rounded-lg border border-[#121212]">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Digest Output</span>
-                      <p className="font-mono text-xs font-black text-[#121212]">32 Bytes (256 Bits)</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Digest Output
+                      </span>
+                      <p className="font-mono text-xs font-black text-[#121212]">
+                        32 Bytes (256 Bits)
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-[#121212]">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Algorithm</span>
-                      <p className="font-mono text-xs font-black text-[#121212]">Keccak-256 (EVM Native)</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Algorithm
+                      </span>
+                      <p className="font-mono text-xs font-black text-[#121212]">
+                        Keccak-256 (EVM Native)
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -523,7 +549,9 @@ export function InteractiveProofVisualizer({
                         <span>Step 3: Offchain Evidence Manifest Digest</span>
                       </h3>
                       <p className="text-xs text-slate-600">
-                        High-resolution receipt PDFs and merchant receipts are encrypted with AES-256-GCM offchain and summarized into a 32-byte manifest digest.
+                        High-resolution receipt PDFs and merchant receipts are
+                        encrypted with AES-256-GCM offchain and summarized into
+                        a 32-byte manifest digest.
                       </p>
                     </div>
                   </div>
@@ -533,16 +561,24 @@ export function InteractiveProofVisualizer({
                       <span className="font-semibold text-slate-800">
                         {record.evidenceFile}
                       </span>
-                      <span className="neo-badge text-[10px]">Confidential Document</span>
+                      <span className="neo-badge text-[10px]">
+                        Confidential Document
+                      </span>
                     </div>
                     <div className="font-mono text-xs text-slate-600 break-all bg-slate-50 p-2 rounded border border-slate-200">
-                      evidenceManifestHash: {currentPipeline.evidenceManifestHash}
+                      evidenceManifestHash:{" "}
+                      {currentPipeline.evidenceManifestHash}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 text-[11px] text-slate-600 bg-white p-3 rounded-lg border border-[#121212]">
-                    <span className="font-bold uppercase text-emerald-600">Founder Invariant 1:</span>
-                    <span>Zero cleartext receipt scans or customer PII are ever written to public calldata.</span>
+                    <span className="font-bold uppercase text-emerald-600">
+                      Founder Invariant 1:
+                    </span>
+                    <span>
+                      Zero cleartext receipt scans or customer PII are ever
+                      written to public calldata.
+                    </span>
                   </div>
                 </div>
               )}
@@ -553,30 +589,51 @@ export function InteractiveProofVisualizer({
                     <div>
                       <h3 className="text-sm font-black uppercase tracking-wider text-[#121212] flex items-center gap-2">
                         <ShieldCheck className="h-4 w-4 text-[#836EF9]" />
-                        <span>Step 4: EIP-712 Domain Separator & Cryptographic Salt Binding</span>
+                        <span>
+                          Step 4: EIP-712 Domain Separator & Cryptographic Salt
+                          Binding
+                        </span>
                       </h3>
                       <p className="text-xs text-slate-600">
-                        Parameters are encoded using ABI v2 specification with domain separator and a random 32-byte salt to prevent rainbow table attacks.
+                        Parameters are encoded using ABI v2 specification with
+                        domain separator and a random 32-byte salt to prevent
+                        rainbow table attacks.
                       </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-3 bg-white rounded-lg border border-[#121212] space-y-1">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Domain Separator</span>
-                      <p className="font-mono text-[11px] text-slate-700 truncate">{CLARIO_EXPENSE_V1_DOMAIN}</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Domain Separator
+                      </span>
+                      <p className="font-mono text-[11px] text-slate-700 truncate">
+                        {CLARIO_EXPENSE_V1_DOMAIN}
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-[#121212] space-y-1">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Monad Chain ID</span>
-                      <p className="font-mono text-xs font-black text-[#836EF9]">10143 (Monad Testnet)</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Monad Chain ID
+                      </span>
+                      <p className="font-mono text-xs font-black text-[#836EF9]">
+                        10143 (Monad Testnet)
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-[#121212] space-y-1">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Registry Address</span>
-                      <p className="font-mono text-[11px] text-slate-700 truncate">{CLARIO_REGISTRY_ADDRESS}</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Registry Address
+                      </span>
+                      <p className="font-mono text-[11px] text-slate-700 truncate">
+                        {CLARIO_REGISTRY_ADDRESS}
+                      </p>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-[#121212] space-y-1">
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Random 32-Byte Salt</span>
-                      <p className="font-mono text-[11px] text-slate-700 truncate">{record.salt}</p>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">
+                        Random 32-Byte Salt
+                      </span>
+                      <p className="font-mono text-[11px] text-slate-700 truncate">
+                        {record.salt}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -591,7 +648,9 @@ export function InteractiveProofVisualizer({
                         <span>Step 5: Final Onchain Commitment Root</span>
                       </h3>
                       <p className="text-xs text-slate-600">
-                        The ultimate 32-byte root hash submitted to Monad ExpenseRegistryV1. Anchored immutably with sub-second block finality.
+                        The ultimate 32-byte root hash submitted to Monad
+                        ExpenseRegistryV1. Anchored immutably with sub-second
+                        block finality.
                       </p>
                     </div>
                     <button
@@ -604,9 +663,13 @@ export function InteractiveProofVisualizer({
                       <ContextualIconSwap
                         isActive={copiedKey === "step5"}
                         initialIcon={<Copy className="h-3 w-3" />}
-                        activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                        activeIcon={
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        }
                       />
-                      <span>{copiedKey === "step5" ? "Copied" : "Copy Commitment"}</span>
+                      <span>
+                        {copiedKey === "step5" ? "Copied" : "Copy Commitment"}
+                      </span>
                     </button>
                   </div>
 
@@ -837,7 +900,9 @@ export function InteractiveProofVisualizer({
                     </span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    The canonical JSON digest matches the immutable onchain commitment anchored on Monad Testnet block #14,298,106. Every single byte is authentic.
+                    The canonical JSON digest matches the immutable onchain
+                    commitment anchored on Monad Testnet block #14,298,106.
+                    Every single byte is authentic.
                   </p>
                   <div className="p-3 bg-white rounded-lg border border-[#16a34a] space-y-1">
                     <span className="text-[10px] text-slate-500 uppercase font-bold">
@@ -864,7 +929,9 @@ export function InteractiveProofVisualizer({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 font-black text-sm uppercase text-[#b91c1c]">
                       <AlertTriangle className="h-5 w-5 text-[#ef4444] animate-pulse" />
-                      <span>Cryptographic Integrity Breach · Tampered Record</span>
+                      <span>
+                        Cryptographic Integrity Breach · Tampered Record
+                      </span>
                     </div>
                     <span className="neo-badge bg-[#ef4444] text-white border-2 border-[#121212]">
                       Rejected By Smart Contract
@@ -872,7 +939,10 @@ export function InteractiveProofVisualizer({
                   </div>
 
                   <p className="text-xs text-[#991b1b] leading-relaxed font-medium">
-                    Avalanche Effect Triggered: Altering even 1 character alters the resulting 256-bit commitment completely. The Monad SettlementRegistryV1 smart contract rejects this claim immediately.
+                    Avalanche Effect Triggered: Altering even 1 character alters
+                    the resulting 256-bit commitment completely. The Monad
+                    SettlementRegistryV1 smart contract rejects this claim
+                    immediately.
                   </p>
 
                   {/* Side-by-Side Diff */}

@@ -15,7 +15,9 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/db", () => ({
   getDatabaseClient: () => ({
-    query: vi.fn().mockResolvedValue({ rows: [{ workspace_id: "test-workspace" }] }),
+    query: vi
+      .fn()
+      .mockResolvedValue({ rows: [{ workspace_id: "test-workspace" }] }),
   }),
 }));
 
@@ -116,7 +118,8 @@ describe("POST /api/webhooks/privy", () => {
     const payload = {
       type: "transaction.broadcasted",
       data: {
-        transaction_hash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        transaction_hash:
+          "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
         chain_id: 10143,
         wallet_address: "0x111122223333444455556666777788889999aaaa",
       },
@@ -134,14 +137,17 @@ describe("POST /api/webhooks/privy", () => {
     expect(res.status).toBe(200);
     expect(data.status).toBe("processed");
     expect(data.event).toBe("transaction.broadcasted");
-    expect(data.txHash).toBe("0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
+    expect(data.txHash).toBe(
+      "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    );
   });
 
   it("processes transaction.confirmed event", async () => {
     const payload = {
       type: "transaction.confirmed",
       data: {
-        transaction_hash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        transaction_hash:
+          "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
         chain_id: 10143,
         block_number: 67304188,
         wallet_address: "0x111122223333444455556666777788889999aaaa",
@@ -160,7 +166,9 @@ describe("POST /api/webhooks/privy", () => {
     expect(res.status).toBe(200);
     expect(data.status).toBe("processed");
     expect(data.event).toBe("transaction.confirmed");
-    expect(data.txHash).toBe("0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
+    expect(data.txHash).toBe(
+      "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    );
   });
 
   it("processes transaction.execution_reverted event", async () => {

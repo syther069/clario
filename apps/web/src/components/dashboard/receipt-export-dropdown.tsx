@@ -170,10 +170,14 @@ export function ReceiptExportDropdown({
       const container = dropdownRef.current.closest(
         ".neo-card, [role='dialog'], .fixed",
       );
-      const containerRect = container ? container.getBoundingClientRect() : null;
+      const containerRect = container
+        ? container.getBoundingClientRect()
+        : null;
 
       const boundLeft = containerRect ? containerRect.left : 0;
-      const boundRight = containerRect ? containerRect.right : window.innerWidth;
+      const boundRight = containerRect
+        ? containerRect.right
+        : window.innerWidth;
 
       const menuWidth = 288; // w-72 is 18rem = 288px
 

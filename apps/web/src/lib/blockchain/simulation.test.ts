@@ -42,7 +42,9 @@ describe("Alchemy Monad Pre-Flight Transaction Simulation", () => {
   });
 
   it("handles reverts cleanly and returns errorReason without throwing", async () => {
-    const mockCall = vi.fn().mockRejectedValue(new Error("ReceiptAlreadyExists"));
+    const mockCall = vi
+      .fn()
+      .mockRejectedValue(new Error("ReceiptAlreadyExists"));
     const mockEstimateGas = vi.fn();
 
     vi.mocked(viem.createPublicClient).mockReturnValue({

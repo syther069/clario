@@ -34,7 +34,8 @@ export function PersonalBudgetsView({
             Personal Budgets & Spending Limits
           </h2>
           <p className="text-xs text-slate-500">
-            Set category thresholds to prevent lifestyle creep and track remaining capacity.
+            Set category thresholds to prevent lifestyle creep and track
+            remaining capacity.
           </p>
         </div>
         <button
@@ -70,9 +71,7 @@ export function PersonalBudgetsView({
             {currencySymbol}
             {monthlySpending.toFixed(2)}
           </div>
-          <p className="text-[10px] text-slate-500 mt-0.5">
-            Spent this month
-          </p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Spent this month</p>
         </div>
 
         <div className="neo-card p-4">
@@ -83,9 +82,7 @@ export function PersonalBudgetsView({
             {currencySymbol}
             {availableBudget.toFixed(2)}
           </div>
-          <p className="text-[10px] text-slate-500 mt-0.5">
-            Left before limit
-          </p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Left before limit</p>
         </div>
 
         <div className="neo-card p-4">

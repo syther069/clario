@@ -82,7 +82,8 @@ export function usePersonalMetrics({
   );
 
   const monthlySpending = useMemo(
-    () => calculateMonthlySpending(activeTransactions, currentMonth, currentYear),
+    () =>
+      calculateMonthlySpending(activeTransactions, currentMonth, currentYear),
     [activeTransactions, currentMonth, currentYear],
   );
 

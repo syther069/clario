@@ -1,12 +1,20 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, TrendingUp, TrendingDown, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  ShieldCheck,
+} from "lucide-react";
 import { MonadLogo } from "@/components/ui/crypto-icon";
 import { formatCategoryName } from "@/domain/analytics/financial-metrics";
 import type { SpendingCategoryItem } from "@/domain/analytics/financial-metrics";
 import type { BudgetStatusItem } from "@/domain/budgets/budget-engine";
-import type { CashFlowBucket, CashFlowPeriod } from "@/domain/analytics/cashflow-calculator";
+import type {
+  CashFlowBucket,
+  CashFlowPeriod,
+} from "@/domain/analytics/cashflow-calculator";
 import type { Transaction, Subscription } from "@/lib/supabase/types";
 import { getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
 import { PersonalKpiCards } from "../components/PersonalKpiCards";
@@ -163,8 +171,8 @@ export function PersonalOverviewView({
                 tx.blockchain_status === "confirmed" ||
                 Boolean(
                   tx.monad_tx_hash ||
-                    tx.blockchain_tx_hash ||
-                    tx.receipt_bundle_id,
+                  tx.blockchain_tx_hash ||
+                  tx.receipt_bundle_id,
                 );
               const effectiveTxHash =
                 tx.monad_tx_hash || tx.blockchain_tx_hash || null;

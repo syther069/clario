@@ -1,6 +1,7 @@
 import { computeExpenseCommitmentV1, hashCanonicalEvidenceManifestV1, hashCanonicalExpenseV1, } from "../schema/v1/commitment.js";
 import { validateDeploymentManifest } from "../deploy/manifest.js";
 import { computePackageFileHash, validateVerificationPackageManifestV1, } from "../package/validate.js";
+import { safeJsonReviver } from "./archive.js";
 const LIMITATIONS = [
     "Verification proves integrity, onchain authority, ordering, and settlement matching; it does not prove that evidence is genuine.",
     "Verification does not establish business legitimacy, accounting treatment, tax eligibility, or legal compliance.",
@@ -16,7 +17,7 @@ function jsonFile(files, path) {
     const bytes = files.get(path);
     if (!bytes)
         throw new Error(`Missing package file: ${path}`);
-    return JSON.parse(bytes.toString("utf8"));
+    return JSON.parse(bytes.toString("utf8"), safeJsonReviver);
 }
 function overallStatus(checks) {
     if (checks.some((check) => check.status === "FAILED"))
@@ -311,8 +312,8 @@ export async function verifyPackage(options) {
             }
             else {
                 try {
-                    record = JSON.parse(recordBytes.toString("utf8"));
-                    evidenceManifest = JSON.parse(evidenceManifestBytes.toString("utf8"));
+                    record = JSON.parse(recordBytes.toString("utf8"), safeJsonReviver);
+                    evidenceManifest = JSON.parse(evidenceManifestBytes.toString("utf8"), safeJsonReviver);
                     recordHash = hashCanonicalExpenseV1(record);
                     evidenceManifestHash =
                         hashCanonicalEvidenceManifestV1(evidenceManifest);

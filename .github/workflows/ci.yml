@@ -19,6 +19,7 @@ env:
   CHAIN_FAMILY: local
   MONAD_CHAIN_ID: "31337"
   MONAD_RPC_URL: http://127.0.0.1:8545
+  NEXT_PUBLIC_PRIVY_APP_ID: "cl00000000000000000000000"
 
 jobs:
   static-analysis:
@@ -65,6 +66,15 @@ jobs:
           runtime: node@24.15.0
           cache: true
           require-lockfile: true
+
+      - name: Install pinned Foundry
+        uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09 # v1
+        with:
+          version: v1.7.1
+          cache: false
+
+      - name: Build contracts
+        run: pnpm build:contracts
 
       - name: Run unit tests
         run: pnpm test:unit
@@ -149,7 +159,7 @@ jobs:
           tar --extract --gzip --file "${archive}" --directory "${RUNNER_TEMP}" gitleaks
 
       - name: Scan complete Git history for secrets
-        run: "${RUNNER_TEMP}/gitleaks git --redact --no-banner --log-opts=--all ${GITHUB_WORKSPACE}"
+        run: '${RUNNER_TEMP}/gitleaks git --config="${GITHUB_WORKSPACE}/.gitleaks.toml" --redact --no-banner --log-opts=--all ${GITHUB_WORKSPACE}'
 
       - name: Install pinned pnpm and Node.js without dependencies
         uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2

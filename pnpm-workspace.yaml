@@ -3,7 +3,7 @@ packages:
   - "packages/*"
 
 allowBuilds:
-  '@google/genai': true
+  "@google/genai": true
   "@reown/appkit": true
   bufferutil: true
   keccak: true
@@ -39,3 +39,4 @@ overrides:
   source-map-js: ">=1.2.2"
   brace-expansion: ">=1.1.21"
   decode-uri-component: ">=0.4.3"
+  ws: ">=8.21.0"

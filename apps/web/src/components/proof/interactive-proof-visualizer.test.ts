@@ -40,9 +40,7 @@ describe("InteractiveProofVisualizer Cryptographic Engine", () => {
     const hash = keccak256(stringToBytes(canonical));
 
     expect(hash).toMatch(/^0x[0-9a-f]{64}$/);
-    expect(hash).toBe(
-      keccak256(stringToBytes(canonicalizeJsonClient(record))),
-    );
+    expect(hash).toBe(keccak256(stringToBytes(canonicalizeJsonClient(record))));
   });
 
   it("generates authentic onchain commitment anchored to Monad Testnet (Chain ID 10143)", () => {
@@ -187,7 +185,9 @@ describe("InteractiveProofVisualizer Cryptographic Engine", () => {
       amount: "500.01",
     };
 
-    const hash1 = keccak256(stringToBytes(canonicalizeJsonClient(authenticPayload)));
+    const hash1 = keccak256(
+      stringToBytes(canonicalizeJsonClient(authenticPayload)),
+    );
     const hash2 = keccak256(stringToBytes(canonicalizeJsonClient(typoPayload)));
 
     expect(hash1).not.toBe(hash2);

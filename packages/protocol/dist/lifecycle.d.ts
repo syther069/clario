@@ -31,7 +31,7 @@ export declare const VERIFICATION_RESULTS: readonly ["VERIFIED", "VERIFIED_WITH_
 export type VerificationResult = (typeof VERIFICATION_RESULTS)[number];
 /**
  * Supported workspace roles.
- * Governed by RULES.md section 8.
+ * Governed by Clario Workspace Role Specification.
  */
 export declare const WORKSPACE_ROLES: readonly ["OWNER_ROLE", "ADMIN_ROLE", "APPROVER_ROLE", "TREASURY_ROLE", "AUDITOR_ROLE"];
 export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];

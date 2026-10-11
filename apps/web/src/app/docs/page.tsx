@@ -59,10 +59,14 @@ function DocsMainContent() {
   const activeSection: DocSection =
     DOC_SECTIONS.find((sec) => sec.id === activeSectionId) ?? DOC_SECTIONS[0]!;
 
-  const currentIndex = DOC_SECTIONS.findIndex((sec) => sec.id === activeSection.id);
+  const currentIndex = DOC_SECTIONS.findIndex(
+    (sec) => sec.id === activeSection.id,
+  );
   const prevSection = currentIndex > 0 ? DOC_SECTIONS[currentIndex - 1] : null;
   const nextSection =
-    currentIndex < DOC_SECTIONS.length - 1 ? DOC_SECTIONS[currentIndex + 1] : null;
+    currentIndex < DOC_SECTIONS.length - 1
+      ? DOC_SECTIONS[currentIndex + 1]
+      : null;
 
   // Handle section switch
   const handleSelectSection = (id: string, subsectionId?: string) => {
@@ -105,7 +109,10 @@ function DocsMainContent() {
 
           const subElements = activeSection.subsections
             .map((sub) => ({ id: sub.id, el: document.getElementById(sub.id) }))
-            .filter((item): item is { id: string; el: HTMLElement } => item.el !== null);
+            .filter(
+              (item): item is { id: string; el: HTMLElement } =>
+                item.el !== null,
+            );
 
           for (let i = subElements.length - 1; i >= 0; i--) {
             const item = subElements[i];
@@ -170,7 +177,9 @@ function DocsMainContent() {
             className="flex items-center gap-2.5 rounded-md border-2 border-[#121212] bg-white px-3 py-1.5 text-xs font-mono font-bold text-slate-600 shadow-[2px_2px_0_0_#121212] transition hover:bg-slate-50 active:translate-x-0.5 active:translate-y-0.5"
           >
             <Search className="h-3.5 w-3.5 text-[#836EF9]" />
-            <span className="hidden sm:inline uppercase tracking-wider">Search...</span>
+            <span className="hidden sm:inline uppercase tracking-wider">
+              Search...
+            </span>
             <kbd className="hidden sm:inline rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-700 font-bold">
               ⌘K
             </kbd>
@@ -223,12 +232,20 @@ function DocsMainContent() {
         {/* Center Content Rail */}
         <main className="min-w-0 flex-1 px-4 py-8 sm:px-8 lg:px-12">
           {/* Breadcrumb Bar */}
-          <nav aria-label="Breadcrumbs" className="mb-6 flex items-center gap-2 text-xs font-mono text-slate-500 pb-2 border-b border-[#121212]/15">
-            <Link href="/docs" className="hover:text-[#121212] font-black uppercase">
+          <nav
+            aria-label="Breadcrumbs"
+            className="mb-6 flex items-center gap-2 text-xs font-mono text-slate-500 pb-2 border-b border-[#121212]/15"
+          >
+            <Link
+              href="/docs"
+              className="hover:text-[#121212] font-black uppercase"
+            >
               SPEC
             </Link>
             <span>{"//"}</span>
-            <span className="font-bold text-slate-600 uppercase">{activeSection.group}</span>
+            <span className="font-bold text-slate-600 uppercase">
+              {activeSection.group}
+            </span>
             <span>{"//"}</span>
             <span className="font-black text-[#836EF9] uppercase tracking-wider">
               {activeSection.title}
@@ -282,7 +299,8 @@ function DocsMainContent() {
           {/* Bottom Footer Info */}
           <footer className="mt-12 pt-6 border-t-2 border-[#121212]/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-slate-500">
             <div>
-              CLARIO PROTOCOL // VERIFICATION &amp; LEDGER SPECIFICATION. MIT LICENSE.
+              CLARIO PROTOCOL // VERIFICATION &amp; LEDGER SPECIFICATION. MIT
+              LICENSE.
             </div>
             <div className="flex items-center gap-4 uppercase font-bold">
               <a

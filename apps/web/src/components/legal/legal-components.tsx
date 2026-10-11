@@ -18,10 +18,7 @@ import {
   HelpCircle,
   ExternalLink,
 } from "lucide-react";
-import type {
-  LegalCalloutData,
-  LegalTableData,
-} from "@/lib/legal/legal-data";
+import type { LegalCalloutData, LegalTableData } from "@/lib/legal/legal-data";
 import { ContextualIconSwap } from "@/components/ui/motion";
 
 // ==========================================
@@ -57,7 +54,10 @@ export function LegalDraftBanner({ notice }: { notice: string }) {
   return (
     <div className="mb-6 rounded-lg border-2 border-[#121212] bg-amber-50 px-4 py-2.5 shadow-[2px_2px_0_0_#121212] flex items-center justify-between gap-3 text-xs font-mono font-bold text-amber-900 print:border-black print:bg-white print:shadow-none">
       <div className="flex items-center gap-2">
-        <AlertCircle className="h-4 w-4 text-amber-700 shrink-0" aria-hidden="true" />
+        <AlertCircle
+          className="h-4 w-4 text-amber-700 shrink-0"
+          aria-hidden="true"
+        />
         <span className="uppercase tracking-wider">{notice}</span>
       </div>
       <span className="text-[10px] uppercase tracking-wider bg-white border border-[#121212] px-2 py-0.5 rounded shadow-[1px_1px_0_0_#121212]">
@@ -76,25 +76,42 @@ export function LegalCallout({ data }: { data: LegalCalloutData }) {
     info: {
       border: "border-[#121212]",
       bg: "bg-[#836EF9]/5",
-      icon: <Info className="h-4 w-4 text-[#836EF9] shrink-0" aria-hidden="true" />,
+      icon: (
+        <Info className="h-4 w-4 text-[#836EF9] shrink-0" aria-hidden="true" />
+      ),
       badgeBg: "bg-[#836EF9] text-white",
     },
     warning: {
       border: "border-[#121212]",
       bg: "bg-amber-50",
-      icon: <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" aria-hidden="true" />,
+      icon: (
+        <AlertCircle
+          className="h-4 w-4 text-amber-600 shrink-0"
+          aria-hidden="true"
+        />
+      ),
       badgeBg: "bg-amber-600 text-white",
     },
     important: {
       border: "border-[#121212]",
       bg: "bg-rose-50",
-      icon: <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" aria-hidden="true" />,
+      icon: (
+        <ShieldAlert
+          className="h-4 w-4 text-rose-600 shrink-0"
+          aria-hidden="true"
+        />
+      ),
       badgeBg: "bg-rose-600 text-white",
     },
     tip: {
       border: "border-[#121212]",
       bg: "bg-emerald-50",
-      icon: <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0" aria-hidden="true" />,
+      icon: (
+        <CheckCircle2
+          className="h-4 w-4 text-emerald-700 shrink-0"
+          aria-hidden="true"
+        />
+      ),
       badgeBg: "bg-emerald-700 text-white",
     },
   }[data.type];
@@ -221,8 +238,12 @@ export function LegalTable({ data }: { data: LegalTableData }) {
     <div className="my-6 overflow-hidden rounded-md border-2 border-[#121212] bg-white shadow-[4px_4px_0_0_#121212] print:border-black print:shadow-none">
       {data.caption && (
         <div className="border-b-2 border-[#121212] bg-[#F4F4F0] px-4 py-2 font-mono text-[11px] font-black uppercase tracking-wider text-[#121212] flex items-center justify-between">
-          <span>{"//"} {data.caption}</span>
-          <span className="text-slate-500 font-mono text-[10px]">[ ROWS: {data.rows.length} ]</span>
+          <span>
+            {"//"} {data.caption}
+          </span>
+          <span className="text-slate-500 font-mono text-[10px]">
+            [ ROWS: {data.rows.length} ]
+          </span>
         </div>
       )}
       <div className="overflow-x-auto">
@@ -247,10 +268,12 @@ export function LegalTable({ data }: { data: LegalTableData }) {
                     let statusBadge = null;
                     if (cell.status) {
                       const statusMap = {
-                        built: "bg-emerald-100 text-emerald-800 border-emerald-800",
+                        built:
+                          "bg-emerald-100 text-emerald-800 border-emerald-800",
                         partial: "bg-amber-100 text-amber-800 border-amber-800",
                         planned: "bg-blue-100 text-blue-800 border-blue-800",
-                        not_available: "bg-slate-100 text-slate-700 border-slate-700",
+                        not_available:
+                          "bg-slate-100 text-slate-700 border-slate-700",
                       };
                       statusBadge = (
                         <span
@@ -267,7 +290,9 @@ export function LegalTable({ data }: { data: LegalTableData }) {
                       <td
                         key={cIdx}
                         className={`px-4 py-3 border-r border-[#121212]/15 last:border-r-0 text-slate-800 ${
-                          cell.mono ? "font-mono text-xs break-all" : "text-sm font-medium"
+                          cell.mono
+                            ? "font-mono text-xs break-all"
+                            : "text-sm font-medium"
                         }`}
                       >
                         {statusBadge || cell.text}
@@ -321,7 +346,9 @@ export function LegalTwoColumn({
         <ul className="space-y-2 text-sm font-medium text-slate-800">
           {leftItems.map((item, idx) => (
             <li key={idx} className="flex items-start gap-2">
-              <span className="font-mono text-emerald-700 font-bold shrink-0">✓</span>
+              <span className="font-mono text-emerald-700 font-bold shrink-0">
+                ✓
+              </span>
               <span>{item}</span>
             </li>
           ))}
@@ -339,7 +366,9 @@ export function LegalTwoColumn({
         <ul className="space-y-2 text-sm font-medium text-slate-800">
           {rightItems.map((item, idx) => (
             <li key={idx} className="flex items-start gap-2">
-              <span className="font-mono text-rose-700 font-bold shrink-0">✕</span>
+              <span className="font-mono text-rose-700 font-bold shrink-0">
+                ✕
+              </span>
               <span>{item}</span>
             </li>
           ))}
@@ -355,10 +384,30 @@ export function LegalTwoColumn({
 
 export function LegalCrossLinks({ currentSlug }: { currentSlug: string }) {
   const links = [
-    { slug: "privacy", label: "Privacy Policy", icon: Shield, href: "/privacy" },
-    { slug: "terms", label: "Terms of Service", icon: FileText, href: "/terms" },
-    { slug: "security", label: "Security Details", icon: ShieldCheck, href: "/security" },
-    { slug: "disclosure", label: "Risk Disclosure", icon: HelpCircle, href: "/disclosure" },
+    {
+      slug: "privacy",
+      label: "Privacy Policy",
+      icon: Shield,
+      href: "/privacy",
+    },
+    {
+      slug: "terms",
+      label: "Terms of Service",
+      icon: FileText,
+      href: "/terms",
+    },
+    {
+      slug: "security",
+      label: "Security Details",
+      icon: ShieldCheck,
+      href: "/security",
+    },
+    {
+      slug: "disclosure",
+      label: "Risk Disclosure",
+      icon: HelpCircle,
+      href: "/disclosure",
+    },
   ];
 
   return (
@@ -380,7 +429,9 @@ export function LegalCrossLinks({ currentSlug }: { currentSlug: string }) {
                   : "bg-white hover:bg-slate-50 text-[#121212] shadow-[2px_2px_0_0_#121212] hover:-translate-y-0.5"
               }`}
             >
-              <Icon className={`h-4 w-4 mb-1.5 ${isCurrent ? "text-white" : "text-[#836EF9]"}`} />
+              <Icon
+                className={`h-4 w-4 mb-1.5 ${isCurrent ? "text-white" : "text-[#836EF9]"}`}
+              />
               <div className="font-mono text-xs font-black uppercase tracking-wider">
                 {link.label}
               </div>
@@ -410,7 +461,10 @@ export function LegalContactBlock() {
           <span>Questions or Legal Inquiries?</span>
         </div>
         <p className="text-xs text-slate-600 font-medium">
-          Contact our team at <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-[#121212] text-[#121212]">[CONFIRM: contact email]</code>
+          Contact our team at{" "}
+          <code className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-[#121212] text-[#121212]">
+            [CONFIRM: contact email]
+          </code>
         </p>
       </div>
       <a
@@ -511,7 +565,9 @@ export function LegalToc({
                   }`}
                 >
                   <div className="flex items-center gap-1.5 truncate">
-                    <span className="text-[10px] opacity-70">{sec.number}.</span>
+                    <span className="text-[10px] opacity-70">
+                      {sec.number}.
+                    </span>
                     <span className="truncate">{sec.title}</span>
                   </div>
                   <ChevronRight

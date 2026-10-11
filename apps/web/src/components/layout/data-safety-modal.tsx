@@ -135,8 +135,8 @@ export function DataSafetyModal({ isOpen, onClose }: DataSafetyModalProps) {
           <div className="border-2 border-[#121212] bg-[#f0fdf4] rounded-xl p-3.5 flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-[#16a34a] shrink-0" />
             <div className="text-[11px] text-[#166534] font-medium leading-tight">
-              <strong>Zero Leakage Guarantee:</strong> Even in the event of an
-              interface error, your local cache and onchain state remain
+              <strong>Strong Isolation Guarantee:</strong> Even in the event of
+              an interface error, your local cache and onchain state remain
               completely isolated and intact.
             </div>
           </div>

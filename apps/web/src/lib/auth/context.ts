@@ -14,7 +14,8 @@ import {
 import type { WorkspaceRole } from "@clario/protocol";
 
 export function getSessionSecret(): string {
-  const secret = process.env.CLARIO_SESSION_SECRET || process.env.SESSION_SECRET;
+  const secret =
+    process.env.CLARIO_SESSION_SECRET || process.env.SESSION_SECRET;
   if (secret && secret.length >= 32) {
     return secret;
   }

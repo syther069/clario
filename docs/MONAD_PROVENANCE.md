@@ -3,16 +3,16 @@
 **Status:** Verified primary-source provenance reference  
 **Last Verified:** 2026-09-19  
 **Source Authority:** Official Monad Documentation ([docs.monad.xyz](https://docs.monad.xyz))  
-**Governing Rules:** [RULES.md](../RULES.md) §5.1, §10.4, §14 · [architecture.md](../architecture.md) §18 · [CANONICAL_SCHEMA_V1.md](./CANONICAL_SCHEMA_V1.md)
+**Governing Specifications:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [CANONICAL_SCHEMA_V1.md](./CANONICAL_SCHEMA_V1.md)
 
 ---
 
 ## 1. Purpose and Policy
 
-Per `RULES.md` Section 5.1 and Section 10.4:
-- "Contract, token, RPC, explorer, and chain values MUST come from validated environment configuration and a versioned deployment manifest."
-- "Token addresses and decimals MUST come from verified configuration, not UI input or symbol lookup alone."
-- "Current official Monad and issuer documentation MUST be checked before setting network or token addresses."
+Per Clario deployment and protocol configuration policies:
+- Contract, token, RPC, explorer, and chain values MUST come from validated environment configuration and a versioned deployment manifest.
+- Token addresses and decimals MUST come from verified configuration, not UI input or symbol lookup alone.
+- Current official Monad and issuer documentation MUST be checked before setting network or token addresses.
 - Direct hardcoding of addresses or decimals into production product logic is strictly prohibited.
 
 This document records the official primary-source provenance verified for the Monad Testnet settlement environment and its supported USDC token asset. These values are supplied to the deployment pipeline (`scripts/deploy.mjs`) and sealed into the versioned `DeploymentManifest` (`DEPLOYMENT_MANIFEST_JSON`), ensuring end-to-end traceability without embedding live addresses in code.
@@ -50,7 +50,7 @@ This document records the official primary-source provenance verified for the Mo
 
 ## 4. Local EVM Development Environment Provenance
 
-For isolated local testing and development where live networks are not used (RULES §15.1):
+For isolated local testing and development where live networks are not used:
 
 | Parameter | Local Default Value | Notes |
 |---|---|---|

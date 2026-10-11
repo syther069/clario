@@ -2,11 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import {
-  motion,
-  AnimatePresence,
-  useReducedMotion,
-} from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   UserRound,
   BriefcaseBusiness,
@@ -18,7 +14,10 @@ import {
 } from "lucide-react";
 import { WORKSPACES_DATA, type WorkspaceModeData } from "./workspaces-data";
 
-const MODE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const MODE_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   personal: UserRound,
   freelancer: BriefcaseBusiness,
   family: UsersRound,
@@ -87,7 +86,8 @@ export function WorkspaceShowcase() {
           Four Workspaces. One Private System.
         </h2>
         <p className="text-base sm:text-lg text-gray-700 font-medium mt-3 leading-relaxed">
-          Switch between personal cashflow, freelance client billing, household budgets, and team expenses with one click.
+          Switch between personal cashflow, freelance client billing, household
+          budgets, and team expenses with one click.
         </p>
       </div>
 
@@ -119,7 +119,10 @@ export function WorkspaceShowcase() {
               }`}
             >
               <span className="relative z-10 flex items-center gap-2">
-                <Icon className={`h-4 w-4 stroke-[2.5] ${isActive ? "!text-white" : "text-[#836EF9]"}`} aria-hidden="true" />
+                <Icon
+                  className={`h-4 w-4 stroke-[2.5] ${isActive ? "!text-white" : "text-[#836EF9]"}`}
+                  aria-hidden="true"
+                />
                 <span>{mode.name}</span>
               </span>
             </button>
@@ -183,7 +186,10 @@ export function WorkspaceShowcase() {
                     className="flex items-start gap-2.5 text-sm text-gray-800 font-medium"
                   >
                     <div className="h-5 w-5 rounded-md bg-[#f5f3ff] text-[#836EF9] flex items-center justify-center shrink-0 mt-0.5 border-2 border-[#121212] shadow-[1px_1px_0_0_#121212]">
-                      <Check className="h-3 w-3 stroke-[2.5]" aria-hidden="true" />
+                      <Check
+                        className="h-3 w-3 stroke-[2.5]"
+                        aria-hidden="true"
+                      />
                     </div>
                     <span className="leading-snug">{useCase}</span>
                   </motion.div>
@@ -197,13 +203,19 @@ export function WorkspaceShowcase() {
                   className="inline-flex items-center gap-2 font-mono text-xs font-black uppercase tracking-wider !text-[#836EF9] hover:underline transition-colors"
                 >
                   <span className="!text-[#836EF9]">{activeMode.linkText}</span>
-                  <ArrowRight className="h-4 w-4 stroke-[2.5] !text-[#836EF9]" aria-hidden="true" />
+                  <ArrowRight
+                    className="h-4 w-4 stroke-[2.5] !text-[#836EF9]"
+                    aria-hidden="true"
+                  />
                 </Link>
               </div>
             </div>
 
             {/* Right Column: Product Preview Mock */}
-            <div data-image-surface className="lg:col-span-5 rounded-2xl border-2 border-[#121212] bg-white overflow-hidden shadow-[4px_4px_0_0_#121212] w-full">
+            <div
+              data-image-surface
+              className="lg:col-span-5 rounded-2xl border-2 border-[#121212] bg-white overflow-hidden shadow-[4px_4px_0_0_#121212] w-full"
+            >
               {/* Montally Frame Header */}
               <div className="bg-[#121212] border-b-2 border-[#121212] px-3.5 py-2.5 flex items-center justify-between text-xs text-white">
                 <div className="flex items-center gap-2">
@@ -258,7 +270,10 @@ export function WorkspaceShowcase() {
                   <div className="flex items-center justify-between text-xs font-mono font-bold uppercase mt-2 pt-2 border-t border-[#121212]/10">
                     <span className="text-gray-500">Status:</span>
                     <span className="text-emerald-700 inline-flex items-center gap-1 font-black">
-                      <BadgeCheck className="h-3.5 w-3.5 stroke-[2.5]" aria-hidden="true" />
+                      <BadgeCheck
+                        className="h-3.5 w-3.5 stroke-[2.5]"
+                        aria-hidden="true"
+                      />
                       {activeMode.preview.recentStatus}
                     </span>
                   </div>

@@ -105,9 +105,7 @@ export function ReceiptUploadModal({
         setEditMerchant(ext.merchant || "");
         setEditAmount(String(ext.totalAmount || ""));
         setEditCurrency(ext.currency || "USD");
-        setEditDate(
-          ext.date || new Date().toISOString().split("T")[0] || "",
-        );
+        setEditDate(ext.date || new Date().toISOString().split("T")[0] || "");
         setEditCategory(ext.categorySlug || "other");
         setEditPaymentMethod(ext.paymentMethod || "Card");
         setEditTaxAmount(
@@ -220,7 +218,8 @@ export function ReceiptUploadModal({
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Multimodal extraction with off-chain privacy and cryptographic Monad anchoring.
+                    Multimodal extraction with off-chain privacy and
+                    cryptographic Monad anchoring.
                   </p>
                 </div>
               </div>
@@ -258,7 +257,8 @@ export function ReceiptUploadModal({
                         {uploadStep}
                       </p>
                       <p className="text-[11px] text-slate-500">
-                        Private offchain evidence remains safe — only cryptographic hash anchors to Monad.
+                        Private offchain evidence remains safe — only
+                        cryptographic hash anchors to Monad.
                       </p>
                     </div>
                   ) : (
@@ -481,7 +481,8 @@ export function ReceiptUploadModal({
                     result.extractedData.items.length > 0 && (
                       <div className="border-t-2 border-[#121212]/15 pt-2.5 mt-2">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                          Itemized Line Items ({result.extractedData.items.length})
+                          Itemized Line Items (
+                          {result.extractedData.items.length})
                         </span>
                         <ul className="mt-1.5 space-y-1.5 max-h-32 overflow-y-auto">
                           {result.extractedData.items.map((item, idx) => (
@@ -500,7 +501,8 @@ export function ReceiptUploadModal({
                                 )}
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                {item.confidence && renderConfidence(item.confidence)}
+                                {item.confidence &&
+                                  renderConfidence(item.confidence)}
                                 <span className="font-mono font-bold text-[#121212] tabular-nums">
                                   ${Number(item.total).toFixed(2)}
                                 </span>
@@ -532,7 +534,9 @@ export function ReceiptUploadModal({
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                        Anchors cryptographic hash to Monad Testnet for tamper-proof audit verification. Private receipt evidence stays off-chain.
+                        Anchors cryptographic hash to Monad Testnet for
+                        tamper-proof audit verification. Private receipt
+                        evidence stays off-chain.
                       </p>
                     </div>
                   </label>
@@ -578,7 +582,9 @@ export function ReceiptUploadModal({
 
                 {/* Invariant Footer Note */}
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-dashed border-[#121212]/30 text-[10px] text-slate-600 font-mono">
-                  <strong>FOUNDER INVARIANT 10:</strong> AI suggestions populate draft inputs only; human sign-off remains mandatory before ledger commitment.
+                  <strong>FOUNDER INVARIANT 10:</strong> AI suggestions populate
+                  draft inputs only; human sign-off remains mandatory before
+                  ledger commitment.
                 </div>
 
                 {/* Actions */}

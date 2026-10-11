@@ -46,8 +46,12 @@ export function NeoDatePicker({
 
   // Parse current selected date or fallback to today
   const selectedDate = value ? new Date(value + "T00:00:00") : null;
-  const initialYear = selectedDate ? selectedDate.getFullYear() : new Date().getFullYear();
-  const initialMonth = selectedDate ? selectedDate.getMonth() : new Date().getMonth();
+  const initialYear = selectedDate
+    ? selectedDate.getFullYear()
+    : new Date().getFullYear();
+  const initialMonth = selectedDate
+    ? selectedDate.getMonth()
+    : new Date().getMonth();
 
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
@@ -86,7 +90,7 @@ export function NeoDatePicker({
 
   const prevMonthDays = getDaysInMonth(
     currentMonth === 0 ? currentYear - 1 : currentYear,
-    currentMonth === 0 ? 11 : currentMonth - 1
+    currentMonth === 0 ? 11 : currentMonth - 1,
   );
 
   const calendarCells = [];
@@ -140,7 +144,11 @@ export function NeoDatePicker({
     }
   };
 
-  const handleSelectDay = (cell: { day: number; month: number; year: number }) => {
+  const handleSelectDay = (cell: {
+    day: number;
+    month: number;
+    year: number;
+  }) => {
     const formattedMonth = String(cell.month + 1).padStart(2, "0");
     const formattedDay = String(cell.day).padStart(2, "0");
     const dateStr = `${cell.year}-${formattedMonth}-${formattedDay}`;

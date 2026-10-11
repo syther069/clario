@@ -332,7 +332,9 @@ export class SettlementService {
         [workspaceId, row.expense_id],
       );
 
-      const confirmedReimb = reimbRes.rows.find((r) => r.status === "confirmed");
+      const confirmedReimb = reimbRes.rows.find(
+        (r) => r.status === "confirmed",
+      );
       const pendingReimb = reimbRes.rows.find((r) =>
         ["preparing", "awaiting_signature", "submitted", "confirming"].includes(
           r.status,
@@ -591,7 +593,9 @@ export class SettlementService {
       [workspaceId, expenseId],
     );
 
-    const confirmedReimb = allReimbRes.rows.find((r) => r.status === "confirmed");
+    const confirmedReimb = allReimbRes.rows.find(
+      (r) => r.status === "confirmed",
+    );
     if (confirmedReimb) {
       throw new SettlementPreConditionError(
         "DUPLICATE_SETTLEMENT",
@@ -612,7 +616,10 @@ export class SettlementService {
     }
 
     // Check projection_settlements in case settled onchain
-    const projRes = await this.db.query<{ version: number; settled_at_tx: string }>(
+    const projRes = await this.db.query<{
+      version: number;
+      settled_at_tx: string;
+    }>(
       `SELECT version, settled_at_tx
        FROM projection_settlements
        WHERE workspace_id = $1 AND expense_id = $2
@@ -952,7 +959,9 @@ export class SettlementService {
     }
 
     // If already confirmed on ANY version, reject duplicate settlement
-    const confirmedReimb = existingReimbs.rows.find((r) => r.status === "confirmed");
+    const confirmedReimb = existingReimbs.rows.find(
+      (r) => r.status === "confirmed",
+    );
     if (confirmedReimb) {
       throw new SettlementPreConditionError(
         "DUPLICATE_SETTLEMENT",
@@ -974,7 +983,10 @@ export class SettlementService {
     }
 
     // Check projection_settlements across all versions
-    const projRes = await this.db.query<{ version: number; settled_at_tx: string }>(
+    const projRes = await this.db.query<{
+      version: number;
+      settled_at_tx: string;
+    }>(
       `SELECT version, settled_at_tx
        FROM projection_settlements
        WHERE workspace_id = $1 AND expense_id = $2

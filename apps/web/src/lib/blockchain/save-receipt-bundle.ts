@@ -1,4 +1,10 @@
-import { createWalletClient, custom, encodeFunctionData, type Address, type Hash } from "viem";
+import {
+  createWalletClient,
+  custom,
+  encodeFunctionData,
+  type Address,
+  type Hash,
+} from "viem";
 import { simulateMonadTransaction, type SimulationResult } from "./simulation";
 import { listenToMonadEvents } from "./websocket-listener";
 import type { ConnectedWallet } from "@privy-io/react-auth";
@@ -105,7 +111,10 @@ export async function executeSaveReceiptBundle({
   );
   if (alreadyBundled.length > 0) {
     throw new Error(
-      `Cannot bundle transactions: ${alreadyBundled.length} transaction(s) already belong to an existing receipt bundle (${alreadyBundled.map((t) => t.id).slice(0, 3).join(", ")}).`,
+      `Cannot bundle transactions: ${alreadyBundled.length} transaction(s) already belong to an existing receipt bundle (${alreadyBundled
+        .map((t) => t.id)
+        .slice(0, 3)
+        .join(", ")}).`,
     );
   }
 

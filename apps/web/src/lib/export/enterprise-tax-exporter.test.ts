@@ -44,12 +44,21 @@ describe("Enterprise & Tax Exporter Connectors", () => {
 
   describe("QuickBooks Online Connector", () => {
     it("generates pre-mapped QuickBooks CSV with Monad transaction verification links", () => {
-      const csv = generateQuickBooksCsv(sampleTransactions, "Monad Foundry Workspace");
+      const csv = generateQuickBooksCsv(
+        sampleTransactions,
+        "Monad Foundry Workspace",
+      );
 
-      expect(csv).toContain("Date,Transaction Type,Payee,Category,Amount,Memo,Reference Number,Monad Tx Hash,Monad Explorer URL");
-      expect(csv).toContain("2026-10-04,Expense,Amazon Web Services,hosting,150.00");
+      expect(csv).toContain(
+        "Date,Transaction Type,Payee,Category,Amount,Memo,Reference Number,Monad Tx Hash,Monad Explorer URL",
+      );
+      expect(csv).toContain(
+        "2026-10-04,Expense,Amazon Web Services,hosting,150.00",
+      );
       expect(csv).toContain("CLR-TX-QB-00");
-      expect(csv).toContain("https://testnet.monadexplorer.com/tx/0xabcdef1234567890abcdef1234567890abcdef12");
+      expect(csv).toContain(
+        "https://testnet.monadexplorer.com/tx/0xabcdef1234567890abcdef1234567890abcdef12",
+      );
     });
   });
 
@@ -57,7 +66,9 @@ describe("Enterprise & Tax Exporter Connectors", () => {
     it("generates valid Xero bank/expense statement CSV with Monad reference tags", () => {
       const csv = generateXeroCsv(sampleTransactions);
 
-      expect(csv).toContain("*Date,*Amount,Payee,Description,Reference,Cheque Number,Account Code,Tax Rate");
+      expect(csv).toContain(
+        "*Date,*Amount,Payee,Description,Reference,Cheque Number,Account Code,Tax Rate",
+      );
       expect(csv).toContain("2026-10-04,-150.00,Amazon Web Services");
       expect(csv).toContain("MON-0xabcdef12");
       expect(csv).toContain("400,Tax Exclusive");
@@ -97,7 +108,9 @@ describe("Enterprise & Tax Exporter Connectors", () => {
       expect(report.csvContent).toContain("SCHEDULE C SUMMARY");
       expect(report.csvContent).toContain("Total Gross Expenses,400.00");
       expect(report.csvContent).toContain("Total Net Deductible,380.00");
-      expect(report.csvContent).toContain("Non-Deductible Portion (e.g. 50% meals),20.00");
+      expect(report.csvContent).toContain(
+        "Non-Deductible Portion (e.g. 50% meals),20.00",
+      );
       expect(report.csvContent).toContain("Monad Testnet Chain ID 10143");
     });
   });

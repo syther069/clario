@@ -42,11 +42,15 @@ export class BudgetEntity {
     this.userId = (props.userId || props.user_id || "").trim().toLowerCase();
     this.categoryId = props.categoryId || props.category_id || "general";
     this.category = props.category ?? null;
-    this.amountLimit = Math.max(0, props.amountLimit ?? props.amount_limit ?? props.amount ?? 0);
+    this.amountLimit = Math.max(
+      0,
+      props.amountLimit ?? props.amount_limit ?? props.amount ?? 0,
+    );
     this.spentAmount = props.spentAmount ?? props.spent_amount ?? 0;
     this.period = props.period || "monthly";
     this.startDate = props.startDate ?? props.start_date ?? null;
-    this.createdAt = props.createdAt || props.created_at || new Date().toISOString();
+    this.createdAt =
+      props.createdAt || props.created_at || new Date().toISOString();
   }
 
   public toDTO(): BudgetDTO {

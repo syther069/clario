@@ -57,10 +57,15 @@ describe("Transaction & Receipt Client Storage Engine", () => {
       updated_at: "2026-10-09T12:00:00Z",
     };
 
-    upsertStoredTransaction(mockTx, "0x1234567890abcdef1234567890abcdef12345678");
+    upsertStoredTransaction(
+      mockTx,
+      "0x1234567890abcdef1234567890abcdef12345678",
+    );
 
     // Can read via scoped address
-    const fromScoped = getStoredTransactions("0x1234567890abcdef1234567890abcdef12345678");
+    const fromScoped = getStoredTransactions(
+      "0x1234567890abcdef1234567890abcdef12345678",
+    );
     expect(fromScoped).toHaveLength(1);
     expect(fromScoped[0]?.id).toBe("tx-test-1");
 

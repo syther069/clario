@@ -33,7 +33,10 @@ export class UpsertTransactionUseCase {
     return updated;
   }
 
-  private notifyUpdate(transactions: TransactionEntity[], scopeId?: string | null): void {
+  private notifyUpdate(
+    transactions: TransactionEntity[],
+    scopeId?: string | null,
+  ): void {
     if (this.eventBus) {
       this.eventBus.publish(EVENT_TRANSACTIONS_UPDATED, {
         transactions,

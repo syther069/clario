@@ -33,10 +33,7 @@ interface IClarioRegistry {
         returns (bool);
 
     /// @notice Checks if an expense has been settled across any version.
-    function isExpenseSettled(bytes32 workspaceId, bytes32 expenseId)
-        external
-        view
-        returns (bool);
+    function isExpenseSettled(bytes32 workspaceId, bytes32 expenseId) external view returns (bool);
 
     /// @notice Returns the current active version of an expense.
     function getCurrentVersion(bytes32 workspaceId, bytes32 expenseId)

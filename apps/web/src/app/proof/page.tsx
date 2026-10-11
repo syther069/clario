@@ -379,7 +379,9 @@ export default function ProofCenterPage() {
                           <ContextualIconSwap
                             isActive={copied}
                             initialIcon={<Copy className="h-3 w-3" />}
-                            activeIcon={<Check className="h-3 w-3 text-emerald-600" />}
+                            activeIcon={
+                              <Check className="h-3 w-3 text-emerald-600" />
+                            }
                           />
                           <span>{copied ? "Copied" : "Copy"}</span>
                         </button>
@@ -408,9 +410,13 @@ export default function ProofCenterPage() {
                           Associated Offchain Record
                         </span>
                         <div className="flex flex-wrap items-center gap-3 pt-1">
-                          {Boolean(verificationResult.metadata.receiptNumber) && (
+                          {Boolean(
+                            verificationResult.metadata.receiptNumber,
+                          ) && (
                             <span className="neo-badge text-[10px]">
-                              {String(verificationResult.metadata.receiptNumber)}
+                              {String(
+                                verificationResult.metadata.receiptNumber,
+                              )}
                             </span>
                           )}
                           {Boolean(verificationResult.metadata.receiptName) && (
@@ -443,7 +449,9 @@ export default function ProofCenterPage() {
                     <span className="text-slate-500 font-mono text-[11px] tabular-nums">
                       Confirmed:{" "}
                       {verificationResult.timestamp
-                        ? new Date(verificationResult.timestamp).toLocaleString()
+                        ? new Date(
+                            verificationResult.timestamp,
+                          ).toLocaleString()
                         : "Verified"}
                     </span>
 

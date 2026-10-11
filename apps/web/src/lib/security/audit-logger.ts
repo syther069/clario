@@ -25,17 +25,27 @@ const SAFE_KEY_EXCEPTIONS = new Set([
 ]);
 
 // Patterns matching common credential strings in text
-const SENSITIVE_VALUE_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
+const SENSITIVE_VALUE_PATTERNS: Array<{
+  pattern: RegExp;
+  replacement: string;
+}> = [
   // Bearer tokens
-  { pattern: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, replacement: "Bearer [REDACTED]" },
+  {
+    pattern: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi,
+    replacement: "Bearer [REDACTED]",
+  },
   // JWT tokens
-  { pattern: /eyJ[A-Za-z0-9-_]{10,}\.eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]+/g, replacement: "[REDACTED_JWT]" },
+  {
+    pattern: /eyJ[A-Za-z0-9-_]{10,}\.eyJ[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]+/g,
+    replacement: "[REDACTED_JWT]",
+  },
   // Alchemy / Supabase / Provider keys
   { pattern: /alch_[A-Za-z0-9_-]{20,}/g, replacement: "[REDACTED_API_KEY]" },
   { pattern: /sbp_[A-Za-z0-9_-]{20,}/g, replacement: "[REDACTED_API_KEY]" },
   // Generic key assignments: e.g. apiKey=..., privateKey=...
   {
-    pattern: /(?:private_?key|secret|password|api_?key)\s*[:=]\s*["']?([^\s"']{8,})["']?/gi,
+    pattern:
+      /(?:private_?key|secret|password|api_?key)\s*[:=]\s*["']?([^\s"']{8,})["']?/gi,
     replacement: "$1: [REDACTED]",
   },
 ];
@@ -70,7 +80,9 @@ export function sanitizeAuditPayload<T>(payload: T): T {
   }
 
   const clean: Record<string, unknown> = Object.create(null);
-  for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(
+    payload as Record<string, unknown>,
+  )) {
     // Drop prototype pollution keys
     if (key === "__proto__" || key === "constructor" || key === "prototype") {
       continue;
@@ -139,7 +151,9 @@ export function formatSecurityAnomalyEvent(
 /**
  * Emits a structured security event to the server audit stream with sensitive data masked.
  */
-export function logSecurityAnomaly(event: SecurityAnomalyEvent): Required<SecurityAnomalyEvent> {
+export function logSecurityAnomaly(
+  event: SecurityAnomalyEvent,
+): Required<SecurityAnomalyEvent> {
   const formatted = formatSecurityAnomalyEvent(event);
   console.warn(
     `[SECURITY_ALERT] [${formatted.severity.toUpperCase()}] ${formatted.eventType}: ${formatted.targetResource} by ${formatted.actorAddress} (${formatted.actorIp})`,

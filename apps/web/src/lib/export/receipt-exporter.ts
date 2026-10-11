@@ -18,7 +18,10 @@ import type {
   Transaction,
   CanonicalReceiptTransaction,
 } from "@/lib/supabase/types";
-import { MONAD_TESTNET_CHAIN_ID, CLARIO_REGISTRY_ADDRESS } from "@/lib/blockchain/registry";
+import {
+  MONAD_TESTNET_CHAIN_ID,
+  CLARIO_REGISTRY_ADDRESS,
+} from "@/lib/blockchain/registry";
 
 import {
   generateQuickBooksCsv,
@@ -86,7 +89,11 @@ export function extractCanonicalReceiptData(
   // Resolve embedded or fallback transactions
   let txList: NormalizedReceiptData["transactions"] = [];
 
-  if (receiptData?.transactions && Array.isArray(receiptData.transactions) && receiptData.transactions.length > 0) {
+  if (
+    receiptData?.transactions &&
+    Array.isArray(receiptData.transactions) &&
+    receiptData.transactions.length > 0
+  ) {
     txList = receiptData.transactions.map((t) => ({
       id: String(t.id || ""),
       amount: Number(t.amount || 0),
@@ -102,7 +109,10 @@ export function extractCanonicalReceiptData(
     );
     txList = matched.map((t) => {
       const fullTx = t as Partial<Transaction>;
-      const cat = typeof t.category === "string" ? t.category : (t.category as { name?: string })?.name || "General";
+      const cat =
+        typeof t.category === "string"
+          ? t.category
+          : (t.category as { name?: string })?.name || "General";
       return {
         id: t.id,
         amount: Number(t.amount || 0),
@@ -173,7 +183,8 @@ export function extractTransactionReceiptData(
     receiptId: tx.id,
     receiptNumber: tx.id.slice(0, 8).toUpperCase(),
     receiptName: `Transaction - ${tx.merchant || "Unknown Merchant"}`,
-    createdAt: tx.date || tx.timestamp || tx.created_at || new Date().toISOString(),
+    createdAt:
+      tx.date || tx.timestamp || tx.created_at || new Date().toISOString(),
     owner: tx.user_id || "Anonymous",
     transactionCount: 1,
     totalAmount: Number(tx.amount || 0),
@@ -185,7 +196,10 @@ export function extractTransactionReceiptData(
         amount: Number(tx.amount || 0),
         currency: tx.currency || "USD",
         merchant: tx.merchant || "Unknown Merchant",
-        category: typeof tx.category === "string" ? tx.category : tx.category?.name || "General",
+        category:
+          typeof tx.category === "string"
+            ? tx.category
+            : tx.category?.name || "General",
         date: tx.date || tx.timestamp || tx.created_at,
         type: tx.type || "expense",
         status: tx.status,
@@ -198,7 +212,9 @@ export function extractTransactionReceiptData(
       contract,
       txHash: tx.blockchain_tx_hash || tx.monad_tx_hash || null,
       receiptHash: tx.blockchain_data_hash || tx.commitment_hash || null,
-      verificationStatus: isVerified ? "VERIFIED ON MONAD" : "PENDING VERIFICATION",
+      verificationStatus: isVerified
+        ? "VERIFIED ON MONAD"
+        : "PENDING VERIFICATION",
     },
   };
 }
@@ -292,8 +308,10 @@ export function generateCsvReceipt(data: NormalizedReceiptData): string {
 }
 
 export function generateTxtReceipt(data: NormalizedReceiptData): string {
-  const divider = "================================================================================";
-  const subDivider = "--------------------------------------------------------------------------------";
+  const divider =
+    "================================================================================";
+  const subDivider =
+    "--------------------------------------------------------------------------------";
 
   const lines: string[] = [
     divider,
@@ -318,7 +336,9 @@ export function generateTxtReceipt(data: NormalizedReceiptData): string {
     `Canonical Hash:      ${data.blockchain.receiptHash || "N/A"}`,
     `Monad Tx Hash:       ${data.blockchain.txHash || "N/A"}`,
     ...(data.blockchain.txHash
-      ? [`Monad Explorer:      https://testnet.monadexplorer.com/tx/${data.blockchain.txHash}`]
+      ? [
+          `Monad Explorer:      https://testnet.monadexplorer.com/tx/${data.blockchain.txHash}`,
+        ]
       : []),
     "",
     subDivider,
@@ -401,7 +421,9 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
     g = 0.07,
     b = 0.07,
   ) => {
-    stream.push(`BT /${font} ${size} Tf ${r} ${g} ${b} rg 1 0 0 1 ${x} ${y} Tm (${esc(text)}) Tj ET`);
+    stream.push(
+      `BT /${font} ${size} Tf ${r} ${g} ${b} rg 1 0 0 1 ${x} ${y} Tm (${esc(text)}) Tj ET`,
+    );
   };
 
   // Helper to draw rectangle
@@ -424,9 +446,39 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
   };
 
   // Top Neo-Brutalist Border Card Header
-  drawRect(margin, pageHeight - 110, pageWidth - margin * 2, 70, 0.98, 0.98, 1, 0.07, 0.07, 0.07, 2);
-  drawText("CLARIO FINANCIAL INTELLIGENCE", margin + 16, pageHeight - 65, 16, "F2", 0.51, 0.43, 0.98);
-  drawText("OFFICIAL CANONICAL SETTLEMENT RECEIPT", margin + 16, pageHeight - 82, 9, "F2", 0.35, 0.35, 0.35);
+  drawRect(
+    margin,
+    pageHeight - 110,
+    pageWidth - margin * 2,
+    70,
+    0.98,
+    0.98,
+    1,
+    0.07,
+    0.07,
+    0.07,
+    2,
+  );
+  drawText(
+    "CLARIO FINANCIAL INTELLIGENCE",
+    margin + 16,
+    pageHeight - 65,
+    16,
+    "F2",
+    0.51,
+    0.43,
+    0.98,
+  );
+  drawText(
+    "OFFICIAL CANONICAL SETTLEMENT RECEIPT",
+    margin + 16,
+    pageHeight - 82,
+    9,
+    "F2",
+    0.35,
+    0.35,
+    0.35,
+  );
 
   const statusColor = data.blockchain.verificationStatus.includes("VERIFIED")
     ? { r: 0.08, g: 0.5, b: 0.24 }
@@ -445,15 +497,69 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
 
   // Meta Section Box
   let currentY = pageHeight - 130;
-  drawRect(margin, currentY - 95, pageWidth - margin * 2, 95, 1, 1, 1, 0.07, 0.07, 0.07, 1.5);
+  drawRect(
+    margin,
+    currentY - 95,
+    pageWidth - margin * 2,
+    95,
+    1,
+    1,
+    1,
+    0.07,
+    0.07,
+    0.07,
+    1.5,
+  );
 
-  drawText("RECEIPT INFORMATION", margin + 14, currentY - 20, 10, "F2", 0.07, 0.07, 0.07);
-  drawText(`Receipt Name:    ${data.receiptName}`, margin + 14, currentY - 38, 9, "F1");
-  drawText(`Receipt Number:  #${data.receiptNumber}`, margin + 14, currentY - 52, 9, "F1");
-  drawText(`Created Date:    ${data.createdAt}`, margin + 14, currentY - 66, 9, "F1");
-  drawText(`Owner / Wallet:  ${data.owner}`, margin + 14, currentY - 80, 9, "F1");
+  drawText(
+    "RECEIPT INFORMATION",
+    margin + 14,
+    currentY - 20,
+    10,
+    "F2",
+    0.07,
+    0.07,
+    0.07,
+  );
+  drawText(
+    `Receipt Name:    ${data.receiptName}`,
+    margin + 14,
+    currentY - 38,
+    9,
+    "F1",
+  );
+  drawText(
+    `Receipt Number:  #${data.receiptNumber}`,
+    margin + 14,
+    currentY - 52,
+    9,
+    "F1",
+  );
+  drawText(
+    `Created Date:    ${data.createdAt}`,
+    margin + 14,
+    currentY - 66,
+    9,
+    "F1",
+  );
+  drawText(
+    `Owner / Wallet:  ${data.owner}`,
+    margin + 14,
+    currentY - 80,
+    9,
+    "F1",
+  );
 
-  drawText("TOTAL COMMITMENT", pageWidth - margin - 160, currentY - 20, 10, "F2", 0.07, 0.07, 0.07);
+  drawText(
+    "TOTAL COMMITMENT",
+    pageWidth - margin - 160,
+    currentY - 20,
+    10,
+    "F2",
+    0.07,
+    0.07,
+    0.07,
+  );
   drawText(
     `-$${data.totalAmount.toFixed(2)} ${data.currency}`,
     pageWidth - margin - 160,
@@ -477,16 +583,73 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
 
   // Proof Details Box
   currentY -= 115;
-  drawRect(margin, currentY - 90, pageWidth - margin * 2, 90, 0.98, 0.97, 1, 0.07, 0.07, 0.07, 1.5);
-  drawText("MONAD BLOCKCHAIN PROOF & COMMITMENT", margin + 14, currentY - 18, 9, "F2", 0.51, 0.43, 0.98);
-  drawText(`Network:         ${data.blockchain.network} (Chain ID ${data.blockchain.chainId})`, margin + 14, currentY - 34, 8, "F1");
-  drawText(`Registry:        ${data.blockchain.contract}`, margin + 14, currentY - 48, 8, "F1");
-  drawText(`Canonical Hash:  ${data.blockchain.receiptHash || "N/A"}`, margin + 14, currentY - 62, 8, "F1");
-  drawText(`Monad Tx Hash:   ${data.blockchain.txHash || "N/A"}`, margin + 14, currentY - 76, 8, "F1");
+  drawRect(
+    margin,
+    currentY - 90,
+    pageWidth - margin * 2,
+    90,
+    0.98,
+    0.97,
+    1,
+    0.07,
+    0.07,
+    0.07,
+    1.5,
+  );
+  drawText(
+    "MONAD BLOCKCHAIN PROOF & COMMITMENT",
+    margin + 14,
+    currentY - 18,
+    9,
+    "F2",
+    0.51,
+    0.43,
+    0.98,
+  );
+  drawText(
+    `Network:         ${data.blockchain.network} (Chain ID ${data.blockchain.chainId})`,
+    margin + 14,
+    currentY - 34,
+    8,
+    "F1",
+  );
+  drawText(
+    `Registry:        ${data.blockchain.contract}`,
+    margin + 14,
+    currentY - 48,
+    8,
+    "F1",
+  );
+  drawText(
+    `Canonical Hash:  ${data.blockchain.receiptHash || "N/A"}`,
+    margin + 14,
+    currentY - 62,
+    8,
+    "F1",
+  );
+  drawText(
+    `Monad Tx Hash:   ${data.blockchain.txHash || "N/A"}`,
+    margin + 14,
+    currentY - 76,
+    8,
+    "F1",
+  );
 
   // Transactions Table Header
   currentY -= 115;
-  drawRect(margin, currentY - 24, pageWidth - margin * 2, 24, 0.92, 0.94, 0.97, 0.07, 0.07, 0.07, 1.5);
+  drawRect(
+    margin,
+    currentY - 24,
+    pageWidth - margin * 2,
+    24,
+    0.92,
+    0.94,
+    0.97,
+    0.07,
+    0.07,
+    0.07,
+    1.5,
+  );
   drawText("DATE", margin + 10, currentY - 16, 8, "F2");
   drawText("MERCHANT", margin + 90, currentY - 16, 8, "F2");
   drawText("CATEGORY", margin + 270, currentY - 16, 8, "F2");
@@ -500,13 +663,37 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
     if (!tx) continue;
     const isEven = i % 2 === 0;
     const rowBg = isEven ? 1 : 0.98;
-    drawRect(margin, currentY - 20, pageWidth - margin * 2, 20, rowBg, rowBg, rowBg, 0.85, 0.85, 0.85, 0.5);
+    drawRect(
+      margin,
+      currentY - 20,
+      pageWidth - margin * 2,
+      20,
+      rowBg,
+      rowBg,
+      rowBg,
+      0.85,
+      0.85,
+      0.85,
+      0.5,
+    );
 
-    drawText(tx.date ? tx.date.slice(0, 10) : "N/A", margin + 10, currentY - 14, 8, "F1");
+    drawText(
+      tx.date ? tx.date.slice(0, 10) : "N/A",
+      margin + 10,
+      currentY - 14,
+      8,
+      "F1",
+    );
     drawText(tx.merchant.slice(0, 32), margin + 90, currentY - 14, 8, "F2");
     drawText(tx.category.slice(0, 20), margin + 270, currentY - 14, 8, "F1");
     drawText(tx.type.toUpperCase(), margin + 410, currentY - 14, 8, "F1");
-    drawText(`-$${tx.amount.toFixed(2)}`, pageWidth - margin - 65, currentY - 14, 8, "F2");
+    drawText(
+      `-$${tx.amount.toFixed(2)}`,
+      pageWidth - margin - 65,
+      currentY - 14,
+      8,
+      "F2",
+    );
     currentY -= 22;
   }
 
@@ -525,7 +712,19 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
   }
 
   // Footer Invariant Notice
-  drawRect(margin, margin, pageWidth - margin * 2, 35, 0.98, 0.98, 0.98, 0.07, 0.07, 0.07, 1);
+  drawRect(
+    margin,
+    margin,
+    pageWidth - margin * 2,
+    35,
+    0.98,
+    0.98,
+    0.98,
+    0.07,
+    0.07,
+    0.07,
+    1,
+  );
   drawText(
     "Private evidence offchain. Invariant commitment anchored on Monad. Independent verifier standard.",
     margin + 14,
@@ -611,7 +810,9 @@ export function generatePdfReceipt(data: NormalizedReceiptData): Blob {
     "xref",
     "0 7",
     "0000000000 65535 f ",
-    ...xrefOffsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n `),
+    ...xrefOffsets
+      .slice(1)
+      .map((offset) => `${String(offset).padStart(10, "0")} 00000 n `),
     "trailer",
     "<< /Size 7 /Root 1 0 R >>",
     "startxref",
@@ -630,7 +831,9 @@ export async function generatePngReceipt(
   data: NormalizedReceiptData,
 ): Promise<Blob> {
   if (typeof document === "undefined") {
-    throw new Error("generatePngReceipt must be called in a browser environment");
+    throw new Error(
+      "generatePngReceipt must be called in a browser environment",
+    );
   }
 
   const canvas = document.createElement("canvas");
@@ -906,7 +1109,10 @@ export async function triggerReceiptExport(
       break;
     }
     case "quickbooks": {
-      const content = generateQuickBooksCsv(data.transactions, data.receiptName);
+      const content = generateQuickBooksCsv(
+        data.transactions,
+        data.receiptName,
+      );
       blob = new Blob([content], { type: "text/csv;charset=utf-8" });
       filename = `${filePrefix}-quickbooks.csv`;
       break;

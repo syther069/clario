@@ -28,7 +28,6 @@ export function ClarioAssistantTrigger({
     return () => clearTimeout(timer);
   }, [isDismissed, isOpen]);
 
-
   const handleDismissGreeting = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowGreeting(false);
@@ -144,7 +143,10 @@ export function ClarioAssistantTrigger({
 
           {/* Assistant Icon */}
           <div className="relative flex items-center justify-center">
-            <Bot className="h-6 w-6 text-white transition-transform duration-200 group-hover:rotate-6" aria-hidden="true" />
+            <Bot
+              className="h-6 w-6 text-white transition-transform duration-200 group-hover:rotate-6"
+              aria-hidden="true"
+            />
           </div>
 
           {/* Monad Verified Badge Dot */}

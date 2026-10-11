@@ -44,7 +44,9 @@ export function SubLedgerSwitcher({
               : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
           }`}
         >
-          <Layers className={`h-3.5 w-3.5 ${subLedger === "all" ? "text-white" : "text-[#836EF9]"}`} />
+          <Layers
+            className={`h-3.5 w-3.5 ${subLedger === "all" ? "text-white" : "text-[#836EF9]"}`}
+          />
           <span>All Activity</span>
           <span
             className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
@@ -68,7 +70,9 @@ export function SubLedgerSwitcher({
               : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
           }`}
         >
-          <CreditCard className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`} />
+          <CreditCard
+            className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`}
+          />
           <span>Personal Finance</span>
           <span
             className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${

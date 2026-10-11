@@ -76,9 +76,24 @@ describe("Domain: Financial Metrics", () => {
 
   it("calculates normalized monthly subscriptions cost", () => {
     const subs: Subscription[] = [
-      { id: "s1", status: "active", amount: 120, frequency: "yearly" } as Subscription,
-      { id: "s2", status: "active", amount: 15, frequency: "monthly" } as Subscription,
-      { id: "s3", status: "cancelled", amount: 50, frequency: "monthly" } as Subscription,
+      {
+        id: "s1",
+        status: "active",
+        amount: 120,
+        frequency: "yearly",
+      } as Subscription,
+      {
+        id: "s2",
+        status: "active",
+        amount: 15,
+        frequency: "monthly",
+      } as Subscription,
+      {
+        id: "s3",
+        status: "cancelled",
+        amount: 50,
+        frequency: "monthly",
+      } as Subscription,
     ];
 
     const monthlyCost = calculateMonthlySubscriptionsCost(subs);

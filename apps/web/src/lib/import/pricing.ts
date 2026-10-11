@@ -114,21 +114,21 @@ export async function getHistoricalUsdPrice(params: {
     }
   }
 
-async function fetchPriceWithTimeout(
-  url: string,
-  timeoutMs = 800,
-): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timer);
+  async function fetchPriceWithTimeout(
+    url: string,
+    timeoutMs = 800,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
   }
-}
 
   // 3. Query DeFiLlama Historical Coins API
   if (coinId) {
@@ -159,9 +159,7 @@ async function fetchPriceWithTimeout(
   }
 
   // 4. Fallback: Alchemy Token Prices API
-  const effectiveApiKey =
-    alchemyApiKey ||
-    process.env.ALCHEMY_API_KEY;
+  const effectiveApiKey = alchemyApiKey || process.env.ALCHEMY_API_KEY;
 
   if (effectiveApiKey && normSymbol) {
     try {

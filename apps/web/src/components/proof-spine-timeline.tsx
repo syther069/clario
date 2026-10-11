@@ -144,7 +144,8 @@ export function ProofSpineTimeline({
                 cursor: "pointer",
                 boxShadow:
                   filterMode === tab.id ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
-                transition: "color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease",
+                transition:
+                  "color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease",
               }}
             >
               {tab.label}
@@ -336,7 +337,8 @@ export function ProofSpineTimeline({
                   padding: isExpanded
                     ? "var(--space-3) var(--space-4)"
                     : "2px var(--space-2)",
-                  transition: "background-color 0.15s ease, border-color 0.15s ease, padding 0.15s ease",
+                  transition:
+                    "background-color 0.15s ease, border-color 0.15s ease, padding 0.15s ease",
                 }}
               >
                 {/* Event Headline & Primary Badges */}

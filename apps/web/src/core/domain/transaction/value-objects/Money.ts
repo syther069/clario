@@ -16,8 +16,12 @@ export class Money {
     this._currency = (currency || "USD").toUpperCase();
   }
 
-  public static create(amount: number | string, currency: string = "USD"): Money {
-    const parsed = typeof amount === "string" ? Number.parseFloat(amount) : amount;
+  public static create(
+    amount: number | string,
+    currency: string = "USD",
+  ): Money {
+    const parsed =
+      typeof amount === "string" ? Number.parseFloat(amount) : amount;
     return new Money(Number.isNaN(parsed) ? 0 : parsed, currency);
   }
 

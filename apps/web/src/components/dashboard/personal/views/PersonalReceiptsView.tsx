@@ -14,7 +14,11 @@ import {
   UploadCloud,
   Loader2,
 } from "lucide-react";
-import { AnimatedBackground, TextScramble, TextShimmer } from "@/components/ui/motion";
+import {
+  AnimatedBackground,
+  TextScramble,
+  TextShimmer,
+} from "@/components/ui/motion";
 import { WatermelonAlert } from "@/components/ui/watermelon-alert";
 import { WatermelonButton } from "@/components/ui/watermelon-button";
 import {
@@ -24,7 +28,10 @@ import {
   detectCryptoIdentity,
   MonadLogo,
 } from "@/components/ui/crypto-icon";
-import { MONAD_TESTNET_CHAIN_ID, getMonadExplorerTxUrl } from "@/lib/blockchain/registry";
+import {
+  MONAD_TESTNET_CHAIN_ID,
+  getMonadExplorerTxUrl,
+} from "@/lib/blockchain/registry";
 import type { ReceiptBundle } from "@/lib/supabase/types";
 import type { DashboardTransaction } from "../types";
 
@@ -49,7 +56,10 @@ export interface PersonalReceiptsViewProps {
   handleBatchSaveOnChain: () => void;
   currencySymbol: string;
   formatTransactionDateTime: (t?: string | null) => string;
-  formatCategoryName: (cat?: string | import("@/lib/supabase/types").Category | null, catId?: string | null) => string;
+  formatCategoryName: (
+    cat?: string | import("@/lib/supabase/types").Category | null,
+    catId?: string | null,
+  ) => string;
   receiptBundles: Record<string, ReceiptBundle>;
   savingTxId: string | null;
   savingProgressLabel: string;
@@ -155,7 +165,9 @@ export function PersonalReceiptsView({
                   key={tab.id}
                   data-id={tab.id}
                   type="button"
-                  onClick={() => setActiveLedgerTab(tab.id as "transactions" | "receipts")}
+                  onClick={() =>
+                    setActiveLedgerTab(tab.id as "transactions" | "receipts")
+                  }
                   className={`group inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-black uppercase tracking-wider transition-colors shrink-0 cursor-pointer ${
                     isActive
                       ? "text-[#121212]"
@@ -164,7 +176,9 @@ export function PersonalReceiptsView({
                 >
                   <Icon
                     className={`h-4 w-4 shrink-0 transition-colors ${
-                      isActive ? "text-[#836EF9]" : "text-slate-500 group-hover:text-[#121212]"
+                      isActive
+                        ? "text-[#836EF9]"
+                        : "text-slate-500 group-hover:text-[#121212]"
                     }`}
                     aria-hidden="true"
                   />
@@ -286,9 +300,7 @@ export function PersonalReceiptsView({
                     <th className="py-3 px-4">Type</th>
                     <th className="py-3 px-4">Payment Method</th>
                     <th className="py-3 px-4 text-right">Amount</th>
-                    <th className="py-3 px-4 text-right">
-                      Receipt / Proof
-                    </th>
+                    <th className="py-3 px-4 text-right">Receipt / Proof</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y-2 divide-[#121212]">
@@ -537,8 +549,8 @@ export function PersonalReceiptsView({
                 No transactions recorded
               </p>
               <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                Drag-and-drop a receipt image, import transactions, or add
-                an expense manually to start tracking with cryptographic proof.
+                Drag-and-drop a receipt image, import transactions, or add an
+                expense manually to start tracking with cryptographic proof.
               </p>
               <div className="mt-5 flex gap-3">
                 <WatermelonButton
@@ -585,7 +597,9 @@ export function PersonalReceiptsView({
                   No Saved Receipts Yet
                 </p>
                 <p className="text-xs text-slate-600 mt-1 max-w-sm">
-                  Receipts you save and verify on Monad will appear here. A cryptographic fingerprint proves payment authenticity while keeping invoice details private.
+                  Receipts you save and verify on Monad will appear here. A
+                  cryptographic fingerprint proves payment authenticity while
+                  keeping invoice details private.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
                   <WatermelonButton
@@ -594,7 +608,11 @@ export function PersonalReceiptsView({
                     size="sm"
                     textMorph
                     leftIcon={<Plus className="h-3.5 w-3.5" />}
-                    onClick={() => onAddTransaction?.(subLedger === "onchain" ? "onchain" : "fiat")}
+                    onClick={() =>
+                      onAddTransaction?.(
+                        subLedger === "onchain" ? "onchain" : "fiat",
+                      )
+                    }
                   >
                     Log Expense
                   </WatermelonButton>
@@ -604,7 +622,9 @@ export function PersonalReceiptsView({
                       variant="secondary"
                       size="sm"
                       textMorph
-                      leftIcon={<UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />}
+                      leftIcon={
+                        <UploadCloud className="h-3.5 w-3.5 text-[#836EF9]" />
+                      }
                       onClick={onUploadReceipt}
                     >
                       Scan Receipt
@@ -622,7 +642,9 @@ export function PersonalReceiptsView({
                 </p>
                 <p className="text-xs text-slate-600 mt-1 max-w-md">
                   You have {transactions.length} local transaction
-                  {transactions.length === 1 ? "" : "s"}. Select transactions in the ledger and click &quot;Create Receipt&quot; or &quot;Save on Chain&quot; to record an immutable Monad proof.
+                  {transactions.length === 1 ? "" : "s"}. Select transactions in
+                  the ledger and click &quot;Create Receipt&quot; or &quot;Save
+                  on Chain&quot; to record an immutable Monad proof.
                 </p>
                 <div className="mt-5 flex gap-3">
                   <button
@@ -687,9 +709,7 @@ export function PersonalReceiptsView({
                         <th className="py-3 px-4">Created Date</th>
                         <th className="py-3 px-4">Signing Wallet</th>
                         <th className="py-3 px-4">Status</th>
-                        <th className="py-3 px-4 text-right">
-                          Total Amount
-                        </th>
+                        <th className="py-3 px-4 text-right">Total Amount</th>
                         <th className="py-3 px-4 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -704,17 +724,13 @@ export function PersonalReceiptsView({
                           r.receipt_number ||
                           `CR-${r.id.slice(0, 8).toUpperCase()}`;
                         const txCount =
-                          r.transaction_count ||
-                          r.transaction_ids?.length ||
-                          1;
+                          r.transaction_count || r.transaction_ids?.length || 1;
                         const txHash = r.blockchain_tx_hash;
                         const explorerUrl = txHash
                           ? getMonadExplorerTxUrl(txHash)
                           : null;
                         const walletAddr =
-                          r.wallet_address ||
-                          effectiveConnectedAddress ||
-                          null;
+                          r.wallet_address || effectiveConnectedAddress || null;
 
                         return (
                           <tr

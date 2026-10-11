@@ -122,7 +122,9 @@ contract ClarioSettlementRegistryV1 is IClarioSettlementRegistryV1 {
             revert InvalidAmount();
         }
 
-        if (_isExpenseSettled[workspaceId][expenseId] || _isSettled[workspaceId][expenseId][version]) {
+        if (
+            _isExpenseSettled[workspaceId][expenseId] || _isSettled[workspaceId][expenseId][version]
+        ) {
             revert DuplicateSettlement();
         }
 

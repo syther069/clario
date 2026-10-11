@@ -110,15 +110,21 @@ export function DataSeparationDiagram() {
           </li>
           <li className="flex items-start gap-2">
             <span className="font-mono font-bold text-[#121212]">[ + ]</span>
-            <span>Customer PII, corporate tax registration numbers & payment details</span>
+            <span>
+              Customer PII, corporate tax registration numbers & payment details
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-mono font-bold text-[#121212]">[ + ]</span>
-            <span>Protected by Supabase PostgreSQL Row Level Security (RLS)</span>
+            <span>
+              Protected by Supabase PostgreSQL Row Level Security (RLS)
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-mono font-bold text-[#121212]">[ + ]</span>
-            <span>Encrypted at rest via AES-256 envelope encryption (DEK/KEK)</span>
+            <span>
+              Encrypted at rest via AES-256 envelope encryption (DEK/KEK)
+            </span>
           </li>
         </ul>
       </div>
@@ -147,11 +153,15 @@ export function DataSeparationDiagram() {
           </li>
           <li className="flex items-start gap-2">
             <span className="font-mono font-bold text-[#836EF9]">[ ✓ ]</span>
-            <span>Settlement recipient address & USDC reimbursement allocation</span>
+            <span>
+              Settlement recipient address & USDC reimbursement allocation
+            </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-mono font-bold text-[#836EF9]">[ ✓ ]</span>
-            <span>Block timestamp and transaction hash for permanent audit trails</span>
+            <span>
+              Block timestamp and transaction hash for permanent audit trails
+            </span>
           </li>
         </ul>
       </div>
@@ -180,7 +190,8 @@ export function AiBoundaryDiagram() {
             01 // PROBABILISTIC OCR
           </div>
           <p className="text-slate-600 font-medium leading-relaxed font-sans">
-            Gemini 2.5 Flash extracts candidate fields (vendor, total, tax) into an unconfirmed draft payload.
+            Gemini 2.5 Flash extracts candidate fields (vendor, total, tax) into
+            an unconfirmed draft payload.
           </p>
         </div>
         <div className="rounded border-2 border-[#121212] bg-[#FAF8FF] p-3 shadow-[2px_2px_0_0_#836EF9]">
@@ -188,7 +199,8 @@ export function AiBoundaryDiagram() {
             02 // AUTHORIZED HUMAN REVIEW
           </div>
           <p className="text-slate-700 font-medium leading-relaxed font-sans">
-            User inspects extracted figures, resolves ambiguities, and explicitly signs off before state mutation.
+            User inspects extracted figures, resolves ambiguities, and
+            explicitly signs off before state mutation.
           </p>
         </div>
         <div className="rounded border-2 border-[#121212] bg-[#F4F9F4] p-3">
@@ -196,7 +208,8 @@ export function AiBoundaryDiagram() {
             03 // CANONICAL CONSENSUS
           </div>
           <p className="text-slate-600 font-medium leading-relaxed font-sans">
-            Only verified data is canonicalized (RFC 8785) and anchored to the Monad registry smart contract.
+            Only verified data is canonicalized (RFC 8785) and anchored to the
+            Monad registry smart contract.
           </p>
         </div>
       </div>

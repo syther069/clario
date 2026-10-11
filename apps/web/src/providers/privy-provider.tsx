@@ -115,7 +115,8 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 }
 
 export function ClarioPrivyProvider({ children }: { children: ReactNode }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "";
+  const appId =
+    process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cl00000000000000000000000";
 
   return (
     <PrivyProvider

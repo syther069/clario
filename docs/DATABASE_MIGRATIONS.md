@@ -3,13 +3,13 @@
 **Status:** Authoritative database specification  
 **Owner:** Core Engineering  
 **Applies to:** API, workers, background jobs, database administrators, and CI  
-**Companion documents:** [architecture.md](../architecture.md) (Section 9) · [RULES.md](../RULES.md) (Section 13) · [THREAT_MODEL.md](../THREAT_MODEL.md)
+**Companion documents:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [SECURITY.md](./SECURITY.md)
 
 ---
 
 ## 1. Overview and Trust Boundaries
 
-Clario uses PostgreSQL 16+ as its primary relational store for private workflow coordination. In accordance with **ADR-001** and founder invariant **R-001 (Private by default)**, private business evidence, notes, and unredacted values are **never published onchain**. The PostgreSQL database stores the operational state and encrypted ciphertext pointers required to produce public commitments on Monad.
+Clario uses PostgreSQL 16+ as its primary relational store for private workflow coordination. In accordance with protocol security invariants (Private by default), private business evidence, notes, and unredacted values are **never published onchain**. The PostgreSQL database stores the operational state and encrypted ciphertext pointers required to produce public commitments on Monad.
 
 ### 1.1 Data Classification Map
 
@@ -27,7 +27,7 @@ Clario uses PostgreSQL 16+ as its primary relational store for private workflow 
 The database schema enforces workflow integrity at the database engine level via strict foreign keys, check constraints, and partial unique indexes:
 
 ### 2.1 Integer Base-Unit Monetary Amounts
-Floating-point arithmetic for currency is strictly prohibited (**RULES.md Section 13**). All monetary values (e.g. USDC, native assets) are stored as `NUMERIC(78, 0)` base units:
+Floating-point arithmetic for currency is strictly prohibited. All monetary values (e.g. USDC, native assets) are stored as `NUMERIC(78, 0)` base units:
 ```sql
 amount NUMERIC(78, 0) NOT NULL CHECK (amount >= 0)
 ```
@@ -41,7 +41,7 @@ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 Application layers MUST supply and parse timestamps formatted as ISO 8601 UTC (`YYYY-MM-DDTHH:MM:SSZ`).
 
 ### 2.3 Immutable Expense Versioning
-A material edit creates a new immutable version and never overwrites an existing record (**R-003**).
+A material edit creates a new immutable version and never overwrites an existing record.
 - `expense_versions` primary key is composite: `(workspace_id, expense_id, version)`.
 - Predecessor check constraint:
   ```sql
@@ -191,7 +191,7 @@ In local, test, or isolated preview environments:
 
 ## 6. Test Fixture Guidelines
 
-In compliance with **RULES.md Section 5.2**:
+In compliance with testing data hygiene policies:
 - Test fixtures MUST contain **zero real personal data**, customer emails, live merchant invoices, or active production addresses.
 - All fixtures in `packages/database/src/fixtures/` use RFC 2606 example names and deterministic 0x test hashes.
 - Tests execute offline in memory via `pg-mem` without requiring live network access or external credentials.

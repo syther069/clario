@@ -68,10 +68,7 @@ export class MonadFallbackImportAdapter implements TransactionImportAdapter {
   private explorerApiKey: string | null;
 
   constructor(alchemyApiKey?: string, explorerApiKey?: string) {
-    this.alchemyApiKey =
-      alchemyApiKey ??
-      process.env.ALCHEMY_API_KEY ??
-      null;
+    this.alchemyApiKey = alchemyApiKey ?? process.env.ALCHEMY_API_KEY ?? null;
     this.explorerApiKey =
       explorerApiKey ??
       process.env.ETHERSCAN_API_KEY ??

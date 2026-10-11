@@ -1,14 +1,9 @@
 /**
- * Clario Verification Package Export Service (VER-001)
- *
- * Governed by:
- * - Architecture section 15 (Verification package architecture)
- * - PRD section 9.12 (Independent verifier)
- * - RULES.md sections 2, 7, 8, 14, 15, 19
+ * Clario Verification Package Export Service
  *
  * Invariants enforced:
- * - Export restricted to OWNER_ROLE, ADMIN_ROLE, or AUDITOR_ROLE (RULES §8)
- * - Recent wallet confirmation required within 15 minutes (RULES §8)
+ * - Export restricted to OWNER_ROLE, ADMIN_ROLE, or AUDITOR_ROLE
+ * - Recent wallet confirmation required within 15 minutes
  * - Explicit disclosure preview before export creation
  * - REDACTED mode omits private records, salts, and evidence; missing inputs become UNVERIFIABLE
  * - FULL mode decrypts records and evidence without saving plaintext to server disk or logs

@@ -168,12 +168,17 @@ export async function updateInvoiceStatus(
 // FAMILY MODE WORKFLOWS
 // ============================================================================
 
-export async function getFamilyMembers(householdId: string): Promise<FamilyMember[]> {
-  const entities = await container.manageFamilyUseCase.getFamilyMembers(householdId);
+export async function getFamilyMembers(
+  householdId: string,
+): Promise<FamilyMember[]> {
+  const entities =
+    await container.manageFamilyUseCase.getFamilyMembers(householdId);
   return entities.map((e) => e.toDTO());
 }
 
-export async function saveFamilyMember(member: FamilyMember): Promise<FamilyMember> {
+export async function saveFamilyMember(
+  member: FamilyMember,
+): Promise<FamilyMember> {
   const entity = FamilyMemberEntity.fromDTO(member);
   const saved = await container.manageFamilyUseCase.saveFamilyMember(entity);
   return saved.toDTO();
@@ -186,8 +191,11 @@ export async function deleteFamilyMember(
   await container.manageFamilyUseCase.deleteFamilyMember(memberId, householdId);
 }
 
-export async function getFamilyBills(householdId: string): Promise<FamilyBill[]> {
-  const entities = await container.manageFamilyUseCase.getFamilyBills(householdId);
+export async function getFamilyBills(
+  householdId: string,
+): Promise<FamilyBill[]> {
+  const entities =
+    await container.manageFamilyUseCase.getFamilyBills(householdId);
   return entities.map((e) => e.toDTO());
 }
 
@@ -218,8 +226,11 @@ export async function updateFamilyBillStatus(
   );
 }
 
-export async function getFamilySettlements(householdId: string): Promise<FamilySettlement[]> {
-  const entities = await container.manageFamilyUseCase.getFamilySettlements(householdId);
+export async function getFamilySettlements(
+  householdId: string,
+): Promise<FamilySettlement[]> {
+  const entities =
+    await container.manageFamilyUseCase.getFamilySettlements(householdId);
   return entities.map((e) => e.toDTO());
 }
 
@@ -227,7 +238,8 @@ export async function saveFamilySettlement(
   settlement: FamilySettlement,
 ): Promise<FamilySettlement> {
   const entity = FamilySettlementEntity.fromDTO(settlement);
-  const saved = await container.manageFamilyUseCase.saveFamilySettlement(entity);
+  const saved =
+    await container.manageFamilyUseCase.saveFamilySettlement(entity);
   return saved.toDTO();
 }
 
@@ -235,14 +247,19 @@ export async function deleteFamilySettlement(
   settlementId: string,
   householdId?: string,
 ): Promise<void> {
-  await container.manageFamilyUseCase.deleteFamilySettlement(settlementId, householdId);
+  await container.manageFamilyUseCase.deleteFamilySettlement(
+    settlementId,
+    householdId,
+  );
 }
 
 // ============================================================================
 // BUSINESS MODE WORKFLOWS
 // ============================================================================
 
-export async function getBusinessTeam(orgId: string): Promise<BusinessTeamMember[]> {
+export async function getBusinessTeam(
+  orgId: string,
+): Promise<BusinessTeamMember[]> {
   const entities = await container.manageBusinessUseCase.getBusinessTeam(orgId);
   return entities.map((e) => e.toDTO());
 }
@@ -251,7 +268,8 @@ export async function saveBusinessTeamMember(
   member: BusinessTeamMember,
 ): Promise<BusinessTeamMember> {
   const entity = BusinessTeamMemberEntity.fromDTO(member);
-  const saved = await container.manageBusinessUseCase.saveBusinessTeamMember(entity);
+  const saved =
+    await container.manageBusinessUseCase.saveBusinessTeamMember(entity);
   return saved.toDTO();
 }
 
@@ -259,11 +277,17 @@ export async function deleteBusinessTeamMember(
   memberId: string,
   orgId?: string,
 ): Promise<void> {
-  await container.manageBusinessUseCase.deleteBusinessTeamMember(memberId, orgId);
+  await container.manageBusinessUseCase.deleteBusinessTeamMember(
+    memberId,
+    orgId,
+  );
 }
 
-export async function getBusinessReimbursements(orgId: string): Promise<BusinessReimbursement[]> {
-  const entities = await container.manageBusinessUseCase.getBusinessReimbursements(orgId);
+export async function getBusinessReimbursements(
+  orgId: string,
+): Promise<BusinessReimbursement[]> {
+  const entities =
+    await container.manageBusinessUseCase.getBusinessReimbursements(orgId);
   return entities.map((e) => e.toDTO());
 }
 
@@ -271,7 +295,8 @@ export async function saveBusinessReimbursement(
   claim: BusinessReimbursement,
 ): Promise<BusinessReimbursement> {
   const entity = BusinessReimbursementEntity.fromDTO(claim);
-  const saved = await container.manageBusinessUseCase.saveBusinessReimbursement(entity);
+  const saved =
+    await container.manageBusinessUseCase.saveBusinessReimbursement(entity);
   return saved.toDTO();
 }
 
@@ -297,15 +322,23 @@ export async function deleteBusinessReimbursement(
   claimId: string,
   orgId?: string,
 ): Promise<void> {
-  await container.manageBusinessUseCase.deleteBusinessReimbursement(claimId, orgId);
+  await container.manageBusinessUseCase.deleteBusinessReimbursement(
+    claimId,
+    orgId,
+  );
 }
 
-export async function getExpensePolicies(orgId: string): Promise<ExpensePolicy[]> {
-  const entities = await container.manageBusinessUseCase.getExpensePolicies(orgId);
+export async function getExpensePolicies(
+  orgId: string,
+): Promise<ExpensePolicy[]> {
+  const entities =
+    await container.manageBusinessUseCase.getExpensePolicies(orgId);
   return entities.map((e) => e.toDTO());
 }
 
-export async function saveExpensePolicy(policy: ExpensePolicy): Promise<ExpensePolicy> {
+export async function saveExpensePolicy(
+  policy: ExpensePolicy,
+): Promise<ExpensePolicy> {
   const entity = ExpensePolicyEntity.fromDTO(policy);
   const saved = await container.manageBusinessUseCase.saveExpensePolicy(entity);
   return saved.toDTO();
@@ -318,8 +351,11 @@ export async function deleteExpensePolicy(
   await container.manageBusinessUseCase.deleteExpensePolicy(policyId, orgId);
 }
 
-export async function getBusinessAuditEvents(orgId: string): Promise<BusinessAuditEvent[]> {
-  const entities = await container.manageBusinessUseCase.getBusinessAuditEvents(orgId);
+export async function getBusinessAuditEvents(
+  orgId: string,
+): Promise<BusinessAuditEvent[]> {
+  const entities =
+    await container.manageBusinessUseCase.getBusinessAuditEvents(orgId);
   return entities.map((e) => e.toDTO());
 }
 
@@ -327,7 +363,8 @@ export async function recordBusinessAuditEvent(
   event: BusinessAuditEvent,
 ): Promise<BusinessAuditEvent> {
   const entity = BusinessAuditEventEntity.fromDTO(event);
-  const saved = await container.manageBusinessUseCase.recordBusinessAuditEvent(entity);
+  const saved =
+    await container.manageBusinessUseCase.recordBusinessAuditEvent(entity);
   return saved.toDTO();
 }
 
@@ -346,7 +383,8 @@ export function saveStoredBudgets(budgets: Budget[], scopeId?: string): void {
 }
 
 export function getStoredSubscriptions(scopeId?: string): Subscription[] {
-  const entities = container.managePersonalModeUseCase.getSubscriptions(scopeId);
+  const entities =
+    container.managePersonalModeUseCase.getSubscriptions(scopeId);
   return entities.map((e) => e.toDTO());
 }
 

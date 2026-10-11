@@ -98,8 +98,12 @@ export function TransactionModal({
   const handleConnectWallet = onConnectWallet || auth.connectEvmWallet;
 
   const [subLedger, setSubLedger] = useState<SubLedgerMode>(initialSubLedger);
-  const [view, setView] = useState<"selection" | "manual" | "saved_action">("selection");
-  const [savedTransaction, setSavedTransaction] = useState<Transaction | null>(null);
+  const [view, setView] = useState<"selection" | "manual" | "saved_action">(
+    "selection",
+  );
+  const [savedTransaction, setSavedTransaction] = useState<Transaction | null>(
+    null,
+  );
   const [isOnChainSaving, setIsOnChainSaving] = useState(false);
   const [onChainStepLabel, setOnChainStepLabel] = useState("");
   const [onChainError, setOnChainError] = useState<string | null>(null);
@@ -240,7 +244,9 @@ export function TransactionModal({
                               ? "Base Sepolia"
                               : "EVM";
 
-        setPaymentMethod(`Onchain (${chainName} - ${tx.assetSymbol || "Native"})`);
+        setPaymentMethod(
+          `Onchain (${chainName} - ${tx.assetSymbol || "Native"})`,
+        );
         setDetectedChainInfo({
           chainId: tx.sourceChainId,
           chainName,
@@ -303,7 +309,9 @@ export function TransactionModal({
           (w) =>
             w.address.toLowerCase() ===
             (effectiveConnectedAddress || "").toLowerCase(),
-        ) || auth.wallets[0] || null;
+        ) ||
+        auth.wallets[0] ||
+        null;
 
       const res = await executeSaveTransaction({
         transactionData: savedTransaction,
@@ -321,7 +329,11 @@ export function TransactionModal({
       }
     } catch (err: unknown) {
       console.error("Save on chain error:", err);
-      setOnChainError(err instanceof Error ? err.message : "Failed to record on Monad Testnet");
+      setOnChainError(
+        err instanceof Error
+          ? err.message
+          : "Failed to record on Monad Testnet",
+      );
     } finally {
       setIsOnChainSaving(false);
     }
@@ -358,20 +370,32 @@ export function TransactionModal({
       category_id: category,
       date,
       timestamp: new Date(date).toISOString(),
-      payment_method: paymentMethod?.trim() || (isCrypto ? "Onchain (Monad)" : "Credit Card"),
-      verification_state: anchorToMonad || isCrypto ? "anchored_onchain" : "unverified",
-      verification_status: anchorToMonad || isCrypto ? "anchored" : "unverified",
+      payment_method:
+        paymentMethod?.trim() || (isCrypto ? "Onchain (Monad)" : "Credit Card"),
+      verification_state:
+        anchorToMonad || isCrypto ? "anchored_onchain" : "unverified",
+      verification_status:
+        anchorToMonad || isCrypto ? "anchored" : "unverified",
       blockchain_status: anchorToMonad || isCrypto ? "unverified" : null,
-      blockchain_network: detectedChainInfo?.chainName || (anchorToMonad || isCrypto ? "Monad Testnet" : null),
-      blockchain_chain_id: detectedChainInfo?.chainId || (anchorToMonad || isCrypto ? 10143 : null),
-      blockchain_tx_hash: txHash ? (txHash.toLowerCase() as `0x${string}`) : null,
+      blockchain_network:
+        detectedChainInfo?.chainName ||
+        (anchorToMonad || isCrypto ? "Monad Testnet" : null),
+      blockchain_chain_id:
+        detectedChainInfo?.chainId ||
+        (anchorToMonad || isCrypto ? 10143 : null),
+      blockchain_tx_hash: txHash
+        ? (txHash.toLowerCase() as `0x${string}`)
+        : null,
       monad_tx_hash:
-        (detectedChainInfo?.chainId === 10143 || detectedChainInfo?.chainId === 143) && txHash
+        (detectedChainInfo?.chainId === 10143 ||
+          detectedChainInfo?.chainId === 143) &&
+        txHash
           ? (txHash.toLowerCase() as `0x${string}`)
           : isCrypto && txHash
             ? (txHash.toLowerCase() as `0x${string}`)
             : null,
-      blockchain_timestamp: isCrypto && txHash ? new Date(date).toISOString() : null,
+      blockchain_timestamp:
+        isCrypto && txHash ? new Date(date).toISOString() : null,
       source:
         detectedChainInfo?.chainId === 10143
           ? "onchain_monad"
@@ -440,7 +464,6 @@ export function TransactionModal({
       />
     );
   }
-
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -518,61 +541,63 @@ export function TransactionModal({
         {view !== "saved_action" && (
           <div className="mt-4 p-1.5 bg-[#f3f4f6] border-2 border-[#121212] shadow-[2px_2px_0_0_#121212] rounded-xl flex items-center gap-2">
             <motion.button
-            type="button"
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              setSubLedger("fiat");
-              setPaymentMethod("Credit Card");
-              setCategory("food_dining");
-            }}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              subLedger === "fiat"
-                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
-                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
-            }`}
-          >
-            <CreditCard className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`} />
-            <span>Personal Finance</span>
-            <span
-              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+              type="button"
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setSubLedger("fiat");
+                setPaymentMethod("Credit Card");
+                setCategory("food_dining");
+              }}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 subLedger === "fiat"
-                  ? "bg-white/20 text-white border-white/40"
-                  : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                  ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                  : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
               }`}
             >
-              Fiat
-            </span>
-          </motion.button>
+              <CreditCard
+                className={`h-3.5 w-3.5 ${subLedger === "fiat" ? "text-white" : "text-[#836EF9]"}`}
+              />
+              <span>Personal Finance</span>
+              <span
+                className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                  subLedger === "fiat"
+                    ? "bg-white/20 text-white border-white/40"
+                    : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                }`}
+              >
+                Fiat
+              </span>
+            </motion.button>
 
-          <motion.button
-            type="button"
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              setSubLedger("onchain");
-              setPaymentMethod("Onchain (Monad)");
-              setCategory("crypto_ops");
-            }}
-            className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              subLedger === "onchain"
-                ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
-                : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
-            }`}
-          >
-            <MonadLogo className="h-3.5 w-3.5" />
-            <span>On-Chain</span>
-            <span
-              className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+            <motion.button
+              type="button"
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setSubLedger("onchain");
+                setPaymentMethod("Onchain (Monad)");
+                setCategory("crypto_ops");
+              }}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-mono font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 subLedger === "onchain"
-                  ? "bg-white/20 text-white border-white/40"
-                  : "bg-purple-100 text-[#836EF9] border-purple-300"
+                  ? "bg-[#836EF9] text-white border-2 border-[#121212] shadow-[2.5px_2.5px_0_0_#121212]"
+                  : "bg-white text-slate-700 border-2 border-transparent hover:border-[#121212] hover:bg-[#fafafa]"
               }`}
             >
-              Web3
-            </span>
-          </motion.button>
-        </div>
+              <MonadLogo className="h-3.5 w-3.5" />
+              <span>On-Chain</span>
+              <span
+                className={`text-[9px] px-1.5 py-0.5 rounded font-bold border ${
+                  subLedger === "onchain"
+                    ? "bg-white/20 text-white border-white/40"
+                    : "bg-purple-100 text-[#836EF9] border-purple-300"
+                }`}
+              >
+                Web3
+              </span>
+            </motion.button>
+          </div>
         )}
 
         {/* VIEW 1: SELECTION SCREEN */}
@@ -610,7 +635,8 @@ export function TransactionModal({
                       <span className="text-sm font-mono font-black">→</span>
                     </h4>
                     <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                      Upload grocery, dining, or shopping receipts. Multimodal Gemini extracts merchant, total amount & currency.
+                      Upload grocery, dining, or shopping receipts. Multimodal
+                      Gemini extracts merchant, total amount & currency.
                     </p>
                   </motion.button>
                 )}
@@ -640,7 +666,8 @@ export function TransactionModal({
                     <span className="text-sm font-mono font-black">→</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Log daily spending, rent, coffee, or subscription with multi-currency ($, ₹, €, £) and payment method tagging.
+                    Log daily spending, rent, coffee, or subscription with
+                    multi-currency ($, ₹, €, £) and payment method tagging.
                   </p>
                 </motion.button>
               </>
@@ -671,7 +698,8 @@ export function TransactionModal({
                     <span className="text-sm font-mono font-black">→</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Auto-scan connected EVM address for recent transfers across Monad, Base, Ethereum & Arbitrum.
+                    Auto-scan connected EVM address for recent transfers across
+                    Monad, Base, Ethereum & Arbitrum.
                   </p>
                 </motion.button>
 
@@ -700,7 +728,8 @@ export function TransactionModal({
                     <span className="text-sm font-mono font-black">→</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Manually paste transaction hash, token amount, and gas spent for tracking protocol interactions.
+                    Manually paste transaction hash, token amount, and gas spent
+                    for tracking protocol interactions.
                   </p>
                 </motion.button>
               </>
@@ -798,12 +827,15 @@ export function TransactionModal({
                   <p className="mt-1.5 text-[11px] font-mono font-bold text-emerald-700 flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3 shrink-0" />
                     <span>
-                      Detected on {detectedChainInfo.chainName} via Alchemy • Amount, token & date auto-filled
+                      Detected on {detectedChainInfo.chainName} via Alchemy •
+                      Amount, token & date auto-filled
                     </span>
                   </p>
                 )}
                 <p className="text-[10px] text-slate-500 mt-1 font-mono">
-                  Paste any EVM tx hash (Monad, Base, Ethereum, etc.) — Alchemy automatically extracts amount, token, timestamp & flow direction.
+                  Paste any EVM tx hash (Monad, Base, Ethereum, etc.) — Alchemy
+                  automatically extracts amount, token, timestamp & flow
+                  direction.
                 </p>
               </div>
             )}
@@ -826,9 +858,14 @@ export function TransactionModal({
                 </div>
               )}
 
-              <div className={subLedger === "fiat" ? "sm:col-span-7" : "sm:col-span-12"}>
+              <div
+                className={
+                  subLedger === "fiat" ? "sm:col-span-7" : "sm:col-span-12"
+                }
+              >
                 <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Amount ({subLedger === "fiat" ? currentCurrencySymbol : "$ USD"})
+                  Amount (
+                  {subLedger === "fiat" ? currentCurrencySymbol : "$ USD"})
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-600 text-xs font-mono font-bold pointer-events-none">
@@ -850,7 +887,9 @@ export function TransactionModal({
             {/* Description / Merchant */}
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                {subLedger === "fiat" ? "Merchant / Description" : "Asset / Transfer Description"}
+                {subLedger === "fiat"
+                  ? "Merchant / Description"
+                  : "Asset / Transfer Description"}
               </label>
               <input
                 type="text"
@@ -950,8 +989,16 @@ export function TransactionModal({
                 /* On-Chain Payment Assets */
                 <div className="flex items-center gap-1.5 flex-wrap mb-2">
                   {[
-                    { name: "Onchain (Monad)", label: "Monad", icon: MonadLogo },
-                    { name: "Onchain (Ethereum)", label: "ETH", icon: EthereumLogo },
+                    {
+                      name: "Onchain (Monad)",
+                      label: "Monad",
+                      icon: MonadLogo,
+                    },
+                    {
+                      name: "Onchain (Ethereum)",
+                      label: "ETH",
+                      icon: EthereumLogo,
+                    },
                     { name: "Onchain (Base)", label: "Base", icon: BaseLogo },
                     { name: "USDC", label: "USDC", icon: UsdcLogo },
                     { name: "USDT", label: "USDT", icon: UsdtLogo },
@@ -1009,7 +1056,10 @@ export function TransactionModal({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Stores a tamper-proof digital fingerprint on the Monad blockchain. Your personal receipts and details remain completely private on your device; only a mathematical hash is registered to prevent tampering.
+                      Stores a tamper-proof digital fingerprint on the Monad
+                      blockchain. Your personal receipts and details remain
+                      completely private on your device; only a mathematical
+                      hash is registered to prevent tampering.
                     </p>
                   </div>
                 </label>
@@ -1130,7 +1180,8 @@ export function TransactionModal({
                     {savedTransaction.type.toUpperCase()}
                   </span>
                   <div className="text-xl font-black font-mono tabular-nums text-[#121212] mt-1.5">
-                    {savedTransaction.currency === "USD" || !savedTransaction.currency
+                    {savedTransaction.currency === "USD" ||
+                    !savedTransaction.currency
                       ? "$"
                       : `${savedTransaction.currency} `}
                     {Number(savedTransaction.amount).toFixed(2)}
@@ -1140,19 +1191,30 @@ export function TransactionModal({
 
               <div className="pt-2.5 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs font-mono">
                 <div>
-                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Category</span>
-                  <span className="font-bold text-[#121212]">{formatCategoryLabel(savedTransaction.category)}</span>
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">
+                    Category
+                  </span>
+                  <span className="font-bold text-[#121212]">
+                    {formatCategoryLabel(savedTransaction.category)}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Payment Method</span>
-                  <span className="font-bold text-[#121212] truncate block">{savedTransaction.payment_method || "Recorded"}</span>
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">
+                    Payment Method
+                  </span>
+                  <span className="font-bold text-[#121212] truncate block">
+                    {savedTransaction.payment_method || "Recorded"}
+                  </span>
                 </div>
               </div>
 
               {/* Status indicator */}
               <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-mono">
-                <span className="text-[10px] text-slate-500 uppercase font-bold">Verification State:</span>
-                {savedTransaction.blockchain_tx_hash || savedTransaction.monad_tx_hash ? (
+                <span className="text-[10px] text-slate-500 uppercase font-bold">
+                  Verification State:
+                </span>
+                {savedTransaction.blockchain_tx_hash ||
+                savedTransaction.monad_tx_hash ? (
                   <div className="flex items-center gap-1.5">
                     <span className="neo-badge neo-badge-purple text-[10px]">
                       • VERIFIED ON MONAD
@@ -1185,7 +1247,9 @@ export function TransactionModal({
                 <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
                 <div className="flex-1">
                   <p className="font-bold">On-chain recording notice:</p>
-                  <p className="text-[11px] text-red-700 mt-0.5">{onChainError}</p>
+                  <p className="text-[11px] text-red-700 mt-0.5">
+                    {onChainError}
+                  </p>
                 </div>
               </div>
             )}
@@ -1193,7 +1257,8 @@ export function TransactionModal({
             {/* Dual Primary Actions: Save on Chain + Create Receipt */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               {/* Action 1: Save on Chain (optional) */}
-              {savedTransaction.blockchain_tx_hash || savedTransaction.monad_tx_hash ? (
+              {savedTransaction.blockchain_tx_hash ||
+              savedTransaction.monad_tx_hash ? (
                 <div className="p-3 rounded-xl border-2 border-[#836EF9] bg-[#fbf9fe] flex items-center justify-between text-xs font-mono shadow-[2.5px_2.5px_0_0_#121212]">
                   <div className="flex items-center gap-1.5 text-[#836EF9] font-black">
                     <MonadLogo className="h-4 w-4" />
@@ -1223,12 +1288,18 @@ export function TransactionModal({
                   {isOnChainSaving ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin text-white" />
-                      <span className="text-[11px]">{onChainStepLabel || "Submitting to Monad..."}</span>
+                      <span className="text-[11px]">
+                        {onChainStepLabel || "Submitting to Monad..."}
+                      </span>
                     </>
                   ) : (
                     <>
                       <MonadLogo className="h-4 w-4 text-white" />
-                      <span>{auth.isSessionDelegated ? "⚡ 1-Click Save on Chain" : "Save on Chain"}</span>
+                      <span>
+                        {auth.isSessionDelegated
+                          ? "⚡ 1-Click Save on Chain"
+                          : "Save on Chain"}
+                      </span>
                       <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-normal lowercase">
                         optional
                       </span>
@@ -1250,7 +1321,8 @@ export function TransactionModal({
 
             {/* Invariant Note */}
             <p className="text-[11px] text-slate-500 font-mono text-center">
-              On-chain saving is always optional. Every receipt and entry is permanently tied to your connected account.
+              On-chain saving is always optional. Every receipt and entry is
+              permanently tied to your connected account.
             </p>
 
             {/* Bottom Actions */}
@@ -1296,7 +1368,10 @@ export function TransactionModal({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.15, ease: "easeOut" },
+              }}
               onClick={() => setIsNoWalletPopupOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
@@ -1347,21 +1422,30 @@ export function TransactionModal({
                     </span>
                   </div>
                   <div className="font-bold text-[#121212] truncate font-mono text-xs">
-                    {auth.primaryEmail || (auth.user?.id ? `ID: ${auth.user.id.slice(0, 16)}...` : "Email-Authenticated Account")}
+                    {auth.primaryEmail ||
+                      (auth.user?.id
+                        ? `ID: ${auth.user.id.slice(0, 16)}...`
+                        : "Email-Authenticated Account")}
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1 leading-snug">
-                    Your Clario Account manages saved workspaces, receipts, and offline records.
+                    Your Clario Account manages saved workspaces, receipts, and
+                    offline records.
                   </div>
                 </div>
 
                 <div className="space-y-1.5 text-xs text-slate-600 leading-relaxed">
                   <p>
-                    Email authentication does not create blockchain transactions. To search and index on-chain transfers across Monad, Base, Ethereum, or Arbitrum via Alchemy, connect an EVM wallet.
+                    Email authentication does not create blockchain
+                    transactions. To search and index on-chain transfers across
+                    Monad, Base, Ethereum, or Arbitrum via Alchemy, connect an
+                    EVM wallet.
                   </p>
                   <div className="rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 font-mono flex items-start gap-1.5">
                     <span className="shrink-0 text-amber-600 font-bold">ℹ</span>
                     <span>
-                      Connecting a wallet does not automatically import all your past history. You can inspect and choose which attributable transactions to index.
+                      Connecting a wallet does not automatically import all your
+                      past history. You can inspect and choose which
+                      attributable transactions to index.
                     </span>
                   </div>
                 </div>
