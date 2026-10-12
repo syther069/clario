@@ -1,3 +1,7 @@
+import type { ITransactionRepository } from "../domain/transaction/ports/ITransactionRepository";
+import type { IBusinessRepository } from "../domain/business/ports/IBusinessRepository";
+import { SupabaseTransactionRepository } from "../infrastructure/storage/SupabaseTransactionRepository";
+import { SupabaseBusinessRepository } from "../infrastructure/storage/SupabaseBusinessRepository";
 import { LocalStorageTransactionRepository } from "../infrastructure/storage/LocalStorageTransactionRepository";
 import { LocalStorageFreelancerRepository } from "../infrastructure/storage/LocalStorageFreelancerRepository";
 import { LocalStorageFamilyRepository } from "../infrastructure/storage/LocalStorageFamilyRepository";
@@ -25,10 +29,10 @@ class ServiceContainer {
   private _eventBus?: BrowserEventBus;
 
   // Infrastructure: Repositories
-  private _transactionRepository?: LocalStorageTransactionRepository;
+  private _transactionRepository?: ITransactionRepository;
   private _freelancerRepository?: LocalStorageFreelancerRepository;
   private _familyRepository?: LocalStorageFamilyRepository;
-  private _businessRepository?: LocalStorageBusinessRepository;
+  private _businessRepository?: IBusinessRepository;
   private _personalRepository?: LocalStoragePersonalRepository;
 
   // Application: Transaction Use Cases
@@ -52,11 +56,20 @@ class ServiceContainer {
   }
 
   // Transaction Layer
-  public get transactionRepository(): LocalStorageTransactionRepository {
+  public get transactionRepository(): ITransactionRepository {
     if (!this._transactionRepository) {
-      this._transactionRepository = new LocalStorageTransactionRepository();
+      this._transactionRepository = new SupabaseTransactionRepository();
     }
     return this._transactionRepository;
+  }
+
+  public setTransactionRepository(repo: ITransactionRepository): void {
+    this._transactionRepository = repo;
+    this._getTransactionsUseCase = new GetTransactionsUseCase(repo);
+    this._upsertTransactionUseCase = new UpsertTransactionUseCase(
+      repo,
+      this.eventBus,
+    );
   }
 
   public get getTransactionsUseCase(): GetTransactionsUseCase {
@@ -133,11 +146,19 @@ class ServiceContainer {
   }
 
   // Business Layer
-  public get businessRepository(): LocalStorageBusinessRepository {
+  public get businessRepository(): IBusinessRepository {
     if (!this._businessRepository) {
-      this._businessRepository = new LocalStorageBusinessRepository();
+      this._businessRepository = new SupabaseBusinessRepository();
     }
     return this._businessRepository;
+  }
+
+  public setBusinessRepository(repo: IBusinessRepository): void {
+    this._businessRepository = repo;
+    this._manageBusinessUseCase = new ManageBusinessUseCase(
+      repo,
+      this.eventBus,
+    );
   }
 
   public get manageBusinessUseCase(): ManageBusinessUseCase {

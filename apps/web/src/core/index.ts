@@ -48,6 +48,10 @@ export * from "./application/personal/use-cases/ManagePersonalModeUseCase";
 
 // Infrastructure Layer: Adapters & Storage
 export * from "./infrastructure/events/BrowserEventBus";
+export * from "./infrastructure/storage/indexeddb/ClarioIndexedDB";
+export * from "./infrastructure/storage/indexeddb/SyncQueueManager";
+export * from "./infrastructure/storage/SupabaseTransactionRepository";
+export * from "./infrastructure/storage/SupabaseBusinessRepository";
 export * from "./infrastructure/storage/LocalStorageTransactionRepository";
 export * from "./infrastructure/storage/LocalStorageFreelancerRepository";
 export * from "./infrastructure/storage/LocalStorageFamilyRepository";

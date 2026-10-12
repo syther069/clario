@@ -60,6 +60,7 @@ Clario resolves this fragmentation through an immutable, progressive verificatio
   - **Business**: Role-separated team roster, corporate spend policy engine, receipt-attached reimbursement queue, manager approvals with reason commitments, and immutable audit logs.
 - **Alchemy Multi-Chain Ingestion Engine**: Automated multi-chain ingestion across Ethereum, Base, Polygon, Arbitrum, and Optimism via Alchemy Transfers API with spam token filtering and historical price resolution. Monad activity is ingested via direct Monad RPC and explorer adapters.
 - **Privy 1-Click Fast Signing & Embedded Wallets**: Seedless non-custodial EVM onboarding via Shamir Secret Sharing, 1-Click Session Signing (Privy Delegated Actions via `useDelegatedActions`) for zero-popup instantaneous onchain anchoring to Monad Testnet, native in-app wallet funding modal (`useFundWallet`), FIDO2 Passkeys, and multi-account linking.
+- **3-Tier Hybrid Persistence Engine**: Sub-millisecond instant UI updates via L1 in-memory caching, hundreds of megabytes of offline persistent storage via native IndexedDB (`clario_db`) bypassing the 5MB browser localStorage limit, and seamless multi-device cloud synchronization via Supabase PostgreSQL with Row Level Security and an automatic offline sync queue.
 - **Client-Side Privacy Engine**: Sensitive metadata is protected with client-side sanitization (`anonymizeCopilotContext`), scrubbing names, emails, phones, and wallet addresses before external transmission.
 - **Clario Neo-Brutalist Design System**: High-contrast `border-2 border-black` borders, hard 2D offset box-shadows (`shadow-[4px_4px_0px_#000]`), monospace tracking badges, `.bg-grid` canvas, and Monad electric purple accent (`#836EF9`).
 
@@ -139,9 +140,43 @@ clario/
 - **Onchain Data Ingestion**: Alchemy Asset Transfers API (`alchemy_getAssetTransfers`), Alchemy Prices API, Monad Fallback RPC Scanner
 - **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS v4, Lucide Icons
 - **Identity & Wallets**: Privy (Embedded Wallets, Shamir Secret Sharing, 1-Click Delegated Session Signing via `useDelegatedActions`, Native `useFundWallet` Modal, FIDO2 Passkeys, Multi-Account Linking, External EVM Connectors)
-- **Database & Storage**: Supabase (PostgreSQL with Row Level Security, Storage Buckets)
+- **Database & Storage**: 3-Tier Hybrid Persistence (L1 In-Memory Fast Cache, L2 Persistent Offline IndexedDB `clario_db` with `SyncQueueManager`, and L3 Supabase PostgreSQL with Row Level Security & Encrypted Storage Buckets)
 - **AI & Copilot**: Groq, Google Gemini 2.5 Flash, Client-Side PII Redaction Engine
 - **Quality Toolchain**: TypeScript (strict, `exactOptionalPropertyTypes`), Vitest, Forge, ESLint, Prettier
+
+---
+
+## 💾 Hybrid Database & Storage Architecture
+
+Clario is engineered with a **3-tier hybrid persistence model** that solves the twin challenges of Web3 financial apps: **instant speed** and **reliable cross-device synchronization**, without ever losing data when offline.
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                   TIER 1: L1 IN-MEMORY FAST CACHE                     │
+│  • Sub-millisecond reads (< 1ms) for instantaneous UI rendering        │
+│  • Optimistic updates: changes reflect immediately on screen           │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Hydrates on launch & mirrors
+┌───────────────────────────────────▼────────────────────────────────────┐
+│              TIER 2: L2 PERSISTENT OFFLINE INDEXEDDB                   │
+│  • Native browser database (clario_db) supporting hundreds of MBs      │
+│  • Bypasses the 5 MB browser localStorage quota limit                  │
+│  • Built-in SyncQueueManager queues offline edits for auto-replay       │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Auto-syncs when online
+┌───────────────────────────────────▼────────────────────────────────────┐
+│               TIER 3: L3 SUPABASE CLOUD DATABASE & STORAGE             │
+│  • PostgreSQL with Row Level Security (RLS) bound to your identity     │
+│  • Multi-device sync: access your ledgers from desktop, tablet, or phone│
+│  • Private AES-256-GCM encrypted buckets for receipts and tax docs     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### How It Works in Plain English:
+1. **Instant Response**: When you create an invoice, log an expense, or approve a reimbursement, Clario updates your screen instantly via the in-memory cache—no loading spinners or lag.
+2. **Offline-First Resilience**: Even with zero Wi-Fi or mobile data (e.g. while flying), your records are safely written to native IndexedDB. Any pending changes are queued in `sync_queue`.
+3. **Automatic Cloud Sync**: As soon as your device reconnects to the internet, Clario automatically flushes the queue and synchronizes your changes to Supabase PostgreSQL in the background.
+4. **Complete Privacy**: All cloud rows enforce PostgreSQL Row Level Security (RLS). Only your authenticated wallet or Privy user ID can view or modify your data. Plaintext financial notes never touch public blockspace; only 32-byte cryptographic hashes touch Monad.
 
 ---
 

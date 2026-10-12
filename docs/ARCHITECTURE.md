@@ -38,11 +38,13 @@ Clario is organized into three distinct tiers:
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        TIER 1: PRESENTATION & CLIENT                  │
 │  Next.js 15 App Router • React 19 • Tailwind CSS • Neo-Brutalist UI    │
-│  Privy Embedded Wallet • Client-Side PII Scrubbing • Local Mode Stores │
+│  Privy Embedded Wallet • Client-Side PII Scrubbing                     │
+│  L1 In-Memory Fast Cache • L2 Offline IndexedDB (clario_db)            │
+│  SyncQueueManager (Offline Background Replay Engine)                   │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ HTTPS / RPC / WSS
 ┌───────────────────────────────────▼────────────────────────────────────┐
-│                  TIER 2: PRIVATE COORDINATION & STORAGE                │
+│                  TIER 2: PRIVATE COORDINATION & CLOUD STORAGE          │
 │  PostgreSQL (Supabase RLS) • AES-256-GCM Envelope Encryption (KMS)     │
 │  Alchemy Multi-Chain Ingestion • Gemini 2.5 Flash OCR • Groq Copilot   │
 └───────────────────────────────────┬────────────────────────────────────┘

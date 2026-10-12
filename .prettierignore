@@ -1,0 +1,31 @@
+# Package managers and dependencies
+node_modules
+.pnpm-store
+pnpm-lock.yaml
+
+# Build output
+.next
+out
+dist
+packages/*/dist
+packages/**/dist
+
+# Foundry
+contracts/cache
+contracts/out
+contracts/broadcast
+
+# Test & coverage
+coverage
+*.tsbuildinfo
+
+# Environment and local data
+.env
+.env.*
+!.env.example
+*.db
+*.db-journal
+uploads
+exports
+.data
+scratch

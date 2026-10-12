@@ -1974,100 +1974,202 @@ export async function POST(req: Request) {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#121212] bg-emerald-100 px-3 py-1 font-mono text-xs font-black uppercase text-emerald-800 shadow-[2px_2px_0_0_#121212]">
               <Database className="h-3.5 w-3.5" />
-              <span>PostgreSQL & Storage</span>
+              <span>Hybrid Database & Storage</span>
             </div>
             <h1 className="mt-3 text-3xl sm:text-4xl font-black font-sans tracking-tight text-[#121212]">
               Database & Storage Architecture
             </h1>
             <p className="mt-3 text-base text-slate-600 font-medium leading-relaxed max-w-3xl">
-              PostgreSQL schema, Row Level Security (RLS) isolation, and private
-              encrypted object storage buckets in Supabase.
+              How Clario keeps your financial data instant, available offline, and securely synced across all your devices using a 3-tier hybrid storage engine.
             </p>
           </div>
 
-          <section id="core-tables" className="space-y-4">
+          {/* 3-Tier Architecture Overview */}
+          <section id="three-tier-storage" className="space-y-4">
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
-              <span className="text-[#836EF9]">#</span> Core Relational Tables
+              <span className="text-[#836EF9]">#</span> 3-Tier Storage Model
             </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Traditional web applications either rely strictly on cloud servers (making them slow and unusable offline) or pure browser localStorage (which has a tiny 5 MB limit and does not sync between your laptop and phone). Clario combines the best of both worlds using a three-tier model:
+            </p>
+
+            <DocStatGrid
+              items={[
+                {
+                  label: "Tier 1: In-Memory Cache",
+                  value: "< 1 ms",
+                  description: "Sub-millisecond instant UI updates with zero loading screens or flickers.",
+                },
+                {
+                  label: "Tier 2: IndexedDB (Offline)",
+                  value: "Hundreds of MBs",
+                  description: "Deep browser storage that works offline and holds receipt images without quota limits.",
+                },
+                {
+                  label: "Tier 3: Cloud Database",
+                  value: "PostgreSQL + RLS",
+                  description: "Secure multi-device cloud synchronization powered by Supabase with Row Level Security.",
+                },
+              ]}
+            />
+
+            <DocCallout
+              type="tip"
+              title="Why IndexedDB instead of localStorage?"
+            >
+              Standard browser localStorage caps storage at only 5 MB. As you upload receipt photos, add team members, and log invoices, localStorage quickly runs out of space. Clario uses native IndexedDB (<code>clario_db</code>), allowing hundreds of megabytes of offline storage with full indexing and lightning-fast search.
+            </DocCallout>
+          </section>
+
+          {/* Offline Sync Flow */}
+          <section
+            id="offline-sync"
+            className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24"
+          >
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> How Offline Sync Works
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              You can track expenses and review receipts anywhere—even on an airplane or with an unstable mobile connection. Here is how Clario handles your data:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 border-2 border-[#121212] bg-white rounded-lg shadow-[3px_3px_0_0_#121212] space-y-2">
+                <span className="inline-block px-2 py-0.5 text-xs font-black font-mono bg-purple-100 text-purple-800 border border-purple-300 rounded">
+                  Step 1
+                </span>
+                <h3 className="font-bold text-[#121212] text-sm font-mono uppercase">Instant Local Save</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  When you add an expense or approve a claim, Clario immediately updates the screen and writes the record directly to your local IndexedDB storage.
+                </p>
+              </div>
+
+              <div className="p-4 border-2 border-[#121212] bg-white rounded-lg shadow-[3px_3px_0_0_#121212] space-y-2">
+                <span className="inline-block px-2 py-0.5 text-xs font-black font-mono bg-amber-100 text-amber-800 border border-amber-300 rounded">
+                  Step 2
+                </span>
+                <h3 className="font-bold text-[#121212] text-sm font-mono uppercase">Offline Queueing</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  If your internet is disconnected or slow, the action is safely queued in the <code>sync_queue</code> store. Your work is never lost.
+                </p>
+              </div>
+
+              <div className="p-4 border-2 border-[#121212] bg-white rounded-lg shadow-[3px_3px_0_0_#121212] space-y-2">
+                <span className="inline-block px-2 py-0.5 text-xs font-black font-mono bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">
+                  Step 3
+                </span>
+                <h3 className="font-bold text-[#121212] text-sm font-mono uppercase">Automatic Reconnection</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  The moment your device reconnects to the internet, Clario automatically flushes the queue, synchronizing your updates to Supabase PostgreSQL in the background.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Core Tables */}
+          <section id="core-tables" className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24">
+            <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
+              <span className="text-[#836EF9]">#</span> Cloud PostgreSQL Tables
+            </h2>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              When online, records sync to structured PostgreSQL tables hosted on Supabase:
+            </p>
             <DocTable
               headers={[
                 "Table Name",
                 "Primary Key",
                 "Key Columns",
-                "Description",
+                "What It Stores",
               ]}
               rows={[
                 [
                   "profiles",
                   "id (uuid)",
-                  "privy_did, wallet_address, wallet_nickname, active_mode",
-                  "User account profile & preferences",
+                  "privy_did, wallet_address, active_mode",
+                  "User identity, settings, and active operating mode",
                 ],
                 [
                   "transactions",
                   "id (uuid)",
-                  "user_id, hash, chain_id, amount, currency, category, status",
-                  "Unified multi-chain financial records",
+                  "user_id, amount, currency, category, status, monad_tx_hash",
+                  "Personal, freelancer, and business expense records",
                 ],
                 [
                   "receipts",
                   "id (uuid)",
-                  "user_id, transaction_id, image_url, merchant_name, total_amount, ocr_json",
-                  "Offchain receipt scans & OCR data",
+                  "user_id, storage_path, merchant, ocr_status, total_amount",
+                  "Uploaded receipt metadata and AI OCR extractions",
                 ],
                 [
                   "saved_receipt_bundles",
                   "id (uuid)",
-                  "bundle_hash, root_commitment, tx_hashes, monad_tx_hash, status",
-                  "Anchored receipt packages with Monad proofs",
+                  "receipt_hash, transaction_count, monad_tx_hash, status",
+                  "Anchored multi-transaction bundles verified on Monad",
+                ],
+                [
+                  "business_team_members",
+                  "id (uuid)",
+                  "org_id, name, email, role, spending_limit_monthly",
+                  "Team roster and spending authorization limits",
+                ],
+                [
+                  "business_reimbursements",
+                  "id (uuid)",
+                  "org_id, employee_id, amount, status, reviewed_by, monad_tx_hash",
+                  "Corporate employee expense claims and approval workflows",
+                ],
+                [
+                  "business_policies",
+                  "id (uuid)",
+                  "org_id, category, max_single_amount, monthly_budget",
+                  "Spend governance rules and auto-approval limits",
+                ],
+                [
+                  "business_audit_events",
+                  "id (uuid)",
+                  "org_id, actor_name, action, details, timestamp",
+                  "Immutable audit trail of corporate approvals and policy updates",
                 ],
                 [
                   "budgets",
                   "id (uuid)",
-                  "user_id, category, monthly_limit, spent_amount, mode",
-                  "Category budget thresholds",
+                  "user_id, category, amount_limit, period",
+                  "Personal and family spending targets",
                 ],
                 [
                   "subscriptions",
                   "id (uuid)",
                   "user_id, name, amount, billing_cycle, next_renewal_date",
-                  "Detected recurring software & bills",
-                ],
-                [
-                  "clients",
-                  "id (uuid)",
-                  "user_id, name, email, billing_rate, currency",
-                  "Freelancer client directory",
+                  "Detected recurring SaaS tools, memberships, and bills",
                 ],
                 [
                   "invoices",
                   "id (uuid)",
                   "user_id, client_id, invoice_number, total, due_date, status",
-                  "Verifiable client invoices",
+                  "Freelancer invoices sent to clients",
                 ],
               ]}
             />
           </section>
 
+          {/* Security & RLS */}
           <section
             id="rls-policies"
             className="space-y-4 pt-4 border-t-2 border-[#121212]/10 scroll-mt-24"
           >
             <h2 className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wide text-[#121212] flex items-center gap-2">
-              <span className="text-[#836EF9]">#</span> Row Level Security
-              Policies
+              <span className="text-[#836EF9]">#</span> Privacy & Row Level Security (RLS)
             </h2>
             <p className="text-sm text-slate-700 font-medium leading-relaxed">
-              Every table enforces strict Row Level Security (RLS) bound to the
-              authenticated user ID. Users can never query or mutate another
-              user’s records directly:
+              Every table in Supabase enforces strict <strong>Row Level Security (RLS)</strong>. Your financial records are locked to your authenticated identity. Even if someone makes a direct database API call, PostgreSQL automatically blocks access to any records that do not belong to them:
             </p>
             <DocCodeBlock
-              filename="PostgreSQL RLS Policy"
+              filename="PostgreSQL Row Level Security Rule"
               language="sql"
-              code={`-- Restrict access to authenticated profile owner
+              code={`-- Enable RLS so rows are private by default
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
+-- Allow users to only see and edit their own transactions
 CREATE POLICY "Users access own transactions"
 ON transactions
 FOR ALL
