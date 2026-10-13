@@ -12,16 +12,16 @@ Clario is an open financial operating system engineered for crypto-native indivi
 
 ---
 
-## ⚡ Key Links & Live Deployments
+##  Key Links & Live Deployments
 
 | Resource | Link / Destination | Description |
 |---|---|---|
-| 🌐 **Live Web Application** | [www.useclario.xyz](https://www.useclario.xyz) | Production PWA connected to Monad Testnet and live indexers |
-| 🎥 **Technical Demo Video** | [youtu.be/-A8oSLmlqxQ](https://youtu.be/-A8oSLmlqxQ) | End-to-end technical walkthrough of architecture, signing, and verification |
-| 🔍 **Interactive Proof Center** | [useclario.xyz/proof](https://www.useclario.xyz/proof) | Live cryptographic verifier for onchain RFC 8785 hash commitments |
-| 📜 **Monad Contract Explorer** | [`0x92f9...bA87` on MonadExplorer](https://testnet.monadexplorer.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) | Deployed `ClarioTransactionRegistry` on Monad Testnet (`chainId: 10143`) |
-| 👁️ **MonadVision Explorer** | [`0x92f9...bA87` on MonadVision](https://testnet.monadvision.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) | Block inspector and state viewer on MonadVision |
-| 📖 **Documentation Portal** | [useclario.xyz/docs](https://www.useclario.xyz/docs) · [Repo Docs](./docs) | Comprehensive technical architecture, API schemas, and security model |
+|  **Live Web Application** | [www.useclario.xyz](https://www.useclario.xyz) | Production PWA connected to Monad Testnet and live indexers |
+|   **Technical Demo Video** | [youtu.be/-A8oSLmlqxQ](https://youtu.be/-A8oSLmlqxQ) | End-to-end technical walkthrough of architecture, signing, and verification |
+|   **Interactive Proof Center** | [useclario.xyz/proof](https://www.useclario.xyz/proof) | Live cryptographic verifier for onchain RFC 8785 hash commitments |
+|   **Monad Contract Explorer** | [`0x92f9...bA87` on MonadExplorer](https://testnet.monadexplorer.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) | Deployed `ClarioTransactionRegistry` on Monad Testnet (`chainId: 10143`) |
+|   **MonadVision Explorer** | [`0x92f9...bA87` on MonadVision](https://testnet.monadvision.com/address/0x92f9B76673C1D88c9E3c490A88eB95b08823bA87) | Block inspector and state viewer on MonadVision |
+|   **Documentation Portal** | [useclario.xyz/docs](https://www.useclario.xyz/docs) · [Repo Docs](./docs) | Comprehensive technical architecture, API schemas, and security model |
 
 ---
 
